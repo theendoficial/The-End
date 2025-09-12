@@ -13,10 +13,10 @@ export default {
         'rainbow-gradient': 'linear-gradient(to right, #0d41e1, #3498db, #2ecc71, #f1c40f, #e67e22, #e74c3c)',
       },
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['Objectivity', 'sans-serif'],
+        headline: ['Objectivity', 'sans-serif'],
         code: ['monospace'],
-        sans: ['Poppins', 'sans-serif'],
+        sans: ['Objectivity', 'sans-serif'],
       },
       spacing: {
         '18': '4.5rem',
