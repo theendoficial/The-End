@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Mock data for scheduled posts
 const scheduledPosts = {
@@ -19,6 +19,13 @@ const scheduledPosts = {
   '2024-08-01': [{ type: 'image' }],
   '2024-08-05': [{ type: 'carousel' }],
 };
+
+// Mock data for pending items
+const pendingItems = {
+  approvals: 3,
+  documents: 1,
+};
+
 
 type PostType = 'image' | 'video' | 'carousel';
 
@@ -68,7 +75,7 @@ export default function DashboardPage() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Link href="/dashboard/calendar">
-        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
            <CardHeader className="text-center">
             <CardTitle className="font-headline">Calendário de Conteúdo</CardTitle>
           </CardHeader>
@@ -110,7 +117,7 @@ export default function DashboardPage() {
                 cell: 'text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 w-full rounded-md',
                 day: cn(
                   buttonVariants({ variant: 'ghost' }),
-                  'h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-md'
+                  'h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md'
                 ),
                 day_selected:
                   'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
@@ -132,6 +139,52 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </Link>
+        <Link href="/dashboard/approvals">
+            <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
+                <CardHeader>
+                    <CardTitle className="font-headline text-center">Minhas Pendências</CardTitle>
+                    <CardDescription className="text-center">
+                        Ações necessárias para o andamento do projeto.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                    {pendingItems.approvals > 0 || pendingItems.documents > 0 ? (
+                        <>
+                        {pendingItems.approvals > 0 && (
+                             <div className="flex items-center justify-between p-4 rounded-lg bg-background/50">
+                                <div className="flex items-center gap-4">
+                                    <FileWarning className="h-6 w-6 text-yellow-500" />
+                                    <div>
+                                        <p className="font-semibold">Posts para Aprovar</p>
+                                        <p className="text-sm text-muted-foreground">Aguardando sua revisão</p>
+                                    </div>
+                                </div>
+                                <span className="font-bold text-lg">{pendingItems.approvals}</span>
+                            </div>
+                        )}
+                       {pendingItems.documents > 0 && (
+                             <div className="flex items-center justify-between p-4 rounded-lg bg-background/50">
+                                <div className="flex items-center gap-4">
+                                    <FileWarning className="h-6 w-6 text-orange-500" />
+                                    <div>
+                                        <p className="font-semibold">Documentos Pendentes</p>
+                                        <p className="text-sm text-muted-foreground">Contratos ou arquivos</p>
+                                    </div>
+                                </div>
+                                <span className="font-bold text-lg">{pendingItems.documents}</span>
+                            </div>
+                        )}
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-center p-8 gap-3">
+                            <CheckCircle2 className="h-12 w-12 text-green-500" />
+                            <p className="font-semibold text-lg">Nenhuma pendência!</p>
+                            <p className="text-sm text-muted-foreground">Você está em dia com suas tarefas.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </Link>
       </div>
     </>
