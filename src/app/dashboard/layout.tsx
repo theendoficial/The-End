@@ -76,7 +76,7 @@ export default function DashboardLayout({
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
       <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
-      <div className="hidden border-r bg-card/30 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
+      <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
@@ -112,7 +112,7 @@ export default function DashboardLayout({
         </div>
       </div>
       <div className="flex flex-col z-10">
-        <header className="flex h-14 items-center gap-4 border-b bg-card/30 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10">
+        <header className="flex h-14 items-center gap-4 border-b bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10">
           <Sheet>
             <SheetTrigger asChild>
               <Button
