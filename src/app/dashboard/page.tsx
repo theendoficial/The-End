@@ -43,20 +43,25 @@ const postLegends: Record<PostType, string> = {
     carousel: 'Carrossel'
 }
 
-type Status = 'scheduled' | 'review' | 'draft';
+type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
 
 const statusConfig: Record<Status, { label: string; className: string }> = {
-    scheduled: { label: 'Agendado', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
-    review: { label: 'Em Revisão', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-    draft: { label: 'Rascunho', className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' }
+    awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
+    in_revision: { label: 'Em alteração', className: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
+    scheduled: { label: 'Agendado', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+    canceled: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
+    completed: { label: 'Concluído', className: 'bg-green-600/20 text-green-500 border-green-600/30' }
 };
 
 
 const upcomingPosts = [
     { id: 1, title: 'Lançamento da nova coleção de verão', date: '15 de Jul, 2024', status: 'scheduled' as Status, imageUrl: 'https://picsum.photos/seed/post1/100/100', imageHint: 'fashion summer' },
-    { id: 2, title: 'Dicas de estilo para o trabalho', date: '18 de Jul, 2024', status: 'review' as Status, imageUrl: 'https://picsum.photos/seed/post2/100/100', imageHint: 'office style' },
-    { id: 3, title: 'Como usar acessórios para transformar o look', date: '22 de Jul, 2024', status: 'draft' as Status, imageUrl: 'https://picsum.photos/seed/post3/100/100', imageHint: 'fashion accessories' },
-    { id: 4, title: 'Promoção de Aniversário', date: '25 de Jul, 2024', status: 'scheduled' as Status, imageUrl: 'https://picsum.photos/seed/post4/100/100', imageHint: 'sale promotion' },
+    { id: 2, title: 'Dicas de estilo para o trabalho', date: '18 de Jul, 2024', status: 'awaiting_approval' as Status, imageUrl: 'https://picsum.photos/seed/post2/100/100', imageHint: 'office style' },
+    { id: 3, title: 'Como usar acessórios para transformar o look', date: '22 de Jul, 2024', status: 'in_revision' as Status, imageUrl: 'https://picsum.photos/seed/post3/100/100', imageHint: 'fashion accessories' },
+    { id: 4, title: 'Promoção de Aniversário', date: '25 de Jul, 2024', status: 'approved' as Status, imageUrl: 'https://picsum.photos/seed/post4/100/100', imageHint: 'sale promotion' },
+    { id: 5, title: 'Post de engajamento semanal', date: '28 de Jul, 2024', status: 'canceled' as Status, imageUrl: 'https://picsum.photos/seed/post5/100/100', imageHint: 'social media' },
+    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '02 de Ago, 2024', status: 'completed' as Status, imageUrl: 'https://picsum.photos/seed/post6/100/100', imageHint: 'makeup tutorial' },
 ]
 
 function CalendarDots({ day }: { day: Date }) {
@@ -213,15 +218,15 @@ export default function DashboardPage() {
               Acompanhe o status das próximas publicações.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-2">
             {upcomingPosts.map((post) => (
-                <div key={post.id} className="flex items-center gap-4 p-3 rounded-lg bg-background/50 dark:bg-black/20 hover:bg-accent/50 dark:hover:bg-white/10 transition-colors">
+                <div key={post.id} className="flex items-center gap-4 p-2 rounded-lg bg-background/50 dark:bg-black/20 hover:bg-accent/50 dark:hover:bg-white/10 transition-colors">
                     <Image 
                         src={post.imageUrl}
-                        width={64}
-                        height={64}
+                        width={48}
+                        height={48}
                         alt={`Preview for ${post.title}`}
-                        className="rounded-md object-cover h-16 w-16"
+                        className="rounded-md object-cover h-12 w-12"
                         data-ai-hint={post.imageHint}
                     />
                     <div className="flex-grow">
@@ -233,9 +238,9 @@ export default function DashboardPage() {
                     </Badge>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded-md hover:bg-muted">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md">
                                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                            </button>
+                            </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
                             <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
