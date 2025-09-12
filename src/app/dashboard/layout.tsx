@@ -169,7 +169,7 @@ export default function DashboardLayout({
           </Sheet>
            <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
               <Image 
-                  src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
+                  src="/assets/logo/TheEnd_Q_COLORS.png"
                   width={32}
                   height={32}
                   alt="The End Logo"

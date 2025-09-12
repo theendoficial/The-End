@@ -1,3 +1,4 @@
+
 'use client';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -31,7 +32,7 @@ export default function LoginPage() {
         <div className="absolute w-[200px] h-[40px] top-2.5 right-[200px] z-[-2] transform -rotate-60 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-[#2ecc71] via-[#f1c40f] via-[#e67e22] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
         
         <Image 
-            src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
+            src="/assets/logo/TheEnd_Q_COLORS.png"
             width={108}
             height={108}
             alt="The End Logo"
