@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
+import { ptBR } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
@@ -27,7 +28,7 @@ const postColors: Record<PostType, string> = {
 };
 
 const postLegends: Record<PostType, string> = {
-    image: 'Imagem Estática',
+    image: 'Imagem',
     video: 'Vídeo/Reels',
     carousel: 'Carrossel'
 }
@@ -65,12 +66,13 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
-           <CardHeader>
+        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-lg rounded-2xl backdrop-blur-lg">
+           <CardHeader className="text-center">
             <CardTitle>Calendário de Conteúdo</CardTitle>
           </CardHeader>
           <CardContent>
             <DayPicker
+              locale={ptBR}
               month={date}
               onMonthChange={setDate}
               modifiers={{
