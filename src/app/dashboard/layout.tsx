@@ -45,6 +45,13 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { setTheme } = useTheme();
 
+  // Placeholder for dynamic client data
+  const clientData = {
+    companyName: 'Nome da Empresa',
+    email: 'contato@empresa.com',
+    logoUrl: 'https://picsum.photos/seed/clientlogo/32/32'
+  };
+
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Painel de Controle' },
     { href: '/dashboard/projects', icon: FolderKanban, label: 'Meus Projetos' },
@@ -55,7 +62,7 @@ export default function DashboardLayout({
   ];
 
   const NavLinks = () => (
-    <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+    <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2">
       {navItems.map((item) => (
         <Link
           key={item.label}
@@ -79,21 +86,22 @@ export default function DashboardLayout({
       <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
+            <div className="flex items-center gap-2">
               <Image 
-                  src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
+                  src={clientData.logoUrl}
                   width={32}
                   height={32}
-                  alt="The End Logo"
+                  alt="Client Logo"
+                  className="rounded-full"
+                  data-ai-hint="logo"
               />
-              <span className="">The End.</span>
-            </Link>
-            <Button variant="ghost" size="icon" className="ml-auto h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button>
+              <div>
+                <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
+                <p className="text-xs text-muted-foreground">{clientData.email}</p>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 py-4">
             <NavLinks />
           </div>
           <div className="mt-auto p-4">
@@ -125,7 +133,25 @@ export default function DashboardLayout({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-card/80 dark:bg-black/80 backdrop-blur-lg text-foreground dark:text-white border-r-border/20 dark:border-r-white/20">
-              <NavLinks />
+              <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
+                <div className="flex items-center gap-2">
+                  <Image 
+                      src={clientData.logoUrl}
+                      width={32}
+                      height={32}
+                      alt="Client Logo"
+                      className="rounded-full"
+                      data-ai-hint="logo"
+                  />
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
+                    <p className="text-xs text-muted-foreground">{clientData.email}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 py-4">
+                <NavLinks />
+              </div>
                <div className="mt-auto p-4">
                 <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
                   <CardHeader className="p-2 pt-0 md:p-4">
@@ -141,7 +167,20 @@ export default function DashboardLayout({
               </div>
             </SheetContent>
           </Sheet>
+           <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
+              <Image 
+                  src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
+                  width={32}
+                  height={32}
+                  alt="The End Logo"
+              />
+              <span className="hidden md:inline-block">The End.</span>
+            </Link>
           <div className="w-full flex-1" />
+           <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">Toggle notifications</span>
+            </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hover:bg-white/20 border-border/10 dark:border-white/10 border">
