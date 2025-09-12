@@ -73,7 +73,7 @@ export default function DashboardLayout({
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-[#101011] to-[#000000]">
-      <div className="absolute w-[1500px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
+      <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
       <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
       <div className="hidden border-r bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
