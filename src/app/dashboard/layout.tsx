@@ -49,7 +49,7 @@ export default function DashboardLayout({
   const clientData = {
     companyName: 'Nome da Empresa',
     email: 'contato@empresa.com',
-    logoUrl: 'https://picsum.photos/seed/clientlogo/32/32'
+    logoUrl: 'https://picsum.photos/seed/clientlogo/40/40'
   };
 
   const navItems = [
@@ -62,12 +62,12 @@ export default function DashboardLayout({
   ];
 
   const NavLinks = () => (
-    <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2">
+    <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-4">
       {navItems.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:text-primary dark:text-gray-500 dark:hover:text-primary ${
             pathname === item.href ? 'bg-muted text-primary' : ''
           }`}
         >
@@ -86,11 +86,11 @@ export default function DashboardLayout({
       <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Image 
                   src={clientData.logoUrl}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   alt="Client Logo"
                   className="rounded-full"
                   data-ai-hint="logo"
@@ -134,11 +134,11 @@ export default function DashboardLayout({
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-card/80 dark:bg-black/80 backdrop-blur-lg text-foreground dark:text-white border-r-border/20 dark:border-r-white/20">
               <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Image 
                       src={clientData.logoUrl}
-                      width={32}
-                      height={32}
+                      width={40}
+                      height={40}
                       alt="Client Logo"
                       className="rounded-full"
                       data-ai-hint="logo"

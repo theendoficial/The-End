@@ -52,7 +52,10 @@ export default function DashboardPage() {
   return (
     <>
       <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">Painel de Controle</h1>
+        <div className="flex flex-col">
+            <h1 className="text-lg font-semibold md:text-2xl">Bem Vindo!</h1>
+            <p className="text-sm text-muted-foreground">Sua área The End, explore e encontre seu projeto aqui!</p>
+        </div>
       </div>
       <div className="flex flex-1 rounded-lg border border-dashed border-border/20 dark:border-white/20 shadow-lg bg-card/20 dark:bg-black/20 backdrop-blur-sm">
         <div className="flex flex-col w-full p-8">
