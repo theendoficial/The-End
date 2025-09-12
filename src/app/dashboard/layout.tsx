@@ -76,7 +76,7 @@ export default function DashboardLayout({
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
       <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
-      <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
+      <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
@@ -97,7 +97,7 @@ export default function DashboardLayout({
             <NavLinks />
           </div>
           <div className="mt-auto p-4">
-            <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white">
+            <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
               <CardHeader className="p-2 pt-0 md:p-4">
                 <CardTitle className="text-base">Avisos</CardTitle>
                 <CardDescription className="text-muted-foreground dark:text-gray-300">
@@ -112,7 +112,7 @@ export default function DashboardLayout({
         </div>
       </div>
       <div className="flex flex-col z-10">
-        <header className="flex h-14 items-center gap-4 border-b bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10">
+        <header className="flex h-14 items-center gap-4 border-b bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10 shadow-lg">
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -127,7 +127,7 @@ export default function DashboardLayout({
             <SheetContent side="left" className="flex flex-col bg-card/80 dark:bg-black/80 backdrop-blur-lg text-foreground dark:text-white border-r-border/20 dark:border-r-white/20">
               <NavLinks />
                <div className="mt-auto p-4">
-                <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white">
+                <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
                   <CardHeader className="p-2 pt-0 md:p-4">
                     <CardTitle>Avisos</CardTitle>
                     <CardDescription className="text-muted-foreground dark:text-gray-300">

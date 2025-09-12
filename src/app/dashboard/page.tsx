@@ -54,13 +54,13 @@ export default function DashboardPage() {
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">Painel de Controle</h1>
       </div>
-      <div className="flex flex-1 rounded-lg border border-dashed border-border/20 dark:border-white/20 shadow-sm bg-card/20 dark:bg-black/20 backdrop-blur-sm">
+      <div className="flex flex-1 rounded-lg border border-dashed border-border/20 dark:border-white/20 shadow-lg bg-card/20 dark:bg-black/20 backdrop-blur-sm">
         <div className="flex flex-col w-full p-8">
             <h2 className="text-2xl font-bold tracking-tight mb-4">Atalhos Rápidos</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                  {shortcutCards.map((card) => (
                     <Link href={card.href} key={card.title}>
-                        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white">
+                        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
                                     {card.title}
