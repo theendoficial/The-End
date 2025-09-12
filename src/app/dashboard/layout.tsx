@@ -72,9 +72,9 @@ export default function DashboardLayout({
   );
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-[#1e1e1f] to-[#000000]">
-      <div className="absolute w-[400px] h-40 -top-20 -left-40 z-0 transform -rotate-45 bg-gradient-to-r from-[#0d41e1]/80 via-[#3498db]/70 to-[#2ecc71]/60 rounded-full filter blur-[100px] opacity-40"></div>
-      <div className="absolute w-[300px] h-32 -bottom-20 -right-20 z-0 transform rotate-12 bg-gradient-to-r from-[#f1c40f]/60 via-[#e67e22]/50 to-[#e74c3c]/40 rounded-full filter blur-[80px] opacity-30"></div>
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-[#101011] to-[#000000]">
+      <div className="absolute w-[1500px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#2ecc71] rounded-full filter blur-[30px] opacity-60"></div>
+      <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#f1c40f] via-[#e67e22] to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-90"></div>
       
       <div className="hidden border-r bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
         <div className="flex h-full max-h-screen flex-col gap-2">
