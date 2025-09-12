@@ -105,11 +105,11 @@ export default function LoginPage() {
           font-family: "Poppins", sans-serif;
         }
         @media (max-width: 480px) {
-          .relative.w-\[340px\] {
+          .relative.w-\\[340px\\] {
             width: 90%;
             padding: 60px 40px 40px;
           }
-          .w-\[108px\] {
+          .w-\\[108px\\] {
             width: 90px;
             height: 90px;
             margin-bottom: 32px;
@@ -121,11 +121,11 @@ export default function LoginPage() {
             top: 15px;
             left: 15px;
           }
-          .absolute.w-\[100px\] {
+          .absolute.w-\\[100px\\] {
             width: 80px;
             height: 40px;
           }
-          .absolute.w-\[200px\] {
+          .absolute.w-\\[200px\\] {
             width: 150px;
             height: 30px;
             right: auto;
