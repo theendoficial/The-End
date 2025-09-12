@@ -72,11 +72,11 @@ export default function DashboardLayout({
   );
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-gray-950 to-black">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-[#1e1e1f] to-[#000000]">
       <div className="absolute w-[400px] h-40 -top-20 -left-40 z-0 transform -rotate-45 bg-gradient-to-r from-[#0d41e1]/80 via-[#3498db]/70 to-[#2ecc71]/60 rounded-full filter blur-[100px] opacity-40"></div>
       <div className="absolute w-[300px] h-32 -bottom-20 -right-20 z-0 transform rotate-12 bg-gradient-to-r from-[#f1c40f]/60 via-[#e67e22]/50 to-[#e74c3c]/40 rounded-full filter blur-[80px] opacity-30"></div>
       
-      <div className="hidden border-r bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl">
+      <div className="hidden border-r bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-white/10 px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-white">
