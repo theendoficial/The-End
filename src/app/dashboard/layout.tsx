@@ -68,7 +68,7 @@ export default function DashboardLayout({
           key={item.label}
           href={item.href}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:text-primary dark:text-gray-500 dark:hover:text-primary ${
-            pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground'
+            pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground/60 dark:text-muted-foreground'
           }`}
         >
           <item.icon className="h-4 w-4" />
@@ -79,11 +79,11 @@ export default function DashboardLayout({
   );
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-background dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000] bg-gradient-to-b from-white to-[#F0F0F0]">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-white to-[#F0F0F0] dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000]">
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
       <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
-      <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
+      <div className="hidden bg-card/10 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export default function DashboardLayout({
         </div>
       </div>
       <div className="flex flex-col z-10">
-        <header className="flex h-14 items-center gap-4 border-b bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10 shadow-lg">
+        <header className="flex h-14 items-center gap-4 border-b bg-card/10 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10 shadow-lg">
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -227,3 +227,5 @@ export default function DashboardLayout({
     </div>
   );
 }
+
+    
