@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
@@ -59,16 +60,17 @@ export default function DashboardPage() {
     <>
       <div className="flex items-center">
         <div className="flex flex-col">
-          <h1 className="text-lg font-semibold md:text-2xl">Bem Vindo!</h1>
+          <h1 className="text-lg font-semibold md:text-2xl font-headline">Bem Vindo!</h1>
           <p className="text-sm text-muted-foreground">
             Sua área The End, explore e encontre seu projeto aqui!
           </p>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-lg rounded-2xl backdrop-blur-lg">
+        <Link href="/dashboard/calendar">
+        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
            <CardHeader className="text-center">
-            <CardTitle>Calendário de Conteúdo</CardTitle>
+            <CardTitle className="font-headline">Calendário de Conteúdo</CardTitle>
           </CardHeader>
           <CardContent>
             <DayPicker
@@ -93,7 +95,7 @@ export default function DashboardPage() {
                 months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
                 month: 'space-y-4 w-full',
                 caption: 'flex justify-center pt-1 relative items-center text-foreground',
-                caption_label: 'text-sm font-semibold',
+                caption_label: 'text-sm font-semibold font-headline',
                 nav: 'space-x-1 flex items-center',
                 nav_button: cn(
                   buttonVariants({ variant: 'outline' }),
@@ -130,6 +132,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </Link>
       </div>
     </>
   );
