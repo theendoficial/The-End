@@ -14,10 +14,14 @@ export default function LoginPage() {
         <div className="absolute w-[100px] h-[50px] -bottom-2.5 -right-2.5 z-[-2] transform -rotate-20 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-[#2ecc71] via-[#f1c40f] via-[#e67e22] to-[#e74c3c] rounded-[60%] filter blur-[15px] opacity-60"></div>
         <div className="absolute w-[200px] h-[40px] top-2.5 right-[200px] z-[-2] transform -rotate-60 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-[#2ecc71] via-[#f1c40f] via-[#e67e22] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
         
-        {/* Placeholder for the logo image */}
-        <div className="w-[108px] h-[108px] bg-gray-700 rounded-full mb-10 flex items-center justify-center">
-            <span className="text-gray-400 text-xs">Logo</span>
-        </div>
+        {/* Adicione sua imagem de logo na pasta `public/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png` */}
+        <Image 
+            src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
+            width={108}
+            height={108}
+            alt="The End Logo"
+            className="mb-10"
+        />
 
         <h2 className="text-lg font-medium m-0 mb-1.5">Seja Bem Vindo!</h2>
         <h3 className="text-[#f4f1f7] text-sm font-medium m-0 mb-10">
