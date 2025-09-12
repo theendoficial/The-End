@@ -13,6 +13,10 @@ export default {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
         code: ['monospace'],
+        sans: ['Poppins', 'sans-serif'],
+      },
+      spacing: {
+        '18': '4.5rem',
       },
       colors: {
         background: 'hsl(var(--background))',

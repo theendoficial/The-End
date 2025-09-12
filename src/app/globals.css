@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 234 43% 94%; /* Light Indigo */
@@ -14,11 +10,11 @@ body {
     --card-foreground: 231 48% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 231 48% 20%;
-    --primary: 231 48% 48%; /* Deep Indigo */
+    --primary: #f1f1f5;
     --primary-foreground: 0 0% 98%;
     --secondary: 231 40% 88%;
     --secondary-foreground: 231 48% 30%;
-    --muted: 231 40% 90%;
+    --muted: #f4f1f7;
     --muted-foreground: 231 40% 60%;
     --accent: 45 100% 51%; /* Amber */
     --accent-foreground: 45 100% 15%;
@@ -51,11 +47,11 @@ body {
     --card-foreground: 234 43% 94%;
     --popover: 231 48% 16%;
     --popover-foreground: 234 43% 94%;
-    --primary: 231 48% 60%;
+    --primary: #f1f1f5;
     --primary-foreground: 0 0% 98%;
     --secondary: 231 40% 25%;
     --secondary-foreground: 234 43% 94%;
-    --muted: 231 40% 25%;
+    --muted: #f4f1f7;
     --muted-foreground: 231 40% 70%;
     --accent: 45 100% 51%; /* Amber */
     --accent-foreground: 45 100% 15%;
@@ -85,6 +81,7 @@ body {
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
   body {
     @apply bg-background text-foreground;
