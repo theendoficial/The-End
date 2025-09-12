@@ -72,14 +72,14 @@ export default function DashboardLayout({
   );
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-[#101011] to-[#000000]">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-background dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000] bg-gradient-to-b from-white to-[#F0F0F0]">
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
       <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
-      <div className="hidden border-r bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
+      <div className="hidden border-r bg-card/30 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b border-white/10 px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-white">
+          <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
+            <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
               <Image 
                   src="/assets/images/LOGOTHEEND/TheEnd_Q_COLORS.png"
                   width={32}
@@ -88,7 +88,7 @@ export default function DashboardLayout({
               />
               <span className="">The End.</span>
             </Link>
-            <Button variant="ghost" size="icon" className="ml-auto h-8 w-8 text-white hover:bg-white/10 hover:text-white">
+            <Button variant="ghost" size="icon" className="ml-auto h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
               <Bell className="h-4 w-4" />
               <span className="sr-only">Toggle notifications</span>
             </Button>
@@ -97,22 +97,22 @@ export default function DashboardLayout({
             <NavLinks />
           </div>
           <div className="mt-auto p-4">
-            <Card className="bg-white/5 border-white/10 text-white">
+            <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white">
               <CardHeader className="p-2 pt-0 md:p-4">
                 <CardTitle className="text-base">Avisos</CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardDescription className="text-muted-foreground dark:text-gray-300">
                   Mensagens importantes do administrador para você.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-                 <p className="text-xs text-gray-400">Nenhum aviso no momento.</p>
+                 <p className="text-xs text-muted-foreground dark:text-gray-400">Nenhum aviso no momento.</p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
       <div className="flex flex-col z-10">
-        <header className="flex h-14 items-center gap-4 border-b bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-white/10">
+        <header className="flex h-14 items-center gap-4 border-b bg-card/30 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10">
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -124,18 +124,18 @@ export default function DashboardLayout({
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col bg-black/80 backdrop-blur-lg text-white border-r-white/20">
+            <SheetContent side="left" className="flex flex-col bg-card/80 dark:bg-black/80 backdrop-blur-lg text-foreground dark:text-white border-r-border/20 dark:border-r-white/20">
               <NavLinks />
                <div className="mt-auto p-4">
-                <Card className="bg-white/5 border-white/10 text-white">
+                <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white">
                   <CardHeader className="p-2 pt-0 md:p-4">
                     <CardTitle>Avisos</CardTitle>
-                    <CardDescription className="text-gray-300">
+                    <CardDescription className="text-muted-foreground dark:text-gray-300">
                       Mensagens importantes do administrador para você.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-                     <p className="text-xs text-gray-400">Nenhum aviso no momento.</p>
+                     <p className="text-xs text-muted-foreground dark:text-gray-400">Nenhum aviso no momento.</p>
                   </CardContent>
                 </Card>
               </div>
@@ -144,44 +144,44 @@ export default function DashboardLayout({
           <div className="w-full flex-1" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full bg-white/10 hover:bg-white/20 border-white/10 border">
-                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-white" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-white" />
+              <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hover:bg-white/20 border-border/10 dark:border-white/10 border">
+                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-foreground dark:text-white" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-foreground dark:text-white" />
                 <span className="sr-only">Toggle theme</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-black/80 backdrop-blur-lg text-white border-white/20">
-              <DropdownMenuItem onClick={() => setTheme('light')} className="focus:bg-white/10">
+            <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
+              <DropdownMenuItem onClick={() => setTheme('light')} className="focus:bg-accent dark:focus:bg-white/10">
                 Claro
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('dark')} className="focus:bg-white/10">
+              <DropdownMenuItem onClick={() => setTheme('dark')} className="focus:bg-accent dark:focus:bg-white/10">
                 Escuro
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('system')} className="focus:bg-white/10">
+              <DropdownMenuItem onClick={() => setTheme('system')} className="focus:bg-accent dark:focus:bg-white/10">
                 Sistema
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full bg-white/10 hover:bg-white/20 border-white/10 border">
-                <Settings className="h-5 w-5 text-white" />
+              <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hover:bg-white/20 border-border/10 dark:border-white/10 border">
+                <Settings className="h-5 w-5 text-foreground dark:text-white" />
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-black/80 backdrop-blur-lg text-white border-white/20">
+            <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/20"/>
-              <DropdownMenuItem className="focus:bg-white/10">Configurações</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-white/10">Suporte</DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-white/20"/>
+              <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
+              <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Configurações</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Suporte</DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
               <Link href="/login">
-                <DropdownMenuItem className="focus:bg-white/10">Sair</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Sair</DropdownMenuItem>
               </Link>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 text-white">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 text-foreground">
           {children}
         </main>
       </div>
