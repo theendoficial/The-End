@@ -68,7 +68,7 @@ export default function DashboardLayout({
           key={item.label}
           href={item.href}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:text-primary dark:text-gray-500 dark:hover:text-primary ${
-            pathname === item.href ? 'bg-muted text-primary' : ''
+            pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground'
           }`}
         >
           <item.icon className="h-4 w-4" />
@@ -80,8 +80,8 @@ export default function DashboardLayout({
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-background dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000] bg-gradient-to-b from-white to-[#F0F0F0]">
-      <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
-      <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-green-500 via-yellow-500 via-orange-500 to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
+      <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
+      <div className="absolute w-[500px] h-[100px] bottom-[-2px] right-[-40px] z-0 transform -rotate-30 bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-[30%] filter blur-[20px] opacity-60"></div>
       
       <div className="hidden bg-gray-900/5 dark:bg-black/30 backdrop-blur-lg md:block z-10 m-2 rounded-2xl border-white/10 shadow-lg">
         <div className="flex h-full max-h-screen flex-col gap-2">
