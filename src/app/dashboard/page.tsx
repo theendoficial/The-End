@@ -1,25 +1,81 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut } from 'lucide-react';
+
+import {
+  Calendar,
+  CheckSquare,
+  FileText,
+  FolderKanban,
+  LineChart,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const shortcutCards = [
+    {
+      title: 'Meus Projetos',
+      description: 'Visualize e gerencie seus projetos.',
+      icon: FolderKanban,
+      href: '/dashboard/projects',
+    },
+    {
+      title: 'Calendário',
+      description: 'Acompanhe os conteúdos programados.',
+      icon: Calendar,
+      href: '/dashboard/calendar',
+    },
+    {
+      title: 'Aprovação',
+      description: 'Revise e aprove posts pendentes.',
+      icon: CheckSquare,
+      href: '/dashboard/approvals',
+    },
+    {
+      title: 'Documentos',
+      description: 'Acesse contratos e guias.',
+      icon: FileText,
+      href: '/dashboard/documents',
+    },
+    {
+      title: 'Relatórios',
+      description: 'Veja as métricas e resultados.',
+      icon: LineChart,
+      href: '/dashboard/reports',
+    },
+  ];
+
   return (
-    <main className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md text-center shadow-2xl">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold">Welcome!</CardTitle>
-          <CardDescription>You have successfully logged in.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link href="/login" passHref>
-            <Button variant="outline">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-    </main>
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">Painel de Controle</h1>
+      </div>
+      <div className="flex flex-1 rounded-lg border border-dashed shadow-sm">
+        <div className="flex flex-col w-full p-8">
+            <h2 className="text-2xl font-bold tracking-tight mb-4">Atalhos Rápidos</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                 {shortcutCards.map((card) => (
+                    <Link href={card.href} key={card.title}>
+                        <Card className="hover:bg-muted/50 transition-colors">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    {card.title}
+                                </CardTitle>
+                                <card.icon className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-muted-foreground">{card.description}</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                ))}
+            </div>
+        </div>
+      </div>
+    </>
   );
 }
