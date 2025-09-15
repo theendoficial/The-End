@@ -3,13 +3,27 @@
 
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
-import { startOfWeek, endOfWeek, isWithinInterval, getDay, format } from 'date-fns';
+import { 
+    startOfWeek, 
+    endOfWeek, 
+    isWithinInterval, 
+    getDay, 
+    format, 
+    startOfMonth, 
+    endOfMonth, 
+    eachDayOfInterval, 
+    isSameMonth, 
+    isToday,
+    addMonths,
+    subMonths,
+    isSameDay
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical, Calendar as CalendarIcon, Tag, Info } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { scheduledPosts, postColors, postLegends, PostType, Post, PostDialogContent, upcomingPosts } from './dashboard-components';
@@ -29,109 +43,6 @@ const allPostColors: Record<string, string> = {
     strategy: 'bg-cyan-500'
 };
 
-const allScheduledEvents = { ...scheduledPosts };
-
-// Add other events to the main schedule object
-const otherEvents = [
-    { id: 'evt-1', date: new Date('2024-09-09T14:00:00'), type: 'meeting' },
-    { id: 'evt-2', date: new Date('2024-09-20T18:00:00'), type: 'delivery' },
-    { id: 'evt-3', date: new Date('2024-09-25T10:00:00'), type: 'meeting' },
-];
-
-otherEvents.forEach(event => {
-    const dateString = format(event.date, 'yyyy-MM-dd');
-    if (!allScheduledEvents[dateString]) {
-        allScheduledEvents[dateString] = [];
-    }
-    allScheduledEvents[dateString].push({ type: event.type as PostType });
-});
-
-
-function CalendarDots({ day }: { day: Date }) {
-  const dateString = day.toISOString().split('T')[0];
-  const posts = allScheduledEvents[dateString as keyof typeof allScheduledEvents];
-
-  if (posts) {
-    return (
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex space-x-1">
-        {posts.map((post, index) => (
-          <span
-            key={index}
-            className={cn('h-1 w-1 rounded-full', allPostColors[post.type])}
-          />
-        ))}
-      </div>
-    );
-  }
-  return null;
-}
-
-
-export function FullCalendar() {
-    const [date, setDate] = React.useState<Date>(new Date(2024, 8, 1));
-    return (
-        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
-            <CardContent className="p-4">
-                <DayPicker
-                locale={ptBR}
-                month={date}
-                onMonthChange={setDate}
-                modifiers={{
-                    scheduled: Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'))
-                }}
-                components={{
-                    DayContent: (props) => (
-                        <div className="relative h-full w-full flex items-center justify-center">
-                            <span className="relative z-10">{props.date.getDate()}</span>
-                            <CalendarDots day={props.date} />
-                        </div>
-                    ),
-                    IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-                    IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-                }}
-                className="p-0"
-                classNames={{
-                    months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
-                    month: 'space-y-4 w-full',
-                    caption: 'flex justify-center pt-1 relative items-center text-foreground',
-                    caption_label: 'text-sm font-semibold font-headline',
-                    nav: 'space-x-1 flex items-center',
-                    nav_button: cn(
-                        buttonVariants({ variant: 'outline' }),
-                        'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border-muted-foreground/50 text-foreground'
-                    ),
-                    nav_button_previous: 'absolute left-1',
-                    nav_button_next: 'absolute right-1',
-                    table: 'w-full border-collapse space-y-1',
-                    head_row: 'flex',
-                    head_cell: 'text-muted-foreground rounded-md w-full font-normal text-sm',
-                    row: 'flex w-full mt-2',
-                    cell: 'text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 w-full rounded-md h-12',
-                    day: cn(
-                        buttonVariants({ variant: 'ghost' }),
-                        'h-12 w-full p-0 font-normal aria-selected:opacity-100 rounded-md'
-                    ),
-                    day_selected:
-                    'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
-                    day_today: 'bg-accent text-accent-foreground',
-                    day_outside: 'text-muted-foreground opacity-50',
-                    day_disabled: 'text-muted-foreground opacity-50',
-                    day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
-                    day_hidden: 'invisible',
-                }}
-                />
-                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
-                    {Object.entries(allPostLegends).map(([type, label]) => (
-                        <div key={type} className="flex items-center gap-2">
-                            <span className={cn('h-2 w-2 rounded-full', allPostColors[type])} />
-                            <span className="text-sm text-muted-foreground">{label}</span>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
 
 type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done';
 
@@ -144,7 +55,7 @@ const getWeekTasks = () => {
 
     const postTask = upcomingPosts.find(p => p.id === 1); // Let's use an existing post
     
-    const allTasks = [
+    const allTasks: (Task | PostTask)[] = [
         // This Week's Tasks
         { id: 'task-1', status: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-09T10:00:00') },
         { id: 'task-2', status: 'done', title: 'Reunião de pauta semanal', type: 'meeting', project: {id: 6, name: 'Gestão de Mídias Sociais'}, date: new Date('2024-09-09T14:00:00') },
@@ -157,17 +68,19 @@ const getWeekTasks = () => {
         // Post-like task
         ...(postTask ? [{
             id: `post-${postTask.id}`,
-            status: 'done',
+            status: 'done' as TaskStatus,
             title: postTask.title,
-            type: 'post',
+            type: 'post' as any,
             project: { id: 9, name: 'Vídeos curtos' },
             date: new Date('2024-09-08T12:00:00'), // Sunday
             postData: postTask
         }] : []),
     ];
 
-    return allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
+    return allTasks;
 };
+
+const allScheduledEvents = getWeekTasks();
 
 const weekDaysColumns = [
     { id: 0, title: 'Domingo' },
@@ -180,10 +93,10 @@ const weekDaysColumns = [
 ];
 
 const statusConfig: Record<TaskStatus, { label: string; color: string; className: string }> = {
-    todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-    'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-    approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-    done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+    todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-800/80 border-gray-600 text-gray-300' },
+    'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-800/80 border-blue-600 text-blue-300' },
+    approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-800/80 border-purple-600 text-purple-300' },
+    done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-800/80 border-green-600 text-green-300' },
 };
 
 
@@ -195,7 +108,17 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
     post: (props) => <Video {...props} />,
 };
 
-type Task = ReturnType<typeof getWeekTasks>[0];
+type ProjectInfo = { id: number; name: string };
+type BaseTask = {
+    id: string;
+    title: string;
+    date: Date;
+    type: PostType | 'meeting' | 'delivery' | 'strategy';
+    project: ProjectInfo;
+    status: TaskStatus;
+}
+type Task = BaseTask & { type: Exclude<PostType, 'post'> };
+type PostTask = BaseTask & { type: 'post'; postData: Post };
 
 const TaskDialogContent = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
@@ -221,7 +144,7 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
                 </div>
                 <div className="flex items-center gap-4">
                     <Tag className="h-4 w-4 text-muted-foreground" />
-                     <Badge className={cn('text-xs font-normal border', statusInfo.className)}>
+                    <Badge variant="outline" className={cn('text-xs font-normal border', statusInfo.className)}>
                         {statusInfo.label}
                     </Badge>
                 </div>
@@ -235,7 +158,7 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
 };
 
 
-const TaskCard = ({ task }: { task: Task }) => {
+const TaskCard = ({ task }: { task: Task | PostTask }) => {
     const Icon = taskIcons[task.type];
     const statusInfo = statusConfig[task.status as TaskStatus];
     
@@ -267,16 +190,122 @@ const TaskCard = ({ task }: { task: Task }) => {
                     </span>
                 </div>
             </DialogTrigger>
-            <TaskDialogContent task={task} />
+            <TaskDialogContent task={task as Task} />
         </Dialog>
     );
 }
 
+const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
+    const statusInfo = statusConfig[event.status];
+
+    const EventContent = () => (
+        <div className={cn("w-full p-1.5 rounded-md cursor-pointer text-xs flex items-center gap-1.5", statusInfo.color)} style={{backgroundColor: statusInfo.color}}>
+            <span className="font-semibold truncate text-white">
+                {format(event.date, 'HH:mm')} - {event.title}
+            </span>
+        </div>
+    );
+    
+    if (event.type === 'post' && 'postData' in event && event.postData) {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                    <EventContent/>
+                </DialogTrigger>
+                <PostDialogContent post={event.postData} />
+            </Dialog>
+        );
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <EventContent/>
+            </DialogTrigger>
+            <TaskDialogContent task={event as Task} />
+        </Dialog>
+    );
+};
+
+export function FullCalendar() {
+    const [currentDate, setCurrentDate] = React.useState(new Date('2024-09-11T12:00:00'));
+
+    const firstDayOfMonth = startOfMonth(currentDate);
+    const lastDayOfMonth = endOfMonth(currentDate);
+    
+    const daysInMonth = eachDayOfInterval({
+        start: startOfWeek(firstDayOfMonth, { weekStartsOn: 0 }),
+        end: endOfWeek(lastDayOfMonth, { weekStartsOn: 0 })
+    });
+
+    const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+    const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
+
+    return (
+        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-xl font-headline capitalize">
+                    {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
+                </CardTitle>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={goToNextMonth}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-7 border-t border-b border-border">
+                    {weekDaysColumns.map(day => (
+                        <div key={day.id} className="p-2 text-center text-sm font-semibold text-muted-foreground border-l first:border-l-0 border-border">
+                           {day.title}
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-7 grid-rows-5 h-[70vh]">
+                    {daysInMonth.map(day => {
+                        const eventsForDay = allScheduledEvents
+                            .filter(event => isSameDay(event.date, day))
+                            .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+                        return (
+                            <div 
+                                key={day.toString()} 
+                                className={cn(
+                                    "p-2 border-l border-b border-border flex flex-col gap-1 overflow-y-auto",
+                                    !isSameMonth(day, currentDate) && "bg-muted/30 text-muted-foreground",
+                                    isToday(day) && "bg-blue-500/10 relative"
+                                )}
+                            >
+                                <span className={cn(
+                                    "font-semibold",
+                                    isToday(day) && "text-blue-500"
+                                )}>
+                                    {format(day, 'd')}
+                                </span>
+                                {eventsForDay.map(event => (
+                                    <CalendarEvent key={event.id} event={event} />
+                                ))}
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 export const KanbanBoard = () => {
-    const [tasks, setTasks] = React.useState<ReturnType<typeof getWeekTasks>>([]);
+    const [tasks, setTasks] = React.useState<(Task | PostTask)[]>([]);
 
     React.useEffect(() => {
-        setTasks(getWeekTasks());
+        const referenceDate = new Date('2024-09-11T12:00:00');
+        const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
+        const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
+        const weekTasks = getWeekTasks().filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
+        setTasks(weekTasks);
     }, []);
 
 
@@ -297,5 +326,3 @@ export const KanbanBoard = () => {
         </div>
     )
 }
-
-    
