@@ -28,7 +28,7 @@ const getPostImage = (post: Post): PostImage | null => {
     return { url: 'https://placehold.co/600x600/222/fff?text=Post', hint: 'placeholder' };
 };
 
-const RequestChangeDialog = ({ post, onConfirm, children }: { post: Post; onConfirm: (comment: string) => void; children: React.ReactNode }) => {
+const RequestChangeDialog = ({ post, onConfirm }: { post: Post; onConfirm: (comment: string) => void; children: React.ReactNode }) => {
     const [open, setOpen] = React.useState(false);
     const [comment, setComment] = React.useState('');
     
@@ -75,53 +75,8 @@ const RequestChangeDialog = ({ post, onConfirm, children }: { post: Post; onConf
     );
 };
 
-const ApprovalActions = ({ post, onAction }: ApprovalPostCardProps) => {
-    if (post.status === 'in_revision') {
-        return <Badge variant="outline" className="border-yellow-500/80 bg-yellow-500/10 text-yellow-400 py-1 px-3"><Clock className="mr-2 h-4 w-4" />Em Alteração</Badge>;
-    }
-    
-    return (
-        <div className="mt-4 flex flex-col gap-2">
-            <div className="flex gap-2">
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Cancelar
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Não, voltar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar post</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                <Button onClick={() => onAction(post.id, 'approved')} variant="secondary" className="bg-green-500/80 hover:bg-green-500/100 text-white w-full">
-                    <Check className="mr-2 h-4 w-4" />
-                    Aprovar
-                </Button>
-            </div>
-             <RequestChangeDialog post={post} onConfirm={() => onAction(post.id, 'in_revision')}>
-                <Button variant="outline" className="w-full">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Pedir Alteração
-                </Button>
-            </RequestChangeDialog>
-        </div>
-    );
-}
-
 export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
     const image = getPostImage(post);
-
-    const isActionable = post.status === 'awaiting_approval';
 
     return (
         <motion.div
