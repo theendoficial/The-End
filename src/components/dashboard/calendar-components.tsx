@@ -70,7 +70,7 @@ const getWeekTasks = () => {
             id: `post-${postTask.id}`,
             status: 'done' as TaskStatus,
             title: postTask.title,
-            type: 'post' as any,
+            type: 'video' as any,
             project: { id: 9, name: 'Vídeos curtos' },
             date: new Date('2024-09-08T12:00:00'), // Sunday
             postData: postTask
@@ -93,10 +93,10 @@ const weekDaysColumns = [
 ];
 
 const statusConfig: Record<TaskStatus, { label: string; color: string; className: string }> = {
-    todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-800/80 border-gray-600 text-gray-300' },
-    'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-800/80 border-blue-600 text-blue-300' },
-    approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-800/80 border-purple-600 text-purple-300' },
-    done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-800/80 border-green-600 text-green-300' },
+    todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-800/20 border-gray-600/80 text-gray-300' },
+    'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-800/20 border-blue-600/80 text-blue-300' },
+    approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-800/20 border-purple-600/80 text-purple-300' },
+    done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-800/20 border-green-600/80 text-green-300' },
 };
 
 
@@ -105,7 +105,8 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
     meeting: (props) => <Users {...props} />,
     content: (props) => <FileText {...props} />,
     strategy: (props) => <FileText {...props} />,
-    post: (props) => <Video {...props} />,
+    image: (props) => <FileText {...props} />,
+    carousel: (props) => <FileText {...props} />,
 };
 
 type ProjectInfo = { id: number; name: string };
@@ -118,7 +119,7 @@ type BaseTask = {
     status: TaskStatus;
 }
 type Task = BaseTask & { type: Exclude<PostType, 'post'> };
-type PostTask = BaseTask & { type: 'post'; postData: Post };
+type PostTask = BaseTask & { type: 'video' | 'image' | 'carousel'; postData: Post };
 
 const TaskDialogContent = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
@@ -163,7 +164,7 @@ const TaskCard = ({ task }: { task: Task | PostTask }) => {
     const statusInfo = statusConfig[task.status as TaskStatus];
     
     // This is a special task that should render the post dialog
-    if (task.type === 'post' && 'postData' in task && task.postData) {
+    if ('postData' in task && task.postData) {
         return (
             <Dialog>
                 <DialogTrigger asChild>
@@ -196,21 +197,25 @@ const TaskCard = ({ task }: { task: Task | PostTask }) => {
 }
 
 const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
-    const statusInfo = statusConfig[event.status];
-
     const EventContent = () => (
-        <div className={cn("w-full p-1.5 rounded-md cursor-pointer text-xs flex items-center gap-1.5", allPostColors[event.type])} style={{backgroundColor: allPostColors[event.type]}}>
+        <div 
+            className={cn(
+                "w-full p-1.5 rounded-md cursor-pointer text-xs flex items-center gap-1.5", 
+                allPostColors[event.type]
+            )} 
+            style={{backgroundColor: allPostColors[event.type]}}
+        >
             <span className="font-semibold truncate text-white">
                 {format(event.date, 'HH:mm')} - {event.title}
             </span>
         </div>
     );
     
-    if (event.type === 'post' && 'postData' in event && event.postData) {
+    if ('postData' in event && event.postData) {
         return (
             <Dialog>
                 <DialogTrigger asChild>
-                    <EventContent/>
+                    <EventContent />
                 </DialogTrigger>
                 <PostDialogContent post={event.postData} />
             </Dialog>
@@ -220,7 +225,7 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <EventContent/>
+                <EventContent />
             </DialogTrigger>
             <TaskDialogContent task={event as Task} />
         </Dialog>
