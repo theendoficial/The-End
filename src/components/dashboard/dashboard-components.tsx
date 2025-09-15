@@ -435,7 +435,7 @@ type RequestChangeDialogProps = {
     onConfirm: (postId: number, comment: string) => void;
 };
 
-const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogProps) => {
+export const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogProps) => {
     const [open, setOpen] = React.useState(false);
     const [comment, setComment] = React.useState('');
     
@@ -522,7 +522,10 @@ const ApprovalActions = ({ post, onAction }: ApprovalActionsProps) => {
                     Aprovar
                 </Button>
             </div>
-             <RequestChangeDialog post={post} onConfirm={() => onAction(post.id, 'in_revision')}>
+             <RequestChangeDialog post={post} onConfirm={(postId, comment) => {
+                console.log(`Solicitação de alteração para o post ${postId}: ${comment}`);
+                onAction(postId, 'in_revision');
+            }}>
                 <Button variant="outline" className="w-full">
                     <Edit className="mr-2 h-4 w-4" />
                     Pedir Alteração
@@ -541,7 +544,6 @@ export type PostDialogContentProps = {
 };
 
 export const PostDialogContent = ({ post, onRequestChange, children, showExtraActions, onAction }: PostDialogContentProps) => {
-    const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
     const isVideoProjectPost = post.type === 'video' && !onRequestChange;
 
@@ -613,7 +615,7 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                     </div>
 
                     <div className="mt-4 flex flex-col gap-2">
-                         {canRequestChange && (
+                         {canRequestChange && onRequestChange && (
                              <RequestChangeDialog post={post} onConfirm={onRequestChange}>
                                  <Button variant='outline'>Pedir alteração</Button>
                              </RequestChangeDialog>
@@ -674,8 +676,3 @@ export function FeedPreview() {
         </div>
     );
 }
-
-    
-
-    
-

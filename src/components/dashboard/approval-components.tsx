@@ -6,12 +6,12 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Check, Send, Trash2, Edit, CheckCircle, Clock } from 'lucide-react';
 import { Post, PostImage, PostDialogContent, Status } from './dashboard-components';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogTrigger, DialogClose, DialogFooter, DialogHeader, DialogDescription, DialogContent as UiDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Textarea } from '../ui/textarea';
+import { RequestChangeDialog } from './dashboard-components';
 
 type ApprovalPostCardProps = {
     post: Post;
@@ -71,3 +71,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
         </motion.div>
     );
 }
+
+// ApprovalActions need to be inside PostDialogContent or passed to it.
+// Let's modify PostDialogContent in dashboard-components to accept and show these actions.
+// This will be handled in the `dashboard-components.tsx` file change.
