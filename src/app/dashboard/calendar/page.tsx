@@ -1,18 +1,24 @@
 
+'use client';
+
+import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
+
 export default function CalendarPage() {
   return (
     <>
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">Calendário de Conteúdo</h1>
+      <div className="flex items-center mb-4">
+        <h1 className="text-lg font-semibold md:text-2xl">Calendário e Planejamento</h1>
       </div>
-      <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-lg bg-card/60 dark:bg-black/40 backdrop-blur-lg">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h3 className="text-2xl font-bold tracking-tight">
-            Calendário em breve
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            A visualização do seu calendário de posts aparecerá aqui.
-          </p>
+      
+      <div className="flex flex-col gap-6">
+        <div>
+          <h2 className="text-base font-semibold md:text-xl mb-3">Quadro de Tarefas</h2>
+          <KanbanBoard />
+        </div>
+        
+        <div>
+          <h2 className="text-base font-semibold md:text-xl mb-3">Calendário de Conteúdo</h2>
+          <FullCalendar />
         </div>
       </div>
     </>
