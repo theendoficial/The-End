@@ -72,28 +72,31 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
       <Dialog>
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden h-full flex flex-col">
             <DialogTrigger asChild>
-                <div className="cursor-pointer group">
-                    {postImage && (
+                <div className="cursor-pointer group relative">
+                    {postImage ? (
                         <div className="aspect-square w-full relative">
                             <Image
-                            src={postImage.url}
-                            alt={`Preview for ${post.title}`}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            data-ai-hint={postImage.hint}
+                                src={postImage.url}
+                                alt={`Preview for ${post.title}`}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-ai-hint={postImage.hint}
                             />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div className="absolute bottom-0 left-0 p-3">
+                                <h3 className="text-white text-sm font-semibold drop-shadow-md line-clamp-2">{post.title}</h3>
+                            </div>
+                        </div>
+                    ) : (
+                         <div className="aspect-square w-full flex items-center justify-center bg-muted/30">
+                            <p className="text-sm text-muted-foreground p-4 text-center">Pré-visualização indisponível</p>
                         </div>
                     )}
-                    <CardContent className="p-4 flex-grow">
-                         <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">
-                            {post.description}
-                        </p>
-                    </CardContent>
                 </div>
             </DialogTrigger>
 
-            <div className="p-4 pt-0 mt-auto">
-                <div className="flex items-center gap-2 mb-4">
+            <div className="p-4 mt-auto flex flex-col gap-4">
+                <div className="flex items-center gap-2">
                     {post.socials.map(social => {
                     const Icon = socialIcons[social];
                     return Icon ? <Icon key={social} className="text-muted-foreground h-5 w-5" /> : null;
