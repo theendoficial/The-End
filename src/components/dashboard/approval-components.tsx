@@ -4,7 +4,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Check, Send, Trash2, Instagram, Youtube, Edit } from 'lucide-react';
-import { Post, PostImage, PostDialogContent, statusConfig } from './dashboard-components';
+import { Post, PostImage, PostDialogContent } from './dashboard-components';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { statusConfig } from './dashboard-components';
 
 const TiktokIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -56,7 +57,7 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
     ? { url: post.imageUrl, hint: post.imageHint || '' }
     : post.images && post.images.length > 0
     ? post.images[0]
-    : null;
+    : { url: 'https://picsum.photos/seed/placeholder/600/600', hint: 'placeholder image' };
 
     const isAwaitingApproval = post.status === 'awaiting_approval';
     const isInRevision = post.status === 'in_revision';
@@ -96,13 +97,6 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
             </DialogTrigger>
 
             <div className="p-4 mt-auto flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                    {post.socials.map(social => {
-                    const Icon = socialIcons[social];
-                    return Icon ? <Icon key={social} className="text-muted-foreground h-5 w-5" /> : null;
-                    })}
-                </div>
-
                 {isAwaitingApproval && (
                      <div className="flex flex-col gap-2">
                         <div className="grid grid-cols-2 gap-2">
