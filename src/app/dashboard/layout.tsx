@@ -38,6 +38,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { TheEndLogo } from '@/lib/images';
 import { pendingApprovalsCount } from '@/components/dashboard/dashboard-components';
+import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({
   children,
@@ -80,25 +81,43 @@ export default function DashboardLayout({
     </nav>
   );
 
-  const WarningsCard = () => (
-    <Card className="bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white shadow-md">
-      <CardHeader className="p-2 pt-0 md:p-4">
-        <CardTitle className="text-base">Avisos</CardTitle>
-        <CardDescription className="text-muted-foreground dark:text-gray-300">
-          Mensagens importantes do administrador para você.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-         {pendingApprovalsCount > 0 ? (
-           <Link href="/dashboard/approvals" className="text-sm text-primary hover:underline">
-              Você tem {pendingApprovalsCount} posts para aprovar.
-           </Link>
-          ) : (
-            <p className="text-xs text-muted-foreground dark:text-gray-400">Nenhum aviso no momento.</p>
-          )}
-      </CardContent>
-    </Card>
-  );
+  const WarningsCard = () => {
+    const hasNotifications = pendingApprovalsCount > 0;
+    
+    return (
+        <Card className={cn(
+            "transition-colors shadow-md",
+            hasNotifications
+              ? "bg-foreground text-background dark:bg-white dark:text-black"
+              : "bg-card/50 dark:bg-white/5 border-border/20 dark:border-white/10 text-card-foreground dark:text-white"
+          )}>
+        <CardHeader className="p-2 pt-0 md:p-4">
+            <CardTitle className="text-base">Avisos</CardTitle>
+            <CardDescription className={cn(
+                hasNotifications
+                ? "text-background/80 dark:text-gray-600"
+                : "text-muted-foreground dark:text-gray-300"
+            )}>
+            Mensagens importantes do administrador para você.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
+            {hasNotifications ? (
+            <Link href="/dashboard/approvals" className={cn(
+                "text-sm hover:underline",
+                hasNotifications
+                ? "text-primary-foreground dark:text-blue-600"
+                : "text-primary"
+            )}>
+                Você tem {pendingApprovalsCount} posts para aprovar.
+            </Link>
+            ) : (
+                <p className="text-xs text-muted-foreground dark:text-gray-400">Nenhum aviso no momento.</p>
+            )}
+        </CardContent>
+        </Card>
+    );
+    };
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-white to-[#F0F0F0] dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000]">
