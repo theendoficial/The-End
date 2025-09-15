@@ -3,18 +3,18 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Table,
     TableBody,
@@ -99,7 +99,7 @@ const upcomingPosts = [
 
 const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     instagram: (props) => <Instagram {...props} />,
-    tiktok: (props) => <TiktokIcon {...props} />,
+    tiktok: (props) => <TiktokIcon className="h-4 w-4" {...props} />,
     youtube: (props) => <Youtube {...props} />,
 };
 
@@ -201,18 +201,22 @@ export function PendingApprovalsWidget() {
     return (
         <Link href={hasApprovals ? "/dashboard/approvals" : "#"} className="block h-full">
             <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full hover:bg-accent/50 dark:hover:bg-white/10 transition-colors">
-                <CardContent className="flex flex-col items-center justify-center text-center p-4 h-full">
+                <CardHeader>
+                    <CardTitle className="text-sm font-normal text-center">Conteúdos para Aprovar</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center text-center p-4 pt-0 h-full">
                     {hasApprovals ? (
                         <>
-                            <FileWarning className="h-8 w-8 text-yellow-500 mb-3" />
-                            <p className="font-bold text-3xl text-foreground">{pendingItems.approvals}</p>
-                            <p className="font-semibold text-sm text-foreground mt-1">Posts para Aprovar</p>
-                            <p className="text-xs text-muted-foreground">Aguardando sua revisão</p>
+                            <div className="relative">
+                                <FileWarning className="h-8 w-8 text-yellow-500" />
+                                <Badge variant="destructive" className="absolute -top-2 -right-3 h-5 w-5 flex items-center justify-center p-0">{pendingItems.approvals}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">Aguardando sua revisão</p>
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center gap-2">
                             <CheckCircle2 className="h-8 w-8 text-green-500" />
-                            <p className="font-semibold text-sm">Nenhuma pendência!</p>
+                            <p className="font-semibold text-sm mt-2">Nenhuma pendência!</p>
                             <p className="text-xs text-muted-foreground">Você está em dia com suas tarefas.</p>
                         </div>
                     )}
@@ -244,6 +248,10 @@ export function UpcomingPostsList() {
 }
 
 export function ProjectUpcomingPostsList() {
+    const projectPosts = upcomingPosts.filter(post => 
+        ['approved', 'scheduled', 'completed'].includes(post.status)
+    );
+
     return (
       <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
         <CardContent className="p-0">
@@ -258,7 +266,7 @@ export function ProjectUpcomingPostsList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {upcomingPosts.map((post) => (
+              {projectPosts.map((post) => (
                 <Dialog key={post.id}>
                     <TableRow className="border-b-white/10">
                         <TableCell>
@@ -335,7 +343,60 @@ const PostActions = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
     )
 }
 
+
+const RequestChangeDialog = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+    const [open, setOpen] = React.useState(false);
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Here you would typically handle the form submission, e.g., send the comment to a server.
+        // For now, we'll just log it and close the dialog.
+        const formData = new FormData(e.target as HTMLFormElement);
+        const comment = formData.get('comment');
+        console.log(`Change request for post "${post.title}": ${comment}`);
+        setOpen(false); // Close the dialog
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline">Pedir alteração</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Pedir Alteração</DialogTitle>
+                        <DialogDescription>
+                            Descreva abaixo qual alteração você gostaria de solicitar para o post "{post.title}".
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Textarea
+                            name="comment"
+                            placeholder="Ex: Gostaria de alterar a cor de fundo para um tom mais claro..."
+                            className="min-h-[120px] bg-background/50 dark:bg-black/20"
+                            required
+                        />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">Cancelar</Button>
+                        </DialogClose>
+                        <Button type="submit">
+                            <Send className="mr-2 h-4 w-4" />
+                            Enviar
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 const PostDialogContent = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+    const isActionable = ['awaiting_approval'].includes(post.status);
+    const canRequestChange = ['approved', 'scheduled', 'completed'].includes(post.status);
+
     return (
         <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -370,12 +431,20 @@ const PostDialogContent = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
                     </div>
 
                     <div className="mt-4 flex gap-2">
-                         <Button variant="outline">Pedir alteração</Button>
-                         <Button>Aprovar</Button>
+                         {isActionable && (
+                            <>
+                                <Button variant="outline">Pedir alteração</Button>
+                                <Button>Aprovar</Button>
+                            </>
+                         )}
+                         {canRequestChange && <RequestChangeDialog post={post} />}
                     </div>
                 </div>
             </div>
         </DialogContent>
     )
 }
+    
+
+
     
