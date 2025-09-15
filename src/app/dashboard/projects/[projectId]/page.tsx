@@ -519,7 +519,7 @@ export default function ProjectDetailsPage() {
                         <Dialog key={video.id}>
                             <DialogTrigger asChild>
                                 <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden cursor-pointer group">
-                                    <div className="aspect-w-9 aspect-h-16 relative">
+                                    <div className="relative aspect-w-9 aspect-h-16">
                                         <Image 
                                             src={video.imageUrl || ''} 
                                             alt={`Capa do vídeo: ${video.title}`} 

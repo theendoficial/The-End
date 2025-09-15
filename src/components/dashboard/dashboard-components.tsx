@@ -123,6 +123,14 @@ const upcomingPosts: Post[] = [
     { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'approved', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
     { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
     { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
+    { id: 20, title: 'Carrossel Teste com 20 Imagens', date: '15 de Set, 2024', status: 'awaiting_approval', type: 'carousel',
+        images: Array.from({ length: 20 }, (_, i) => ({
+            url: `https://picsum.photos/seed/newcarousel${i + 1}/600/600`,
+            hint: `abstract photo ${i + 1}`,
+        })),
+        description: 'Navegue por este carrossel com 20 imagens geradas dinamicamente. Esta é uma demonstração da capacidade do novo componente de carrossel. #carrossel #teste #dev',
+        socials: ['instagram']
+    },
 ]
 
 const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
@@ -588,8 +596,6 @@ export function FeedPreview() {
 }
     
 
-
-    
 
     
 
