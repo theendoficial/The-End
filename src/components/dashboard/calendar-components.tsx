@@ -215,7 +215,7 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
         return (
             <Dialog>
                 <DialogTrigger asChild>
-                    <EventContent />
+                    <button className="w-full text-left"><EventContent /></button>
                 </DialogTrigger>
                 <PostDialogContent post={event.postData} />
             </Dialog>
@@ -225,7 +225,7 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <EventContent />
+                <button className="w-full text-left"><EventContent /></button>
             </DialogTrigger>
             <TaskDialogContent task={event as Task} />
         </Dialog>
@@ -341,3 +341,5 @@ export const KanbanBoard = () => {
         </div>
     )
 }
+
+    
