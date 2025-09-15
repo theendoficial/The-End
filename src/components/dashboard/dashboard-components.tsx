@@ -613,12 +613,6 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                     </div>
 
                     <div className="mt-4 flex flex-col gap-2">
-                         {isActionable && (
-                            <>
-                                <Button variant="outline">Pedir alteração</Button>
-                                <Button>Aprovar</Button>
-                            </>
-                         )}
                          {canRequestChange && (
                              <RequestChangeDialog post={post} onConfirm={onRequestChange}>
                                  <Button variant='outline'>Pedir alteração</Button>
@@ -684,3 +678,4 @@ export function FeedPreview() {
     
 
     
+
