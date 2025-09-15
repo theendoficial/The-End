@@ -3,7 +3,7 @@
 
 import { useParams } from "next/navigation";
 import Link from 'next/link';
-import { Download, File as FileIcon, Palette, LayoutTemplate } from 'lucide-react';
+import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay } from 'lucide-react';
 import {
     CalendarWidget,
     FeedPreview,
@@ -33,6 +33,14 @@ const designAssets = [
   { name: 'Ícones Personalizados', type: 'SVG', url: '#' },
   { name: 'Assinatura de E-mail', type: 'HTML', url: '#' },
   { name: 'Cartão de Visita (Arte Final)', type: 'PDF', url: '#' },
+];
+
+const siteAssets = [
+    { name: 'Credenciais de Acesso (WordPress)', type: 'PDF', url: '#' },
+    { name: 'Informações da Hospedagem', type: 'PDF', url: '#' },
+    { name: 'Dados de Registro do Domínio', type: 'PDF', url: '#' },
+    { name: 'Manual Básico de Gerenciamento', type: 'PDF', url: '#' },
+    { name: 'Chaves de API (Google Maps, etc)', type: 'PDF', url: '#' },
 ];
 
 export default function ProjectDetailsPage() {
@@ -122,6 +130,60 @@ export default function ProjectDetailsPage() {
                             </TableHeader>
                             <TableBody>
                                 {designAssets.map((asset) => (
+                                    <TableRow key={asset.name} className="border-b-white/10">
+                                        <TableCell className="font-medium flex items-center gap-3">
+                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                            {asset.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="bg-muted/50 text-muted-foreground text-xs font-semibold px-2 py-1 rounded-md">
+                                                {asset.type}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <a href={asset.url} download>
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Baixar
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </>
+        )
+    }
+
+    // "Elaboração de sites" has id 3
+    if (projectId === '3') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <MonitorPlay className="h-6 w-6 text-blue-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                    <CardHeader>
+                        <CardTitle>Documentos e Acessos</CardTitle>
+                        <CardDescription>
+                            Acesse e baixe as informações e credenciais importantes do seu site.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-b-white/10 hover:bg-transparent">
+                                    <TableHead>Documento</TableHead>
+                                    <TableHead className="w-[150px]">Tipo de Arquivo</TableHead>
+                                    <TableHead className="w-[120px] text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {siteAssets.map((asset) => (
                                     <TableRow key={asset.name} className="border-b-white/10">
                                         <TableCell className="font-medium flex items-center gap-3">
                                             <FileIcon className="h-4 w-4 text-muted-foreground" />
