@@ -36,6 +36,7 @@ import { usePathname } from 'next/navigation';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import { TheEndLogo } from '@/lib/images';
 
 export default function DashboardLayout({
   children,
@@ -169,7 +170,7 @@ export default function DashboardLayout({
           </Sheet>
            <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
               <Image 
-                  src="/assets/logo/TheEnd_Q_COLORS.png"
+                  src={TheEndLogo}
                   width={32}
                   height={32}
                   alt="The End Logo"

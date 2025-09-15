@@ -4,6 +4,7 @@ import { ForgotPasswordForm } from '@/components/auth/forgot-password-form';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { TheEndLogo } from '@/lib/images';
 
 export default function ForgotPasswordPage() {
   return (
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
         <div className="absolute w-[200px] h-[40px] top-2.5 right-[200px] z-[-2] transform -rotate-60 bg-gradient-to-r from-[#0d41e1] via-[#3498db] via-[#2ecc71] via-[#f1c40f] via-[#e67e22] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
         
         <Image 
-            src="/assets/logo/TheEnd_Q_COLORS.png"
+            src={TheEndLogo}
             width={108}
             height={108}
             alt="The End Logo"
@@ -33,7 +34,7 @@ export default function ForgotPasswordPage() {
       </div>
        <style jsx>{`
         .font-sans {
-          font-family: "Poppins", sans-serif;
+          font-family: "Objectivity", sans-serif;
         }
         @media (max-width: 480px) {
           .relative.w-\\[340px\\] {
