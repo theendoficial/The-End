@@ -4,11 +4,13 @@
 import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, Edit, Download, Calendar } from 'lucide-react';
+import { Check, Edit, Download, Calendar, Info, Trash2 } from 'lucide-react';
 import { Post, PostImage, PostDialogContent, RequestChangeDialog, Status } from './dashboard-components';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 type ApprovalPostCardProps = {
     post: Post;
@@ -40,65 +42,76 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
             exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
             className="relative"
         >
-            <Dialog>
-                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col">
-                    <DialogTrigger asChild>
-                        <div className="relative aspect-w-4 aspect-h-3 cursor-pointer">
-                            <Image
-                                src={image.url}
-                                alt={`Capa do post: ${post.title}`}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                data-ai-hint={image.hint}
-                            />
-                            {post.url && (
-                                <Button asChild size="sm" className="absolute bottom-2 right-2 bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm h-8 px-3">
-                                    <a href={post.url} download onClick={(e) => e.stopPropagation()}>
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Baixar
-                                    </a>
-                                </Button>
-                            )}
-                        </div>
-                    </DialogTrigger>
-                    
-                    <CardContent className="p-4 flex flex-col flex-grow">
+            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
+                <div className="relative aspect-w-4 aspect-h-3">
+                    <Image
+                        src={image.url}
+                        alt={`Capa do post: ${post.title}`}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={image.hint}
+                    />
+                    <Dialog>
                         <DialogTrigger asChild>
-                            <div className='cursor-pointer'>
-                                <h3 className="font-semibold text-sm leading-snug truncate mb-2">{post.title}</h3>
-                                <div className="flex items-center text-xs text-muted-foreground mb-4">
-                                    <Calendar className="h-4 w-4 mr-2" />
-                                    <span>Publicação: {post.date}</span>
-                                </div>
-                            </div>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70 h-8 w-8">
+                                <Info className="h-4 w-4" />
+                            </Button>
                         </DialogTrigger>
+                        <PostDialogContent post={post} />
+                    </Dialog>
+                </div>
+                
+                <CardContent className="p-4 flex flex-col flex-grow">
+                    <div className="flex items-center text-xs text-muted-foreground mb-4">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        <span>Publicação: {post.date}</span>
+                    </div>
 
-                        <div className="mt-auto">
-                            {isAwaitingApproval && (
+                    <div className="mt-auto space-y-2">
+                        {isAwaitingApproval && (
+                            <>
                                 <div className="grid grid-cols-2 gap-2">
-                                     <RequestChangeDialog post={post} onConfirm={(postId, comment) => { onAction(postId, 'in_revision'); }}>
-                                        <Button variant="destructive" className="w-full bg-red-500/90 hover:bg-red-500">
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            Ajustar
-                                        </Button>
-                                    </RequestChangeDialog>
-                                    <Button onClick={() => onAction(post.id, 'approved')} className="w-full bg-green-500/90 hover:bg-green-500 text-white">
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm" className="w-full">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Cancelar
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Não, voltar</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar post</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                    <Button onClick={() => onAction(post.id, 'approved')} size="sm" className="w-full bg-green-500/90 hover:bg-green-500 text-white">
                                         <Check className="mr-2 h-4 w-4" />
                                         Aprovar
                                     </Button>
                                 </div>
-                            )}
-                            {isInRevision && (
-                                <Button disabled variant="outline" className="w-full border-yellow-500/80 bg-yellow-900/50 text-yellow-300">
-                                    Em Alteração
-                                </Button>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-                <PostDialogContent post={post} showExtraActions={isAwaitingApproval} onAction={onAction} />
-            </Dialog>
+                                <RequestChangeDialog post={post} onConfirm={(postId, comment) => { onAction(postId, 'in_revision'); }}>
+                                    <Button variant="outline" size="sm" className="w-full">
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Pedir Alteração
+                                    </Button>
+                                </RequestChangeDialog>
+                            </>
+                        )}
+                        {isInRevision && (
+                            <Button disabled variant="outline" className="w-full border-yellow-500/80 bg-yellow-900/50 text-yellow-300">
+                                Em Alteração
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </motion.div>
     );
 }
-
