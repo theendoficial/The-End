@@ -28,53 +28,6 @@ const getPostImage = (post: Post): PostImage | null => {
     return { url: 'https://placehold.co/600x600/222/fff?text=Post', hint: 'placeholder' };
 };
 
-const RequestChangeDialog = ({ post, onConfirm }: { post: Post; onConfirm: (comment: string) => void; children: React.ReactNode }) => {
-    const [open, setOpen] = React.useState(false);
-    const [comment, setComment] = React.useState('');
-    
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onConfirm(comment);
-        setComment('');
-        setOpen(false); // Close the dialog
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <UiDialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-                <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>Pedir Alteração</DialogTitle>
-                        <DialogDescription>
-                            Descreva abaixo qual alteração você gostaria de solicitar para o post "{post.title}".
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Textarea
-                            name="comment"
-                            placeholder="Ex: Gostaria de alterar a cor de fundo para um tom mais claro..."
-                            className="min-h-[120px] bg-background/50 dark:bg-black/20"
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button type="button" variant="secondary">Cancelar</Button>
-                        </DialogClose>
-                        <Button type="submit">
-                            <Send className="mr-2 h-4 w-4" />
-                            Enviar
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </UiDialogContent>
-        </Dialog>
-    );
-};
-
 export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
     const image = getPostImage(post);
 
@@ -101,9 +54,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                             )}
                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                 <div className="absolute bottom-0 left-0 p-3">
-                                    <CardContent className='p-0'>
-                                        <h3 className="text-white text-sm font-semibold drop-shadow-md">{post.title}</h3>
-                                    </CardContent>
+                                    <h3 className="text-white text-sm font-semibold drop-shadow-md">{post.title}</h3>
                                 </div>
                         </div>
                     </DialogTrigger>

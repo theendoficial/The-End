@@ -43,7 +43,7 @@ export default function ApprovalsPage() {
           <div>
             <h2 className="text-base font-semibold md:text-xl mb-4">Aguardando Aprovação ({awaitingApprovalPosts.length})</h2>
             {awaitingApprovalPosts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <AnimatePresence>
                   {awaitingApprovalPosts.map((post) => (
                     <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
