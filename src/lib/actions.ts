@@ -27,9 +27,13 @@ export async function login(
 
   const { email, password } = validatedFields.data;
 
-  // Mock authentication: user@example.com / password123
+  // Mock authentication
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-  if (email !== 'user@example.com' || password !== 'password123') {
+
+  const validUser1 = email === 'user@example.com' && password === 'password123';
+  const validUser2 = email === 'jhokkehgames@gmail.com' && password === '1234567890';
+
+  if (!validUser1 && !validUser2) {
     return {
       errors: {
         server: ['Invalid email or password. Please try again.'],
