@@ -15,6 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table"
 
 const TiktokIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -89,10 +97,10 @@ const upcomingPosts = [
     { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed' as Status, imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video' as PostType, description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] as SocialNetwork[] },
 ]
 
-const socialIcons: Record<SocialNetwork, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
-    instagram: Instagram,
-    tiktok: TiktokIcon,
-    youtube: Youtube,
+const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
+    instagram: (props) => <Instagram {...props} />,
+    tiktok: (props) => <TiktokIcon {...props} />,
+    youtube: (props) => <Youtube {...props} />,
 };
 
 
@@ -228,85 +236,146 @@ export function UpcomingPostsList() {
             </CardHeader>
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
               {upcomingPosts.map((post) => (
-                  <Dialog key={post.id}>
-                    <div className="flex items-center gap-2 p-1.5 rounded-lg bg-background/50 dark:bg-black/20 ">
-                        <DialogTrigger asChild>
-                            <button className="flex items-center gap-2 text-left flex-grow">
-                                <Image 
-                                    src={post.imageUrl}
-                                    width={32}
-                                    height={32}
-                                    alt={`Preview for ${post.title}`}
-                                    className="rounded-md object-cover h-8 w-8"
-                                    data-ai-hint={post.imageHint}
-                                />
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-xs leading-tight">{post.title}</p>
-                                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{post.type} - {post.date}</p>
-                                </div>
-                            </button>
-                        </DialogTrigger>
-                        <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
-                            {statusConfig[post.status].label}
-                        </Badge>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md">
-                                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
-                                <DialogTrigger asChild>
-                                    <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
-                                </DialogTrigger>
-                                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                            <div className="rounded-lg overflow-hidden">
-                                <Image
-                                    src={post.imageUrl}
-                                    width={600}
-                                    height={600}
-                                    alt={`Conteúdo do post: ${post.title}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-4">
-                                <DialogHeader>
-                                    <DialogTitle className="text-xl">{post.title}</DialogTitle>
-                                    <DialogDescription>{post.date}</DialogDescription>
-                                </DialogHeader>
-                                
-                                <div>
-                                    <h4 className="font-semibold text-sm mb-2">Legenda</h4>
-                                    <p className="text-sm text-muted-foreground">{post.description}</p>
-                                </div>
-                                
-                                <div>
-                                    <h4 className="font-semibold text-sm mb-2">Redes Sociais</h4>
-                                    <div className="flex items-center gap-3">
-                                        {post.socials.map(social => {
-                                            const Icon = socialIcons[social];
-                                            return Icon ? <Icon key={social} className="text-muted-foreground" /> : null;
-                                        })}
-                                    </div>
-                                </div>
-
-                                <div className="mt-4 flex gap-2">
-                                     <Button variant="outline">Pedir alteração</Button>
-                                     <Button>Aprovar</Button>
-                                </div>
-                            </div>
-                        </div>
-                    </DialogContent>
-                  </Dialog>
+                  <PostListItem key={post.id} post={post} />
               ))}
             </CardContent>
           </Card>
     )
 }
 
+export function ProjectUpcomingPostsList() {
+    return (
+      <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b-white/10">
+                <TableHead className="text-muted-foreground font-normal">Nome do Post</TableHead>
+                <TableHead className="text-muted-foreground font-normal">Tipo</TableHead>
+                <TableHead className="text-muted-foreground font-normal">Data</TableHead>
+                <TableHead className="text-muted-foreground font-normal">Status</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {upcomingPosts.map((post) => (
+                <Dialog key={post.id}>
+                    <TableRow className="border-b-white/10">
+                        <TableCell>
+                            <DialogTrigger asChild>
+                                <button className="font-medium text-left hover:underline">{post.title}</button>
+                            </DialogTrigger>
+                        </TableCell>
+                        <TableCell className="capitalize text-muted-foreground">{postLegends[post.type]}</TableCell>
+                        <TableCell className="text-muted-foreground">{post.date}</TableCell>
+                        <TableCell>
+                            <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
+                                {statusConfig[post.status].label}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>
+                            <PostActions post={post} />
+                        </TableCell>
+                    </TableRow>
+                    <PostDialogContent post={post} />
+                </Dialog>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  }
+
+const PostListItem = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+    return (
+        <Dialog>
+          <div className="flex items-center gap-2 p-1.5 rounded-lg bg-background/50 dark:bg-black/20 ">
+              <DialogTrigger asChild>
+                  <button className="flex items-center gap-2 text-left flex-grow">
+                      <Image 
+                          src={post.imageUrl}
+                          width={32}
+                          height={32}
+                          alt={`Preview for ${post.title}`}
+                          className="rounded-md object-cover h-8 w-8"
+                          data-ai-hint={post.imageHint}
+                      />
+                      <div className="flex-grow">
+                          <p className="font-semibold text-xs leading-tight">{post.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type]} - {post.date}</p>
+                      </div>
+                  </button>
+              </DialogTrigger>
+              <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
+                  {statusConfig[post.status].label}
+              </Badge>
+              <PostActions post={post} />
+          </div>
+          <PostDialogContent post={post} />
+        </Dialog>
+    )
+}
+
+const PostActions = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md">
+                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
+                <DialogTrigger asChild>
+                    <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
+                </DialogTrigger>
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
+const PostDialogContent = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+    return (
+        <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="rounded-lg overflow-hidden">
+                    <Image
+                        src={post.imageUrl}
+                        width={600}
+                        height={600}
+                        alt={`Conteúdo do post: ${post.title}`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <div className="flex flex-col gap-4">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">{post.title}</DialogTitle>
+                        <DialogDescription>{post.date}</DialogDescription>
+                    </DialogHeader>
+                    
+                    <div>
+                        <h4 className="font-semibold text-sm mb-2">Legenda</h4>
+                        <p className="text-sm text-muted-foreground">{post.description}</p>
+                    </div>
+                    
+                    <div>
+                        <h4 className="font-semibold text-sm mb-2">Redes Sociais</h4>
+                        <div className="flex items-center gap-3">
+                            {post.socials.map(social => {
+                                const Icon = socialIcons[social];
+                                return Icon ? <Icon key={social} className="text-muted-foreground h-5 w-5" /> : null;
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                         <Button variant="outline">Pedir alteração</Button>
+                         <Button>Aprovar</Button>
+                    </div>
+                </div>
+            </div>
+        </DialogContent>
+    )
+}
     

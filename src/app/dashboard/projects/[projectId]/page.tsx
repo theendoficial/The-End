@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
     CalendarWidget,
     PendingApprovalsWidget,
-    UpcomingPostsList,
+    ProjectUpcomingPostsList, // Changed from UpcomingPostsList
     projects
 } from '@/components/dashboard/dashboard-components';
 
@@ -25,13 +25,17 @@ export default function ProjectDetailsPage() {
                 <div className="flex items-center mb-4">
                     <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <PendingApprovalsWidget />
-                    <CalendarWidget />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="md:col-span-1 lg:col-span-1">
+                        <PendingApprovalsWidget />
+                    </div>
+                    <div className="md:col-span-1 lg:col-span-1">
+                        <CalendarWidget />
+                    </div>
                 </div>
                 <div className="mt-4">
                     <h2 className="text-base font-semibold md:text-xl mb-3">Próximos Conteúdos:</h2>
-                    <UpcomingPostsList />
+                    <ProjectUpcomingPostsList />
                 </div>
 
             </>
