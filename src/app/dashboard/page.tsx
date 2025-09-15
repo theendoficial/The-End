@@ -20,17 +20,15 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <CalendarWidget />
-            <PendingApprovalsWidget />
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CalendarWidget />
+          <PendingApprovalsWidget />
         </div>
-        <div className="lg:col-span-1">
-           <UpcomingPostsList />
+        <div>
+          <UpcomingPostsList />
         </div>
       </div>
     </>
   );
 }
-
-    
