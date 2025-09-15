@@ -22,14 +22,14 @@ export default function ProjectDetailsPage() {
     if (projectId === '6') {
         return (
             <>
-                <div className="flex items-center">
+                <div className="flex items-center mb-4">
                     <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <PendingApprovalsWidget />
                     <CalendarWidget />
                 </div>
-                <div>
+                <div className="mt-4">
                     <h2 className="text-base font-semibold md:text-xl mb-3">Próximos Conteúdos:</h2>
                     <UpcomingPostsList />
                 </div>
@@ -57,3 +57,5 @@ export default function ProjectDetailsPage() {
         </>
     );
 }
+
+    
