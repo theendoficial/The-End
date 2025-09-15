@@ -33,7 +33,7 @@ const categories = {
   },
 };
 
-const projects = [
+const allProjects = [
   // Creative
   { id: 1, name: 'Identidade Visual', category: 'creative', icon: <Palette className="h-8 w-8 text-blue-500" /> },
   { id: 2, name: 'Design', category: 'creative', icon: <LayoutTemplate className="h-8 w-8 text-blue-500" /> },
@@ -50,9 +50,11 @@ const projects = [
   { id: 11, name: 'Vídeos sequenciais', category: 'audiovisual', icon: <ListVideo className="h-8 w-8 text-pink-500" /> },
 ];
 
-// For this example, we'll assume the client has all projects.
-// In a real app, this would be fetched from a database.
-const clientProjects = projects;
+// No futuro, esta lista virá do seu painel de administração.
+// Por enquanto, mostra apenas os projetos selecionados.
+const clientProjectIds = [1, 6, 9, 10]; 
+
+const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
 
 export default function ProjectsPage() {
   return (
