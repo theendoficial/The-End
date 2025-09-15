@@ -41,6 +41,12 @@ import { PostsProvider, usePosts } from '@/components/dashboard/dashboard-compon
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 
+const clientData = {
+  companyName: 'Major Style - Barbearia',
+  email: 'contato@majorstyle.com',
+  logoUrl: 'https://picsum.photos/seed/barberlogo/40/40'
+};
+
 function DashboardLayoutContent({
   children,
 }: {
@@ -50,12 +56,6 @@ function DashboardLayoutContent({
   const { setTheme } = useTheme();
   const { posts } = usePosts();
   const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
-
-  const clientData = {
-    companyName: 'Major Style - Barbearia',
-    email: 'contato@majorstyle.com',
-    logoUrl: 'https://picsum.photos/seed/barberlogo/40/40'
-  };
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Painel de Controle' },
