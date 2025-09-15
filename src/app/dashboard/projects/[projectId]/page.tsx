@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useParams } from "next/navigation";
@@ -537,7 +538,7 @@ export default function ProjectDetailsPage() {
                                     asChild 
                                     variant="secondary" 
                                     size="icon" 
-                                    className="absolute top-2 right-2 z-10 h-8 w-8 bg-black/50 text-white hover:bg-black/70"
+                                    className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-black/50 text-white hover:bg-black/70"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <a href={video.url} download>
@@ -572,7 +573,3 @@ export default function ProjectDetailsPage() {
         </>
     );
 }
-
-    
-
-    
