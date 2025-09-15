@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download, Edit, Clock, Check, Trash2 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
@@ -13,9 +13,10 @@ import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent as UiDialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
     Table,
     TableBody,
@@ -450,7 +451,7 @@ const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogP
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+            <UiDialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Pedir Alteração</DialogTitle>
@@ -478,17 +479,68 @@ const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogP
                         </Button>
                     </DialogFooter>
                 </form>
-            </DialogContent>
+            </UiDialogContent>
         </Dialog>
     )
+}
+
+type ApprovalActionsProps = {
+    post: Post;
+    onAction: (postId: number, newStatus: Status) => void;
+};
+
+const ApprovalActions = ({ post, onAction }: ApprovalActionsProps) => {
+    if (post.status === 'in_revision') {
+        return <Badge variant="outline" className="border-yellow-500/80 bg-yellow-500/10 text-yellow-400 py-1 px-3"><Clock className="mr-2 h-4 w-4" />Em Alteração</Badge>;
+    }
+    
+    return (
+        <div className="mt-4 flex flex-col gap-2">
+            <div className="flex gap-2">
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Cancelar
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Não, voltar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar post</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <Button onClick={() => onAction(post.id, 'approved')} variant="secondary" className="bg-green-500/80 hover:bg-green-500/100 text-white w-full">
+                    <Check className="mr-2 h-4 w-4" />
+                    Aprovar
+                </Button>
+            </div>
+             <RequestChangeDialog post={post} onConfirm={() => onAction(post.id, 'in_revision')}>
+                <Button variant="outline" className="w-full">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Pedir Alteração
+                </Button>
+            </RequestChangeDialog>
+        </div>
+    );
 }
 
 export type PostDialogContentProps = {
     post: Post;
     onRequestChange?: (postId: number, comment: string) => void;
+    children?: React.ReactNode;
+    showExtraActions?: boolean;
+    onAction?: (postId: number, newStatus: Status) => void;
 };
 
-export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
+export const PostDialogContent = ({ post, onRequestChange, children, showExtraActions, onAction }: PostDialogContentProps) => {
     const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
     const isVideoProjectPost = post.type === 'video' && !onRequestChange;
@@ -536,7 +588,7 @@ export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentPr
     }
 
     return (
-        <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+        <UiDialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <PostMedia />
                 <div className="flex flex-col gap-4">
@@ -560,7 +612,7 @@ export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentPr
                         </div>
                     </div>
 
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex flex-col gap-2">
                          {isActionable && (
                             <>
                                 <Button variant="outline">Pedir alteração</Button>
@@ -580,10 +632,12 @@ export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentPr
                                  </a>
                              </Button>
                          )}
+                          {showExtraActions && onAction && <ApprovalActions post={post} onAction={onAction} />}
                     </div>
+                     {children}
                 </div>
             </div>
-        </DialogContent>
+        </UiDialogContent>
     )
 }
 
