@@ -3,7 +3,7 @@
 
 import { useParams } from "next/navigation";
 import Link from 'next/link';
-import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign } from 'lucide-react';
+import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, BarChart, Megaphone } from 'lucide-react';
 import {
     CalendarWidget,
     FeedPreview,
@@ -59,6 +59,22 @@ const trafegoPagoAssets = [
     { name: 'Acesso à Conta de Anúncios - Google Ads', type: 'PDF', url: '#' },
     { name: 'Planejamento de Orçamento - Q4 2024', type: 'XLSX', url: '#' },
     { name: 'Públicos Personalizados - Lookalike Audiences', type: 'PDF', url: '#' },
+];
+
+const analisePerfilAssets = [
+    { name: 'Relatório de Análise de Público', type: 'PDF', url: '#' },
+    { name: 'Análise de Concorrentes', type: 'PDF', url: '#' },
+    { name: 'Diagnóstico de Perfil - Pontos Fortes e Fracos', type: 'PDF', url: '#' },
+    { name: 'Relatório de Engajamento Mensal', type: 'PDF', url: '#' },
+    { name: 'Sugestões de Otimização de Bio e Destaques', type: 'DOCX', url: '#' },
+];
+
+const estrategiaMarketingAssets = [
+    { name: 'Planejamento Estratégico de Marketing Digital', type: 'PDF', url: '#' },
+    { name: 'Definição de Persona e Jornada do Cliente', type: 'PDF', url: '#' },
+    { name: 'Plano de Ação - Próximos Passos', type: 'PDF', url: '#' },
+    { name: 'Análise SWOT', type: 'PDF', url: '#' },
+    { name: 'Estratégia de Funil de Vendas', type: 'PDF', url: '#' },
 ];
 
 
@@ -362,6 +378,114 @@ export default function ProjectDetailsPage() {
                     <h2 className="text-base font-semibold md:text-xl mb-4 text-center">Visualização do Feed</h2>
                     <FeedPreview />
                 </div>
+            </>
+        )
+    }
+
+    // "Análise de perfil" has id 7
+    if (projectId === '7') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <BarChart className="h-6 w-6 text-cyan-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                    <CardHeader>
+                        <CardTitle>Relatórios e Análises</CardTitle>
+                        <CardDescription>
+                            Faça o download das análises e diagnósticos do seu perfil.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-b-white/10 hover:bg-transparent">
+                                    <TableHead>Material</TableHead>
+                                    <TableHead className="w-[150px]">Tipo de Arquivo</TableHead>
+                                    <TableHead className="w-[120px] text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {analisePerfilAssets.map((asset) => (
+                                    <TableRow key={asset.name} className="border-b-white/10">
+                                        <TableCell className="font-medium flex items-center gap-3">
+                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                            {asset.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="bg-muted/50 text-muted-foreground text-xs font-semibold px-2 py-1 rounded-md">
+                                                {asset.type}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <a href={asset.url} download>
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Baixar
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </>
+        )
+    }
+
+    // "Estratégia de Marketing" has id 8
+    if (projectId === '8') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <Megaphone className="h-6 w-6 text-cyan-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                    <CardHeader>
+                        <CardTitle>Documentos Estratégicos</CardTitle>
+                        <CardDescription>
+                            Acesse e baixe os planejamentos e estratégias para o seu negócio.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-b-white/10 hover:bg-transparent">
+                                    <TableHead>Material</TableHead>
+                                    <TableHead className="w-[150px]">Tipo de Arquivo</TableHead>
+                                    <TableHead className="w-[120px] text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {estrategiaMarketingAssets.map((asset) => (
+                                    <TableRow key={asset.name} className="border-b-white/10">
+                                        <TableCell className="font-medium flex items-center gap-3">
+                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                            {asset.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="bg-muted/50 text-muted-foreground text-xs font-semibold px-2 py-1 rounded-md">
+                                                {asset.type}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <a href={asset.url} download>
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Baixar
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </>
         )
     }
