@@ -25,7 +25,8 @@ const getPostImage = (post: Post): PostImage => {
     if (post.imageUrl) {
         return { url: post.imageUrl, hint: post.imageHint || '' };
     }
-    return { url: 'https://picsum.photos/seed/placeholder/600/600', hint: 'placeholder' };
+    // Consistent placeholder
+    return { url: `https://picsum.photos/seed/post${post.id}/600/600`, hint: 'placeholder' };
 };
 
 export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
@@ -39,29 +40,29 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
             layout
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
             className="relative"
         >
-            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group">
-                <div className="relative aspect-square w-full">
-                    <Image
-                        src={image.url}
-                        alt={`Capa do post: ${post.title}`}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint={image.hint}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-opacity group-hover:opacity-100"></div>
+            <Dialog>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group">
+                    <div className="relative aspect-square w-full">
+                        <Image
+                            src={image.url}
+                            alt={`Capa do post: ${post.title}`}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            data-ai-hint={image.hint}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-opacity opacity-0 group-hover:opacity-100"></div>
 
-                    {/* Title and Info */}
-                    <div className="absolute bottom-0 left-0 p-3 w-full">
-                         <h3 className="text-white text-sm font-semibold drop-shadow-md truncate">{post.title}</h3>
-                    </div>
+                        {/* Title and Info */}
+                        <div className="absolute bottom-0 left-0 p-3 w-full">
+                            <h3 className="text-white text-sm font-semibold drop-shadow-md truncate">{post.title}</h3>
+                        </div>
 
-                    {/* Top Right Badges/Actions */}
-                    <div className="absolute top-2 right-2 flex items-center gap-2">
-                        <Dialog>
-                            <TooltipProvider>
+                        {/* Top Right Badges/Actions */}
+                        <div className="absolute top-2 right-2 flex items-center gap-2">
+                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <DialogTrigger asChild>
@@ -73,52 +74,67 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                                     <TooltipContent side="bottom" className="bg-black/80 text-white border-white/20 backdrop-blur-md">Ver Detalhes</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-                            <PostDialogContent post={post} />
-                        </Dialog>
-                         {isInRevision && (
-                            <Badge variant="outline" className="border-yellow-500/80 bg-yellow-900/50 backdrop-blur-sm text-yellow-300 py-1 px-2 pointer-events-none"><Clock className="mr-1.5 h-3 w-3" />Em Alteração</Badge>
-                         )}
-                    </div>
-                </div>
-                
-                {isAwaitingApproval && (
-                    <div className="absolute inset-x-0 bottom-0 flex justify-center items-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md rounded-full p-1.5">
-                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="icon" className="h-10 w-10 rounded-full bg-red-500/80 hover:bg-red-500 text-white">
-                                        <Trash2 />
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Cancelar Post?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado e uma notificação será enviada.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Voltar</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-
-                            <RequestChangeDialog post={post} onConfirm={(postId, comment) => {
-                                onAction(postId, 'in_revision');
-                            }}>
-                                <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 text-white border-none">
-                                    <Edit />
-                                </Button>
-                            </RequestChangeDialog>
-
-                            <Button onClick={() => onAction(post.id, 'approved')} size="icon" className="h-10 w-10 rounded-full bg-green-500/90 hover:bg-green-500 text-white">
-                                <Check />
-                            </Button>
+                            {isInRevision && (
+                                <Badge variant="outline" className="border-yellow-500/80 bg-yellow-900/50 backdrop-blur-sm text-yellow-300 py-1 px-2 pointer-events-none"><Clock className="mr-1.5 h-3 w-3" />Em Alteração</Badge>
+                            )}
                         </div>
                     </div>
-                )}
-            </Card>
+                    
+                    {isAwaitingApproval && (
+                        <div className="absolute inset-0 flex justify-center items-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md rounded-full p-1.5">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                             <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="icon" className="h-10 w-10 rounded-full bg-red-500/80 hover:bg-red-500 text-white">
+                                                        <Trash2 />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Cancelar Post?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado e uma notificação será enviada.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Voltar</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-black/80 text-white border-white/20 backdrop-blur-md">Cancelar</TooltipContent>
+                                    </Tooltip>
+
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <RequestChangeDialog post={post} onConfirm={(postId, comment) => { onAction(postId, 'in_revision'); }}>
+                                                <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 text-white border-none">
+                                                    <Edit />
+                                                </Button>
+                                            </RequestChangeDialog>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-black/80 text-white border-white/20 backdrop-blur-md">Pedir Alteração</TooltipContent>
+                                    </Tooltip>
+
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button onClick={() => onAction(post.id, 'approved')} size="icon" className="h-10 w-10 rounded-full bg-green-500/90 hover:bg-green-500 text-white">
+                                                <Check />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-black/80 text-white border-white/20 backdrop-blur-md">Aprovar</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        </div>
+                    )}
+                </Card>
+                <PostDialogContent post={post} showExtraActions={isAwaitingApproval} onAction={onAction} />
+            </Dialog>
         </motion.div>
     );
 }

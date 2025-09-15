@@ -59,9 +59,11 @@ export default function ApprovalsPage() {
              <div>
                 <h2 className="text-base font-semibold md:text-xl mb-4">Em Alteração ({inRevisionPosts.length})</h2>
                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {inRevisionPosts.map((post) => (
-                        <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
-                    ))}
+                    <AnimatePresence>
+                        {inRevisionPosts.map((post) => (
+                            <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
+                        ))}
+                    </AnimatePresence>
                 </div>
             </div>
           )}
