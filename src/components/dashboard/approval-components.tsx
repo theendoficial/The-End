@@ -72,14 +72,14 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
       <Dialog>
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden h-full flex flex-col">
             <DialogTrigger asChild>
-                <div className="cursor-pointer">
+                <div className="cursor-pointer group">
                     {postImage && (
                         <div className="aspect-square w-full relative">
                             <Image
                             src={postImage.url}
                             alt={`Preview for ${post.title}`}
                             fill
-                            className="object-cover"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
                             data-ai-hint={postImage.hint}
                             />
                         </div>
@@ -103,16 +103,16 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
                 {isAwaitingApproval && (
                      <div className="flex flex-col gap-2">
                         <div className="grid grid-cols-2 gap-2">
-                            <Button onClick={onApprove} size="sm" variant="secondary" className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30">
-                                <Check className="mr-2 h-4 w-4" />
-                                Aprovar
-                            </Button>
                             <CancelPostDialog onConfirm={onCancel}>
                                 <Button size="sm" variant="destructive" className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Cancelar
                                 </Button>
                             </CancelPostDialog>
+                            <Button onClick={onApprove} size="sm" variant="secondary" className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30">
+                                <Check className="mr-2 h-4 w-4" />
+                                Aprovar
+                            </Button>
                         </div>
                         <RequestChangeDialog post={post} onConfirm={onRequestChange}>
                             <Button size="sm" variant="outline" className="w-full">
