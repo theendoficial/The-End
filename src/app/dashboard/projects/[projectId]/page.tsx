@@ -3,17 +3,20 @@
 
 import { useParams } from "next/navigation";
 import Link from 'next/link';
-import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, BarChart, Megaphone } from 'lucide-react';
+import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, BarChart, Megaphone, Video } from 'lucide-react';
 import {
     CalendarWidget,
     FeedPreview,
     PendingApprovalsWidget,
-    ProjectUpcomingPostsList, // Changed from UpcomingPostsList
+    ProjectUpcomingPostsList, 
     projects
 } from '@/components/dashboard/dashboard-components';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { PostDialogContent } from "@/components/dashboard/dashboard-components";
 
 
 const visualIdentityAssets = [
@@ -77,6 +80,12 @@ const estrategiaMarketingAssets = [
     { name: 'Estratégia de Funil de Vendas', type: 'PDF', url: '#' },
 ];
 
+const videosCurtosAssets = [
+    { id: 1, title: 'Tutorial Rápido: Maquiagem de Verão', date: '15 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa1/600/800', imageHint: 'makeup tutorial', type: 'video', description: 'Um tutorial rápido para uma maquiagem de verão leve e iluminada. #make #verao', socials: ['instagram', 'tiktok'] },
+    { id: 2, title: 'Receita Fácil: Smoothie de Frutas Vermelhas', date: '14 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa2/600/800', imageHint: 'smoothie recipe', type: 'video', description: 'Smoothie delicioso e saudável para começar o dia com energia. #receita #saudavel', socials: ['instagram', 'tiktok', 'youtube'] },
+    { id: 3, title: 'Dica de App: Organize sua Rotina', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa3/600/800', imageHint: 'app organization', type: 'video', description: 'Conheça o app que mudou a forma como eu organizo minhas tarefas. #dica #produtividade', socials: ['instagram'] },
+    { id: 4, title: 'Unboxing: Novos Fones de Ouvido', date: '12 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa4/600/800', imageHint: 'unboxing headphones', type: 'video', description: 'Chegou o tão esperado fone com cancelamento de ruído. Veja minhas primeiras impressões. #unboxing #tecnologia', socials: ['youtube'] },
+];
 
 export default function ProjectDetailsPage() {
     const params = useParams();
@@ -490,6 +499,42 @@ export default function ProjectDetailsPage() {
         )
     }
 
+    // "Vídeos curtos" has id 9
+    if (projectId === '9') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <Video className="h-6 w-6 text-pink-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {videosCurtosAssets.map((video) => (
+                        <Dialog key={video.id}>
+                            <DialogTrigger asChild>
+                                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden cursor-pointer group">
+                                    <div className="aspect-w-9 aspect-h-16 relative">
+                                        <Image 
+                                            src={video.imageUrl || ''} 
+                                            alt={`Capa do vídeo: ${video.title}`} 
+                                            fill
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            data-ai-hint={video.imageHint}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                        <div className="absolute bottom-0 left-0 p-3">
+                                            <CardTitle className="text-white text-sm font-semibold drop-shadow-md">{video.title}</CardTitle>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </DialogTrigger>
+                            <PostDialogContent post={video} />
+                        </Dialog>
+                    ))}
+                </div>
+            </>
+        )
+    }
+
 
     return (
         <>
@@ -509,3 +554,5 @@ export default function ProjectDetailsPage() {
         </>
     );
 }
+
+    

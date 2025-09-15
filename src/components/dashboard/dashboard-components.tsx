@@ -79,12 +79,12 @@ const postLegends: Record<PostType, string> = {
 
 type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
 
-type PostImage = {
+export type PostImage = {
     url: string;
     hint: string;
 };
 
-type Post = {
+export type Post = {
     id: number;
     title: string;
     date: string;
@@ -452,12 +452,12 @@ const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogP
     )
 }
 
-type PostDialogContentProps = {
+export type PostDialogContentProps = {
     post: Post;
     onRequestChange?: (postId: number, comment: string) => void;
 };
 
-const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
+export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
     const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = ['approved', 'scheduled', 'completed'].includes(post.status);
 
@@ -552,7 +552,7 @@ export function FeedPreview() {
         .filter(post => ['approved', 'scheduled', 'completed'].includes(post.status))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    const getPostImage = (post: Post) => {
+    const getPostImage = (post: Post): PostImage | null => {
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
             return post.images[0];
         }
@@ -588,6 +588,8 @@ export function FeedPreview() {
 }
     
 
+
+    
 
     
 
