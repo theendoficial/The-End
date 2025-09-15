@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { scheduledPosts, postColors, postLegends, PostType, Post, PostDialogContent, upcomingPosts } from './dashboard-components';
+import { scheduledPosts, postColors, postLegends, PostType, Post, PostDialogContent, initialPostsData } from './dashboard-components';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const allPostLegends: Record<string, string> = {
@@ -53,7 +53,7 @@ const getWeekTasks = () => {
     const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
     const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
 
-    const postTask = upcomingPosts.find(p => p.id === 1); // Let's use an existing post
+    const postTask = initialPostsData.find(p => p.id === 1); // Let's use an existing post
     
     const allTasks: (Task | PostTask)[] = [
         // This Week's Tasks
@@ -61,8 +61,8 @@ const getWeekTasks = () => {
         { id: 'task-2', status: 'done', title: 'Reunião de pauta semanal', type: 'meeting', project: {id: 6, name: 'Gestão de Mídias Sociais'}, date: new Date('2024-09-09T14:00:00') },
         { id: 'task-3', status: 'todo', title: 'Definir estratégia para campanha Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date('2024-09-10T11:00:00') },
         { id: 'task-4', status: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date('2024-09-11T09:00:00') },
-        { id: 'task-5', status: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-12T15:00:00') },
-        { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') },
+        { id: 'task-5', status: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'carousel', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-12T15:00:00') },
+        { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'image', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') },
         { id: 'task-7', status: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date('2024-09-13T16:00:00') },
         { id: 'task-8', status: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-10T18:00:00') },
         // Post-like task
@@ -103,10 +103,9 @@ const statusConfig: Record<TaskStatus, { label: string; color: string; className
 const taskIcons: Record<string, React.ComponentType<any>> = {
     video: (props) => <Video {...props} />,
     meeting: (props) => <Users {...props} />,
-    content: (props) => <FileText {...props} />,
-    strategy: (props) => <FileText {...props} />,
     image: (props) => <FileText {...props} />,
     carousel: (props) => <FileText {...props} />,
+    strategy: (props) => <FileText {...props} />,
 };
 
 type ProjectInfo = { id: number; name: string };
@@ -114,7 +113,7 @@ type BaseTask = {
     id: string;
     title: string;
     date: Date;
-    type: PostType | 'meeting' | 'delivery' | 'strategy';
+    type: PostType;
     project: ProjectInfo;
     status: TaskStatus;
 }
@@ -341,5 +340,7 @@ export const KanbanBoard = () => {
         </div>
     )
 }
+
+    
 
     
