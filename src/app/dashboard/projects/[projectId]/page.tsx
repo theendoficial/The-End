@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useParams } from "next/navigation";
 import Link from 'next/link';
-import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, BarChart, Megaphone, Video } from 'lucide-react';
+import { Download, File as FileIcon, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, BarChart, Megaphone, Video, Film, ListVideo } from 'lucide-react';
 import {
     CalendarWidget,
     FeedPreview,
@@ -87,6 +86,17 @@ const videosCurtosAssets = [
     { id: 3, title: 'Dica de App: Organize sua Rotina', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa3/600/800', imageHint: 'app organization', type: 'video', description: 'Conheça o app que mudou a forma como eu organizo minhas tarefas. #dica #produtividade', socials: ['instagram'], url: '#' },
     { id: 4, title: 'Unboxing: Novos Fones de Ouvido', date: '12 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/videocapa4/600/800', imageHint: 'unboxing headphones', type: 'video', description: 'Chegou o tão esperado fone com cancelamento de ruído. Veja minhas primeiras impressões. #unboxing #tecnologia', socials: ['youtube'], url: '#' },
 ];
+
+const videosLongosAssets = [
+    { id: 1, title: 'Review Completo: Novo Smartphone XYZ', date: '18 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/longvideo1/800/450', imageHint: 'smartphone review', type: 'video', description: 'Análise detalhada do novo smartphone XYZ, com testes de câmera, bateria e desempenho. #tecnologia #review #smartphone', socials: ['youtube'], url: '#' },
+    { id: 2, title: 'Documentário: A História da Internet', date: '10 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/longvideo2/800/450', imageHint: 'internet documentary', type: 'video', description: 'Uma viagem pela história da internet, desde sua criação até os dias de hoje. #documentario #historia #internet', socials: ['youtube'], url: '#' },
+];
+
+const videosSequenciaisAssets = [
+    { id: 1, title: 'Sequência de Stories: Tour pelo Escritório', date: '20 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/seqvideo1/600/800', imageHint: 'office tour', type: 'video', description: 'Venha conhecer nosso espaço de trabalho! #bastidores #escritorio #tour', socials: ['instagram'], url: '#' },
+    { id: 2, title: 'Stories: Q&A com a Equipe', date: '19 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/seqvideo2/600/800', imageHint: 'team q&a', type: 'video', description: 'Respondendo às perguntas que vocês mais fizeram sobre nossa equipe e trabalho. #q&a #perguntaserespostas #equipe', socials: ['instagram'], url: '#' },
+];
+
 
 export default function ProjectDetailsPage() {
     const params = useParams();
@@ -517,6 +527,100 @@ export default function ProjectDetailsPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {videosCurtosAssets.map((video) => (
+                        <Dialog key={video.id}>
+                            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group relative">
+                                <DialogTrigger asChild>
+                                    <div className="relative aspect-w-9 aspect-h-16 cursor-pointer">
+                                        <Image 
+                                            src={video.imageUrl || ''} 
+                                            alt={`Capa do vídeo: ${video.title}`} 
+                                            fill
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            data-ai-hint={video.imageHint}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                        <div className="absolute bottom-0 left-0 p-3">
+                                            <CardTitle className="text-white text-sm font-semibold drop-shadow-md">{video.title}</CardTitle>
+                                        </div>
+                                    </div>
+                                </DialogTrigger>
+                                <Button 
+                                    asChild 
+                                    variant="secondary" 
+                                    size="icon" 
+                                    className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-black/50 text-white hover:bg-black/70"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <a href={video.url} download>
+                                        <Download className="h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </Card>
+                            <PostDialogContent post={video} />
+                        </Dialog>
+                    ))}
+                </div>
+            </>
+        )
+    }
+
+    // "Vídeos Longos" has id 10
+    if (projectId === '10') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <Film className="h-6 w-6 text-pink-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {videosLongosAssets.map((video) => (
+                        <Dialog key={video.id}>
+                            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group relative">
+                                <DialogTrigger asChild>
+                                    <div className="relative aspect-w-16 aspect-h-9 cursor-pointer">
+                                        <Image 
+                                            src={video.imageUrl || ''} 
+                                            alt={`Capa do vídeo: ${video.title}`} 
+                                            fill
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            data-ai-hint={video.imageHint}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                        <div className="absolute bottom-0 left-0 p-3">
+                                            <CardTitle className="text-white text-sm font-semibold drop-shadow-md">{video.title}</CardTitle>
+                                        </div>
+                                    </div>
+                                </DialogTrigger>
+                                <Button 
+                                    asChild 
+                                    variant="secondary" 
+                                    size="icon" 
+                                    className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-black/50 text-white hover:bg-black/70"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <a href={video.url} download>
+                                        <Download className="h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </Card>
+                            <PostDialogContent post={video} />
+                        </Dialog>
+                    ))}
+                </div>
+            </>
+        )
+    }
+
+    // "Vídeos sequenciais" has id 11
+    if (projectId === '11') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <ListVideo className="h-6 w-6 text-pink-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {videosSequenciaisAssets.map((video) => (
                         <Dialog key={video.id}>
                             <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group relative">
                                 <DialogTrigger asChild>
