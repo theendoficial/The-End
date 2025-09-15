@@ -275,7 +275,7 @@ export function UpcomingPostsList() {
     )
 }
 
-export function ProjectUpcomingPostsList() {
+export function ProjectUpcomingPostsList({ onRequestChange }: { onRequestChange: (postId: number, comment: string) => void }) {
     const [projectPosts, setProjectPosts] = React.useState<Post[]>(
         upcomingPosts.filter(post =>
             ['approved', 'scheduled', 'completed'].includes(post.status)
@@ -287,7 +287,7 @@ export function ProjectUpcomingPostsList() {
         // Here you would typically update the post on the server.
         // For now, we just remove it from the local state.
         setProjectPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
-        
+        onRequestChange(postId, comment); // Notify parent
         // You might want to show a toast notification here
     };
 
@@ -459,7 +459,7 @@ export type PostDialogContentProps = {
 
 export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
     const isActionable = ['awaiting_approval'].includes(post.status);
-    const canRequestChange = ['approved', 'scheduled', 'completed'].includes(post.status);
+    const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
 
     const PostMedia = () => {
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
@@ -535,7 +535,7 @@ export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentPr
                                 <Button>Aprovar</Button>
                             </>
                          )}
-                         {canRequestChange && onRequestChange && (
+                         {canRequestChange && (
                              <RequestChangeDialog post={post} onConfirm={onRequestChange}>
                                  <Button variant='outline'>Pedir alteração</Button>
                              </RequestChangeDialog>
