@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
 import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical } from 'lucide-react';
 import Link from 'next/link';
 
@@ -128,16 +128,29 @@ export function FullCalendar() {
     )
 }
 
-const kanbanTasks = [
-    { id: 'task-1', column: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' } },
-    { id: 'task-2', column: 'todo', title: 'Reunião de pauta semanal', type: 'meeting' },
-    { id: 'task-3', column: 'todo', title: 'Definir estratégia para campanha de Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' } },
-    { id: 'task-4', column: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' } },
-    { id: 'task-5', column: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' } },
-    { id: 'task-6', column: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' } },
-    { id: 'task-7', column: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' } },
-    { id: 'task-8', column: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' } },
-];
+const getWeekTasks = () => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+
+    const allTasks = [
+        // Previous Week
+        { id: 'task-0', column: 'done', title: 'Gravação do vídeo de unboxing', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate() - 7)) },
+        // This Week
+        { id: 'task-1', column: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate())) },
+        { id: 'task-2', column: 'todo', title: 'Reunião de pauta semanal', type: 'meeting', date: new Date(new Date().setDate(today.getDate() + 1)) },
+        { id: 'task-3', column: 'todo', title: 'Definir estratégia para campanha de Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date(new Date().setDate(today.getDate() + 1)) },
+        { id: 'task-4', column: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date(new Date().setDate(today.getDate() + 2)) },
+        { id: 'task-5', column: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date(new Date().setDate(today.getDate() + 3)) },
+        { id: 'task-6', column: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date(new Date().setDate(today.getDate() + 4)) },
+        { id: 'task-7', column: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date(new Date().setDate(today.getDate() + 4)) },
+        { id: 'task-8', column: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate())) },
+        // Next Week
+        { id: 'task-9', column: 'todo', title: 'Planejar conteúdo do próximo mês', type: 'strategy', project: { id: 4, name: 'Roteiros' }, date: new Date(new Date().setDate(today.getDate() + 8)) },
+    ];
+    
+    return allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
+};
 
 const kanbanColumns = [
     { id: 'todo', title: 'A Fazer', color: 'bg-gray-500/20' },
@@ -153,7 +166,7 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
     strategy: (props) => <FileText {...props} />,
 };
 
-const TaskCard = ({ task }: { task: typeof kanbanTasks[0] }) => {
+const TaskCard = ({ task }: { task: ReturnType<typeof getWeekTasks>[0] }) => {
     const Icon = taskIcons[task.type];
     return (
         <Card className="p-3 bg-card/80 dark:bg-black/50 border-white/5 cursor-grab active:cursor-grabbing">
@@ -170,19 +183,27 @@ const TaskCard = ({ task }: { task: typeof kanbanTasks[0] }) => {
                         <span className="text-xs capitalize">{task.type === 'meeting' ? 'Reunião' : 'Estratégia'}</span>
                     )}
                 </div>
+                 <Badge variant="outline" className="text-xs font-normal">{task.date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</Badge>
             </div>
         </Card>
     );
 }
 
 export const KanbanBoard = () => {
+    const [tasks, setTasks] = React.useState<ReturnType<typeof getWeekTasks>>([]);
+
+    React.useEffect(() => {
+        setTasks(getWeekTasks());
+    }, []);
+
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {kanbanColumns.map(column => (
                 <div key={column.id} className={cn("rounded-lg p-3", column.color)}>
                     <h3 className="font-semibold mb-3 text-center">{column.title}</h3>
-                    <div className="flex flex-col gap-3">
-                        {kanbanTasks
+                    <div className="flex flex-col gap-3 min-h-[100px]">
+                        {tasks
                             .filter(task => task.column === column.id)
                             .map(task => <TaskCard key={task.id} task={task} />)
                         }
