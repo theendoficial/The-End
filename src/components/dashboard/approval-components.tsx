@@ -42,76 +42,73 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
             exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
             className="relative"
         >
-            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
-                <div className="relative aspect-w-4 aspect-h-3">
-                    <Image
-                        src={image.url}
-                        alt={`Capa do post: ${post.title}`}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={image.hint}
-                    />
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70 h-8 w-8">
-                                <Info className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
-                        <PostDialogContent post={post} />
-                    </Dialog>
-                </div>
-                
-                <CardContent className="p-4 flex flex-col flex-grow">
-                    <div className="flex items-center text-xs text-muted-foreground mb-4">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        <span>Publicação: {post.date}</span>
-                    </div>
+             <Dialog>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
+                    <DialogTrigger asChild>
+                        <div className="relative aspect-w-4 aspect-h-3 cursor-pointer">
+                            <Image
+                                src={image.url}
+                                alt={`Capa do post: ${post.title}`}
+                                fill
+                                className="object-cover"
+                                data-ai-hint={image.hint}
+                            />
+                        </div>
+                    </DialogTrigger>
+                    
+                    <CardContent className="p-4 flex flex-col flex-grow">
+                        <div className="flex items-center text-xs text-muted-foreground mb-4">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            <span>Publicação: {post.date}</span>
+                        </div>
 
-                    <div className="mt-auto space-y-2">
-                        {isAwaitingApproval && (
-                            <>
-                                <div className="grid grid-cols-2 gap-2">
-                                     <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm" className="w-full">
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Cancelar
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Não, voltar</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar post</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                    <Button onClick={() => onAction(post.id, 'approved')} size="sm" className="w-full bg-green-500/90 hover:bg-green-500 text-white">
-                                        <Check className="mr-2 h-4 w-4" />
-                                        Aprovar
-                                    </Button>
-                                </div>
-                                <RequestChangeDialog post={post} onConfirm={(postId, comment) => { onAction(postId, 'in_revision'); }}>
-                                    <Button variant="outline" size="sm" className="w-full">
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Pedir Alteração
-                                    </Button>
-                                </RequestChangeDialog>
-                            </>
-                        )}
-                        {isInRevision && (
-                            <Button disabled variant="outline" className="w-full border-yellow-500/80 bg-yellow-900/50 text-yellow-300">
-                                Em Alteração
-                            </Button>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                        <div className="mt-auto space-y-2">
+                            {isAwaitingApproval && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="sm" className="w-full">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Cancelar
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Esta ação não pode ser desfeita. O post "{post.title}" será permanentemente cancelado.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Não, voltar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => onAction(post.id, 'canceled')}>Sim, cancelar post</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                        <Button onClick={() => onAction(post.id, 'approved')} size="sm" className="w-full bg-green-500/90 hover:bg-green-500 text-white">
+                                            <Check className="mr-2 h-4 w-4" />
+                                            Aprovar
+                                        </Button>
+                                    </div>
+                                    <RequestChangeDialog post={post} onConfirm={(postId, comment) => { onAction(postId, 'in_revision'); }}>
+                                        <Button variant="outline" size="sm" className="w-full">
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Pedir Alteração
+                                        </Button>
+                                    </RequestChangeDialog>
+                                </>
+                            )}
+                            {isInRevision && (
+                                <Button disabled variant="outline" className="w-full border-yellow-500/80 bg-yellow-900/50 text-yellow-300">
+                                    Em Alteração
+                                </Button>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+                <PostDialogContent post={post} showExtraActions onAction={onAction} />
+            </Dialog>
         </motion.div>
     );
 }
