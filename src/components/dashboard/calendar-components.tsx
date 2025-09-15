@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
-import { startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
+import { startOfWeek, endOfWeek, isWithinInterval, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical } from 'lucide-react';
 import Link from 'next/link';
@@ -129,36 +129,47 @@ export function FullCalendar() {
     )
 }
 
+type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done';
+
 const getWeekTasks = () => {
     const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
-    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+    // Setting a fixed date for deterministic testing, e.g., a Wednesday
+    const referenceDate = new Date('2024-09-11T12:00:00');
+    const weekStart = startOfWeek(referenceDate, { weekStartsOn: 1 }); // Monday
+    const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 1 });
 
     const allTasks = [
-        // Previous Week
-        { id: 'task-0', column: 'done', title: 'Gravação do vídeo de unboxing', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate() - 7)) },
-        // This Week
-        { id: 'task-1', column: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate())) },
-        { id: 'task-2', column: 'todo', title: 'Reunião de pauta semanal', type: 'meeting', date: new Date(new Date().setDate(today.getDate() + 1)) },
-        { id: 'task-3', column: 'todo', title: 'Definir estratégia para campanha de Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date(new Date().setDate(today.getDate() + 1)) },
-        { id: 'task-4', column: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date(new Date().setDate(today.getDate() + 2)) },
-        { id: 'task-5', column: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date(new Date().setDate(today.getDate() + 3)) },
-        { id: 'task-6', column: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date(new Date().setDate(today.getDate() + 4)) },
-        { id: 'task-7', column: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date(new Date().setDate(today.getDate() + 4)) },
-        { id: 'task-8', column: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date(new Date().setDate(today.getDate())) },
-        // Next Week
-        { id: 'task-9', column: 'todo', title: 'Planejar conteúdo do próximo mês', type: 'strategy', project: { id: 4, name: 'Roteiros' }, date: new Date(new Date().setDate(today.getDate() + 8)) },
+        // This Week's Tasks
+        { id: 'task-1', status: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-09T10:00:00') }, // Monday
+        { id: 'task-2', status: 'todo', title: 'Reunião de pauta semanal', type: 'meeting', date: new Date('2024-09-09T14:00:00') }, // Monday
+        { id: 'task-3', status: 'todo', title: 'Definir estratégia para campanha Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date('2024-09-10T11:00:00') }, // Tuesday
+        { id: 'task-4', status: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date('2024-09-11T09:00:00') }, // Wednesday
+        { id: 'task-5', status: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-12T15:00:00') }, // Thursday
+        { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') }, // Friday
+        { id: 'task-7', status: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date('2024-09-13T16:00:00') }, // Friday
+        { id: 'task-8', status: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-10T18:00:00') }, // Tuesday
     ];
-    
+
     return allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
 };
 
-const kanbanColumns = [
-    { id: 'todo', title: 'A Fazer', color: 'bg-gray-500/20' },
-    { id: 'in-progress', title: 'Em Andamento', color: 'bg-blue-500/20' },
-    { id: 'approval', title: 'Aprovação', color: 'bg-purple-500/20' },
-    { id: 'done', title: 'Concluído', color: 'bg-green-500/20' },
+const weekDaysColumns = [
+    { id: 1, title: 'Segunda' },
+    { id: 2, title: 'Terça' },
+    { id: 3, title: 'Quarta' },
+    { id: 4, title: 'Quinta' },
+    { id: 5, title: 'Sexta' },
+    { id: 6, title: 'Sábado' },
+    { id: 0, title: 'Domingo' },
 ];
+
+const statusColors: Record<TaskStatus, string> = {
+    todo: 'bg-gray-400',
+    'in-progress': 'bg-blue-500',
+    approval: 'bg-purple-500',
+    done: 'bg-green-500',
+};
+
 
 const taskIcons: Record<string, React.ComponentType<any>> = {
     video: (props) => <Video {...props} />,
@@ -170,7 +181,7 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
 const TaskCard = ({ task }: { task: ReturnType<typeof getWeekTasks>[0] }) => {
     const Icon = taskIcons[task.type];
     return (
-        <Card className="p-3 bg-card/80 dark:bg-black/50 border-white/5 cursor-grab active:cursor-grabbing">
+        <Card className="p-3 bg-card/80 dark:bg-black/50 border-l-4 cursor-grab active:cursor-grabbing" style={{ borderLeftColor: statusColors[task.status] }}>
             <div className="flex items-start justify-between">
                 <p className="font-semibold text-sm mb-2">{task.title}</p>
                 <GripVertical className="h-5 w-5 text-muted-foreground/50" />
@@ -184,7 +195,7 @@ const TaskCard = ({ task }: { task: ReturnType<typeof getWeekTasks>[0] }) => {
                         <span className="text-xs capitalize">{task.type === 'meeting' ? 'Reunião' : 'Estratégia'}</span>
                     )}
                 </div>
-                 <Badge variant="outline" className="text-xs font-normal">{task.date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</Badge>
+                 <Badge variant="outline" className="text-xs font-normal">{task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Badge>
             </div>
         </Card>
     );
@@ -199,13 +210,14 @@ export const KanbanBoard = () => {
 
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {kanbanColumns.map(column => (
-                <div key={column.id} className={cn("rounded-lg p-3", column.color)}>
-                    <h3 className="font-semibold mb-3 text-center">{column.title}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+            {weekDaysColumns.map(column => (
+                <div key={column.id} className={cn("rounded-lg p-3 bg-card/40 dark:bg-black/20")}>
+                    <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
                     <div className="flex flex-col gap-3 min-h-[100px]">
                         {tasks
-                            .filter(task => task.column === column.id)
+                            .filter(task => getDay(task.date) === column.id)
+                            .sort((a, b) => a.date.getTime() - b.date.getTime())
                             .map(task => <TaskCard key={task.id} task={task} />)
                         }
                     </div>
