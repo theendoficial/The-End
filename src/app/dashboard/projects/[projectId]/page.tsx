@@ -3,7 +3,7 @@
 
 import { useParams } from "next/navigation";
 import Link from 'next/link';
-import { Download, File as FileIcon, Palette } from 'lucide-react';
+import { Download, File as FileIcon, Palette, LayoutTemplate } from 'lucide-react';
 import {
     CalendarWidget,
     FeedPreview,
@@ -24,6 +24,15 @@ const visualIdentityAssets = [
   { name: 'Paleta de Cores', type: 'PDF', url: '#' },
   { name: 'Tipografia', type: 'ZIP', url: '#' },
   { name: 'Mockups de Apresentação', type: 'ZIP', url: '#' },
+];
+
+const designAssets = [
+  { name: 'Banners para Redes Sociais - Campanha X', type: 'ZIP', url: '#' },
+  { name: 'Template de Apresentação (PowerPoint)', type: 'PPTX', url: '#' },
+  { name: 'Template de Apresentação (Google Slides)', type: 'URL', url: '#' },
+  { name: 'Ícones Personalizados', type: 'SVG', url: '#' },
+  { name: 'Assinatura de E-mail', type: 'HTML', url: '#' },
+  { name: 'Cartão de Visita (Arte Final)', type: 'PDF', url: '#' },
 ];
 
 export default function ProjectDetailsPage() {
@@ -59,6 +68,60 @@ export default function ProjectDetailsPage() {
                             </TableHeader>
                             <TableBody>
                                 {visualIdentityAssets.map((asset) => (
+                                    <TableRow key={asset.name} className="border-b-white/10">
+                                        <TableCell className="font-medium flex items-center gap-3">
+                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                            {asset.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="bg-muted/50 text-muted-foreground text-xs font-semibold px-2 py-1 rounded-md">
+                                                {asset.type}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <a href={asset.url} download>
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Baixar
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </>
+        )
+    }
+
+    // "Design" has id 2
+    if (projectId === '2') {
+        return (
+            <>
+                <div className="flex items-center mb-4 gap-3">
+                    <LayoutTemplate className="h-6 w-6 text-blue-500" />
+                    <h1 className="text-lg font-semibold md:text-2xl">{projectName}</h1>
+                </div>
+                <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                    <CardHeader>
+                        <CardTitle>Materiais de Design</CardTitle>
+                        <CardDescription>
+                            Faça o download dos materiais gráficos do seu projeto.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-b-white/10 hover:bg-transparent">
+                                    <TableHead>Material</TableHead>
+                                    <TableHead className="w-[150px]">Tipo de Arquivo</TableHead>
+                                    <TableHead className="w-[120px] text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {designAssets.map((asset) => (
                                     <TableRow key={asset.name} className="border-b-white/10">
                                         <TableCell className="font-medium flex items-center gap-3">
                                             <FileIcon className="h-4 w-4 text-muted-foreground" />
