@@ -87,7 +87,7 @@ const allPostLegends: Record<string, string> = {
     strategy: 'Estratégia'
 }
 
-type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
+export type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
 
 export type PostImage = {
     url: string;
@@ -111,7 +111,7 @@ export type Post = {
 const statusConfig: Record<Status, { label: string; className: string }> = {
     awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
     approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
-    in_revision: { label: 'Em alteração', className: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
+    in_revision: { label: 'Em alteração', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
     scheduled: { label: 'Agendado', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
     canceled: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
     completed: { label: 'Concluído', className: 'bg-green-600/20 text-green-500 border-green-600/30' }
