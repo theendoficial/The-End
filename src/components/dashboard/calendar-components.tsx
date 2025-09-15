@@ -3,7 +3,8 @@
 
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
-import { ptBR, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
+import { startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical } from 'lucide-react';
 import Link from 'next/link';
 
@@ -213,3 +214,5 @@ export const KanbanBoard = () => {
         </div>
     )
 }
+
+    
