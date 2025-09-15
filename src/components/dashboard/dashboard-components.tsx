@@ -108,7 +108,7 @@ export type Post = {
     url?: string;
 };
 
-const statusConfig: Record<Status, { label: string; className: string }> = {
+export const statusConfig: Record<Status, { label: string; className: string }> = {
     awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
     approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
     in_revision: { label: 'Em alteração', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
@@ -626,5 +626,7 @@ export function FeedPreview() {
         </div>
     );
 }
+
+    
 
     

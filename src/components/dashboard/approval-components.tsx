@@ -3,10 +3,12 @@
 import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, Send, X, Instagram, Youtube, Trash2 } from 'lucide-react';
-import { Post, PostImage } from './dashboard-components';
+import { Check, Send, Trash2, Instagram, Youtube, Edit } from 'lucide-react';
+import { Post, PostImage, PostDialogContent, statusConfig } from './dashboard-components';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +58,9 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
     ? post.images[0]
     : null;
 
+    const isAwaitingApproval = post.status === 'awaiting_approval';
+    const isInRevision = post.status === 'in_revision';
+
   return (
     <motion.div
       layout
@@ -64,52 +69,70 @@ export function ApprovalCard({ post, onApprove, onRequestChange, onCancel }: App
       exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
-      <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden h-full flex flex-col">
-        {postImage && (
-          <div className="aspect-square w-full relative">
-            <Image
-              src={postImage.url}
-              alt={`Preview for ${post.title}`}
-              fill
-              className="object-cover"
-              data-ai-hint={postImage.hint}
-            />
-          </div>
-        )}
-        <CardContent className="p-4 flex flex-col flex-grow">
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-grow">
-            {post.description}
-          </p>
+      <Dialog>
+        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden h-full flex flex-col">
+            <DialogTrigger asChild>
+                <div className="cursor-pointer">
+                    {postImage && (
+                        <div className="aspect-square w-full relative">
+                            <Image
+                            src={postImage.url}
+                            alt={`Preview for ${post.title}`}
+                            fill
+                            className="object-cover"
+                            data-ai-hint={postImage.hint}
+                            />
+                        </div>
+                    )}
+                    <CardContent className="p-4 flex-grow">
+                         <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">
+                            {post.description}
+                        </p>
+                    </CardContent>
+                </div>
+            </DialogTrigger>
 
-          <div className="flex items-center gap-2 mb-4">
-            {post.socials.map(social => {
-              const Icon = socialIcons[social];
-              return Icon ? <Icon key={social} className="text-muted-foreground h-5 w-5" /> : null;
-            })}
-          </div>
+            <div className="p-4 pt-0 mt-auto">
+                <div className="flex items-center gap-2 mb-4">
+                    {post.socials.map(social => {
+                    const Icon = socialIcons[social];
+                    return Icon ? <Icon key={social} className="text-muted-foreground h-5 w-5" /> : null;
+                    })}
+                </div>
 
-          <div className="flex flex-col gap-2">
-            <Button onClick={onApprove} size="sm" variant="secondary" className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30">
-              <Check className="mr-2 h-4 w-4" />
-              Aprovar
-            </Button>
-            <div className="grid grid-cols-2 gap-2">
-                <RequestChangeDialog post={post} onConfirm={onRequestChange}>
-                    <Button size="sm" variant="outline" className="w-full">
-                        <Send className="mr-2 h-4 w-4" />
-                        Alteração
-                    </Button>
-                </RequestChangeDialog>
-                <CancelPostDialog onConfirm={onCancel}>
-                    <Button size="sm" variant="destructive" className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Cancelar
-                    </Button>
-                </CancelPostDialog>
+                {isAwaitingApproval && (
+                     <div className="flex flex-col gap-2">
+                        <div className="grid grid-cols-2 gap-2">
+                            <Button onClick={onApprove} size="sm" variant="secondary" className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30">
+                                <Check className="mr-2 h-4 w-4" />
+                                Aprovar
+                            </Button>
+                            <CancelPostDialog onConfirm={onCancel}>
+                                <Button size="sm" variant="destructive" className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Cancelar
+                                </Button>
+                            </CancelPostDialog>
+                        </div>
+                        <RequestChangeDialog post={post} onConfirm={onRequestChange}>
+                            <Button size="sm" variant="outline" className="w-full">
+                                <Send className="mr-2 h-4 w-4" />
+                                Pedir Alteração
+                            </Button>
+                        </RequestChangeDialog>
+                    </div>
+                )}
+                
+                {isInRevision && (
+                    <Badge className={cn('w-full flex justify-center', statusConfig.in_revision.className)}>
+                        <Edit className="mr-2 h-3 w-3" />
+                        {statusConfig.in_revision.label}
+                    </Badge>
+                )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+        </Card>
+        <PostDialogContent post={post} />
+      </Dialog>
     </motion.div>
   );
 }
