@@ -25,7 +25,7 @@ const getPostImage = (post: Post): PostImage | null => {
     if (post.imageUrl) {
         return { url: post.imageUrl, hint: post.imageHint || '' };
     }
-    return { url: 'https://placehold.co/600x600/222/fff?text=Post', hint: 'placeholder' };
+    return { url: 'https://picsum.photos/seed/placeholder/600/600', hint: 'placeholder' };
 };
 
 export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
