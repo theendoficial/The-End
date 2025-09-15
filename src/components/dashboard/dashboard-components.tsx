@@ -50,39 +50,9 @@ export const projects = [
     { id: 11, name: 'Vídeos sequenciais' },
 ];
 
-export const scheduledPosts: Record<string, { type: any }[]> = {
-  '2024-09-09': [{ type: 'video' }],
-  '2024-09-10': [{ type: 'image' }],
-  '2024-09-11': [{ type: 'carousel' }],
-  '2024-09-12': [{ type: 'image' }],
-  '2024-09-13': [{ type: 'video' }, {type: 'image'}],
-};
+export const scheduledPosts: Record<string, { type: any }[]> = {};
 
-const initialPostsData: Post[] = [
-    { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
-    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://mlabs-wordpress-site.s3.amazonaws.com/wp-content/uploads/2024/08/gerencie-conteudo.webp', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
-    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
-        images: [
-            { url: 'https://picsum.photos/seed/carousel1/600/600', hint: 'necklace accessory' },
-            { url: 'https://picsum.photos/seed/carousel2/600/600', hint: 'earrings fashion' },
-            { url: 'https://picsum.photos/seed/carousel3/600/600', hint: 'handbag style' },
-            { url: 'https://picsum.photos/seed/carousel4/600/600', hint: 'watch modern' },
-        ],
-        description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. Arraste para o lado e confira! #acessorios #transformeseulook #modafeminina', 
-        socials: ['instagram', 'youtube'] 
-    },
-    { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
-    { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
-    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
-    { id: 20, title: 'Carrossel Teste com 20 Imagens', date: '15 de Set, 2024', status: 'awaiting_approval', type: 'carousel',
-        images: Array.from({ length: 20 }, (_, i) => ({
-            url: `https://picsum.photos/seed/newcarousel${i + 1}/600/600`,
-            hint: `abstract photo ${i + 1}`,
-        })),
-        description: 'Navegue por este carrossel com 20 imagens geradas dinamicamente. Esta é uma demonstração da capacidade do novo componente de carrossel. #carrossel #teste #dev',
-        socials: ['instagram']
-    },
-]
+export const initialPostsData: Post[] = [];
 
 type PostsContextType = {
     posts: Post[];
@@ -181,12 +151,8 @@ const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     youtube: (props) => <Youtube {...props} />,
 };
 
-const allScheduledEvents = { ...scheduledPosts };
-const otherEvents = [
-    { id: 'evt-1', date: new Date('2024-09-09T14:00:00'), type: 'meeting' },
-    { id: 'evt-2', date: new Date('2024-09-20T18:00:00'), type: 'delivery' },
-    { id: 'evt-3', date: new Date('2024-09-25T10:00:00'), type: 'meeting' },
-];
+const allScheduledEvents: Record<string, { type: any }[]> = { ...scheduledPosts };
+const otherEvents: any[] = [];
 
 otherEvents.forEach(event => {
     const dateString = event.date.toISOString().split('T')[0];
@@ -217,7 +183,7 @@ function CalendarDots({ day }: { day: Date }) {
 }
 
 export function CalendarWidget() {
-    const [date, setDate] = React.useState<Date>(new Date(2024, 8, 1));
+    const [date, setDate] = React.useState<Date>(new Date());
     return (
         <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
              <CardHeader className="p-3">
@@ -335,9 +301,13 @@ export function UpcomingPostsList() {
                 </Link>
             </CardHeader>
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
-              {posts.map((post) => (
-                  <PostListItem key={post.id} post={post} />
-              ))}
+                {posts.length > 0 ? (
+                    posts.map((post) => (
+                        <PostListItem key={post.id} post={post} />
+                    ))
+                ) : (
+                    <p className="text-xs text-muted-foreground text-center py-4">Nenhum post agendado.</p>
+                )}
             </CardContent>
           </Card>
     )
@@ -368,28 +338,36 @@ export function ProjectUpcomingPostsList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projectPosts.map((post) => (
-                <Dialog key={post.id}>
-                    <TableRow className="border-b-white/10">
-                        <TableCell>
-                            <DialogTrigger asChild>
-                                <button className="font-medium text-left hover:underline">{post.title}</button>
-                            </DialogTrigger>
-                        </TableCell>
-                        <TableCell className="capitalize text-muted-foreground">{postLegends[post.type]}</TableCell>
-                        <TableCell className="text-muted-foreground">{post.date}</TableCell>
-                        <TableCell>
-                            <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
-                                {statusConfig[post.status].label}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <PostActions post={post} onRequestChange={handleRequestChange} />
-                        </TableCell>
-                    </TableRow>
-                    <PostDialogContent post={post} onRequestChange={handleRequestChange} />
-                </Dialog>
-              ))}
+              {projectPosts.length > 0 ? (
+                projectPosts.map((post) => (
+                    <Dialog key={post.id}>
+                        <TableRow className="border-b-white/10">
+                            <TableCell>
+                                <DialogTrigger asChild>
+                                    <button className="font-medium text-left hover:underline">{post.title}</button>
+                                </DialogTrigger>
+                            </TableCell>
+                            <TableCell className="capitalize text-muted-foreground">{postLegends[post.type]}</TableCell>
+                            <TableCell className="text-muted-foreground">{post.date}</TableCell>
+                            <TableCell>
+                                <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
+                                    {statusConfig[post.status].label}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <PostActions post={post} onRequestChange={handleRequestChange} />
+                            </TableCell>
+                        </TableRow>
+                        <PostDialogContent post={post} onRequestChange={handleRequestChange} />
+                    </Dialog>
+                ))
+              ) : (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                        Nenhum post encontrado.
+                    </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -686,25 +664,31 @@ export function FeedPreview() {
 
     return (
         <div className="flex justify-center">
-            <div className="grid grid-cols-3 gap-1 max-w-2xl w-full">
-                {feedPosts.map(post => {
-                    const image = getPostImage(post);
-                    return (
-                        <div key={post.id} className="aspect-square bg-card/60 dark:bg-black/40 rounded-sm overflow-hidden">
-                            {image && (
-                                <Image
-                                    src={image.url}
-                                    alt={`Feed preview: ${post.title}`}
-                                    width={300}
-                                    height={300}
-                                    className="w-full h-full object-cover"
-                                    data-ai-hint={image.hint}
-                                />
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+             {feedPosts.length > 0 ? (
+                <div className="grid grid-cols-3 gap-1 max-w-2xl w-full">
+                    {feedPosts.map(post => {
+                        const image = getPostImage(post);
+                        return (
+                            <div key={post.id} className="aspect-square bg-card/60 dark:bg-black/40 rounded-sm overflow-hidden">
+                                {image && (
+                                    <Image
+                                        src={image.url}
+                                        alt={`Feed preview: ${post.title}`}
+                                        width={300}
+                                        height={300}
+                                        className="w-full h-full object-cover"
+                                        data-ai-hint={image.hint}
+                                    />
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="text-center text-muted-foreground py-10">
+                    <p>O feed aparecerá aqui quando houver posts publicados.</p>
+                </div>
+            )}
         </div>
     );
 }

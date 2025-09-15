@@ -12,7 +12,7 @@ import {
 export default function DashboardPage() {
   return (
     <>
-      <div className="flex items-center">
+      <div className="flex items-center mb-6">
         <div className="flex flex-col">
           <h1 className="text-lg font-semibold md:text-xl font-headline">Bem Vindo!</h1>
           <p className="text-sm text-muted-foreground">
