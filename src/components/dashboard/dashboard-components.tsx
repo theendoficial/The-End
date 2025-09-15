@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import {
     Table,
     TableBody,
@@ -78,13 +79,19 @@ const postLegends: Record<PostType, string> = {
 
 type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
 
+type PostImage = {
+    url: string;
+    hint: string;
+};
+
 type Post = {
     id: number;
     title: string;
     date: string;
     status: Status;
-    imageUrl: string;
-    imageHint: string;
+    imageUrl?: string;
+    imageHint?: string;
+    images?: PostImage[];
     type: PostType;
     description: string;
     socials: SocialNetwork[];
@@ -103,7 +110,16 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
 const upcomingPosts: Post[] = [
     { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
     { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post2/600/600', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
-    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024_09_11', status: 'in_revision', imageUrl: 'https://picsum.photos/seed/post3/600/600', imageHint: 'fashion accessories', type: 'carousel', description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. #acessorios #transformeseulook #modafeminina', socials: ['instagram', 'youtube'] },
+    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
+        images: [
+            { url: 'https://picsum.photos/seed/carousel1/600/600', hint: 'necklace accessory' },
+            { url: 'https://picsum.photos/seed/carousel2/600/600', hint: 'earrings fashion' },
+            { url: 'https://picsum.photos/seed/carousel3/600/600', hint: 'handbag style' },
+            { url: 'https://picsum.photos/seed/carousel4/600/600', hint: 'watch modern' },
+        ],
+        description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. Arraste para o lado e confira! #acessorios #transformeseulook #modafeminina', 
+        socials: ['instagram', 'youtube'] 
+    },
     { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'approved', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
     { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
     { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
@@ -139,8 +155,8 @@ export function CalendarWidget() {
     const [date, setDate] = React.useState<Date>(new Date(2024, 8, 1));
     return (
         <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
-            <CardHeader className="text-center p-3">
-                <Link href="/dashboard/calendar">
+             <CardHeader className="p-3">
+                <Link href="/dashboard/calendar" className="text-center">
                     <CardTitle className="font-headline text-sm font-normal">Calendário de Conteúdo</CardTitle>
                 </Link>
             </CardHeader>
@@ -319,19 +335,24 @@ export function ProjectUpcomingPostsList() {
   }
 
 const PostListItem = ({ post }: { post: Post }) => {
+    const postImage = post.imageUrl || (post.images && post.images[0].url);
+    const postHint = post.imageHint || (post.images && post.images[0].hint);
+
     return (
         <Dialog>
           <div className="flex items-center gap-2 p-1.5 rounded-lg bg-background/50 dark:bg-black/20 ">
               <DialogTrigger asChild>
                   <button className="flex items-center gap-2 text-left flex-grow">
-                      <Image 
-                          src={post.imageUrl}
-                          width={32}
-                          height={32}
-                          alt={`Preview for ${post.title}`}
-                          className="rounded-md object-cover h-8 w-8"
-                          data-ai-hint={post.imageHint}
-                      />
+                      {postImage && (
+                          <Image 
+                              src={postImage}
+                              width={32}
+                              height={32}
+                              alt={`Preview for ${post.title}`}
+                              className="rounded-md object-cover h-8 w-8"
+                              data-ai-hint={postHint}
+                          />
+                      )}
                       <div className="flex-grow">
                           <p className="font-semibold text-xs leading-tight">{post.title}</p>
                           <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type]} - {post.date}</p>
@@ -440,18 +461,52 @@ const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) =>
     const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = ['approved', 'scheduled', 'completed'].includes(post.status);
 
-    return (
-        <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                <div className="rounded-lg overflow-hidden">
+    const PostMedia = () => {
+        if (post.type === 'carousel' && post.images && post.images.length > 0) {
+            return (
+                <Carousel className="w-full">
+                    <CarouselContent>
+                        {post.images.map((image, index) => (
+                            <CarouselItem key={index}>
+                                <div className="aspect-square w-full rounded-lg overflow-hidden">
+                                    <Image
+                                        src={image.url}
+                                        width={600}
+                                        height={600}
+                                        alt={`Conteúdo do post ${post.title}, imagem ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                        data-ai-hint={image.hint}
+                                    />
+                                </div>
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white border-none hover:bg-black/70" />
+                    <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white border-none hover:bg-black/70" />
+                </Carousel>
+            )
+        }
+        if (post.imageUrl) {
+             return (
+                <div className="rounded-lg overflow-hidden aspect-square">
                     <Image
                         src={post.imageUrl}
                         width={600}
                         height={600}
                         alt={`Conteúdo do post: ${post.title}`}
                         className="w-full h-full object-cover"
+                        data-ai-hint={post.imageHint}
                     />
                 </div>
+            )
+        }
+        return null;
+    }
+
+    return (
+        <DialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <PostMedia />
                 <div className="flex flex-col gap-4">
                     <DialogHeader>
                         <DialogTitle className="text-xl">{post.title}</DialogTitle>
@@ -493,6 +548,8 @@ const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) =>
 }
     
 
+
+    
 
     
 
