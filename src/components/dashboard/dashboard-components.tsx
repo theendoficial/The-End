@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
@@ -95,6 +95,7 @@ export type Post = {
     type: PostType;
     description: string;
     socials: SocialNetwork[];
+    url?: string;
 };
 
 const statusConfig: Record<Status, { label: string; className: string }> = {
@@ -468,6 +469,7 @@ export type PostDialogContentProps = {
 export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
     const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
+    const isVideoProjectPost = post.type === 'video' && !onRequestChange;
 
     const PostMedia = () => {
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
@@ -548,6 +550,14 @@ export const PostDialogContent = ({ post, onRequestChange }: PostDialogContentPr
                                  <Button variant='outline'>Pedir alteração</Button>
                              </RequestChangeDialog>
                          )}
+                         {isVideoProjectPost && post.url && (
+                             <Button asChild>
+                                 <a href={post.url} download>
+                                     <Download className="mr-2 h-4 w-4" />
+                                     Baixar Vídeo
+                                 </a>
+                             </Button>
+                         )}
                     </div>
                 </div>
             </div>
@@ -596,6 +606,8 @@ export function FeedPreview() {
 }
     
 
+
+    
 
     
 
