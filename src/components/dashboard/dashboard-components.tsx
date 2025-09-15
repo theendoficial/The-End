@@ -546,6 +546,46 @@ const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) =>
         </DialogContent>
     )
 }
+
+export function FeedPreview() {
+    const feedPosts = upcomingPosts
+        .filter(post => ['approved', 'scheduled', 'completed'].includes(post.status))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const getPostImage = (post: Post) => {
+        if (post.type === 'carousel' && post.images && post.images.length > 0) {
+            return post.images[0];
+        }
+        if (post.imageUrl) {
+            return { url: post.imageUrl, hint: post.imageHint || '' };
+        }
+        return null;
+    }
+
+    return (
+        <div className="flex justify-center">
+            <div className="grid grid-cols-3 gap-1 max-w-2xl w-full">
+                {feedPosts.map(post => {
+                    const image = getPostImage(post);
+                    return (
+                        <div key={post.id} className="aspect-square bg-card/60 dark:bg-black/40 rounded-sm overflow-hidden">
+                            {image && (
+                                <Image
+                                    src={image.url}
+                                    alt={`Feed preview: ${post.title}`}
+                                    width={300}
+                                    height={300}
+                                    className="w-full h-full object-cover"
+                                    data-ai-hint={image.hint}
+                                />
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
     
 
 

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from 'next/link';
 import {
     CalendarWidget,
+    FeedPreview,
     PendingApprovalsWidget,
     ProjectUpcomingPostsList, // Changed from UpcomingPostsList
     projects
@@ -33,11 +34,14 @@ export default function ProjectDetailsPage() {
                         <CalendarWidget />
                     </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-6">
                     <h2 className="text-base font-semibold md:text-xl mb-3">Próximos Conteúdos:</h2>
                     <ProjectUpcomingPostsList />
                 </div>
-
+                <div className="mt-6">
+                    <h2 className="text-base font-semibold md:text-xl mb-4 text-center">Visualização do Feed</h2>
+                    <FeedPreview />
+                </div>
             </>
         )
     }
@@ -61,5 +65,3 @@ export default function ProjectDetailsPage() {
         </>
     );
 }
-
-    
