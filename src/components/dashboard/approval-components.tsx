@@ -162,23 +162,3 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
         </motion.div>
     );
 }
-
-type ExtendedPostDialogContentProps = {
-    post: Post;
-    showExtraActions?: boolean;
-    onAction?: (postId: number, newStatus: Status) => void;
-};
-
-// We extend the PostDialogContent to include the approval actions inside it
-// This avoids prop drilling and complexity in the original component
-const ApprovalDialogContent = ({ post, showExtraActions, onAction }: ExtendedPostDialogContentProps) => {
-    return (
-        <PostDialogContent post={post} >
-            {showExtraActions && onAction && (
-                <div className="md:col-start-2">
-                    <ApprovalActions post={post} onAction={onAction} />
-                </div>
-            )}
-        </PostDialogContent>
-    )
-}
