@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -78,6 +79,18 @@ const postLegends: Record<PostType, string> = {
 
 type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
 
+type Post = {
+    id: number;
+    title: string;
+    date: string;
+    status: Status;
+    imageUrl: string;
+    imageHint: string;
+    type: PostType;
+    description: string;
+    socials: SocialNetwork[];
+};
+
 const statusConfig: Record<Status, { label: string; className: string }> = {
     awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
     approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
@@ -88,13 +101,13 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
 };
 
 
-const upcomingPosts = [
-    { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled' as Status, imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video' as PostType, description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] as SocialNetwork[] },
-    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval' as Status, imageUrl: 'https://picsum.photos/seed/post2/600/600', imageHint: 'office style', type: 'image' as PostType, description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] as SocialNetwork[] },
-    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision' as Status, imageUrl: 'https://picsum.photos/seed/post3/600/600', imageHint: 'fashion accessories', type: 'carousel' as PostType, description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. #acessorios #transformeseulook #modafeminina', socials: ['instagram', 'youtube'] as SocialNetwork[] },
-    { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'approved' as Status, imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image' as PostType, description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] as SocialNetwork[] },
-    { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled' as Status, imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image' as PostType, description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] as SocialNetwork[] },
-    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed' as Status, imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video' as PostType, description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] as SocialNetwork[] },
+const upcomingPosts: Post[] = [
+    { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
+    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post2/600/600', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
+    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024_09_11', status: 'in_revision', imageUrl: 'https://picsum.photos/seed/post3/600/600', imageHint: 'fashion accessories', type: 'carousel', description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. #acessorios #transformeseulook #modafeminina', socials: ['instagram', 'youtube'] },
+    { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'approved', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
+    { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
+    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
 ]
 
 const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
@@ -248,9 +261,20 @@ export function UpcomingPostsList() {
 }
 
 export function ProjectUpcomingPostsList() {
-    const projectPosts = upcomingPosts.filter(post => 
-        ['approved', 'scheduled', 'completed'].includes(post.status)
+    const [projectPosts, setProjectPosts] = React.useState<Post[]>(
+        upcomingPosts.filter(post =>
+            ['approved', 'scheduled', 'completed'].includes(post.status)
+        )
     );
+
+    const handleRequestChange = (postId: number, comment: string) => {
+        console.log(`Change request for post ID ${postId}: "${comment}". Status changed to in_revision.`);
+        // Here you would typically update the post on the server.
+        // For now, we just remove it from the local state.
+        setProjectPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+        
+        // You might want to show a toast notification here
+    };
 
     return (
       <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -282,10 +306,10 @@ export function ProjectUpcomingPostsList() {
                             </Badge>
                         </TableCell>
                         <TableCell>
-                            <PostActions post={post} />
+                            <PostActions post={post} onRequestChange={handleRequestChange} />
                         </TableCell>
                     </TableRow>
-                    <PostDialogContent post={post} />
+                    <PostDialogContent post={post} onRequestChange={handleRequestChange} />
                 </Dialog>
               ))}
             </TableBody>
@@ -295,7 +319,7 @@ export function ProjectUpcomingPostsList() {
     );
   }
 
-const PostListItem = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+const PostListItem = ({ post }: { post: Post }) => {
     return (
         <Dialog>
           <div className="flex items-center gap-2 p-1.5 rounded-lg bg-background/50 dark:bg-black/20 ">
@@ -325,7 +349,12 @@ const PostListItem = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
     )
 }
 
-const PostActions = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+type PostActionsProps = {
+    post: Post;
+    onRequestChange?: (postId: number, comment: string) => void;
+};
+
+const PostActions = ({ post, onRequestChange }: PostActionsProps) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -337,30 +366,38 @@ const PostActions = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
                 <DialogTrigger asChild>
                     <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
                 </DialogTrigger>
-                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
+                {onRequestChange && (
+                    <RequestChangeDialog post={post} onConfirm={onRequestChange}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
+                    </RequestChangeDialog>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     )
 }
 
 
-const RequestChangeDialog = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+type RequestChangeDialogProps = {
+    post: Post;
+    children: React.ReactNode;
+    onConfirm: (postId: number, comment: string) => void;
+};
+
+const RequestChangeDialog = ({ post, children, onConfirm }: RequestChangeDialogProps) => {
     const [open, setOpen] = React.useState(false);
+    const [comment, setComment] = React.useState('');
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would typically handle the form submission, e.g., send the comment to a server.
-        // For now, we'll just log it and close the dialog.
-        const formData = new FormData(e.target as HTMLFormElement);
-        const comment = formData.get('comment');
-        console.log(`Change request for post "${post.title}": ${comment}`);
+        onConfirm(post.id, comment);
+        setComment('');
         setOpen(false); // Close the dialog
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Pedir alteração</Button>
+                {children}
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
                 <form onSubmit={handleSubmit}>
@@ -375,6 +412,8 @@ const RequestChangeDialog = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
                             name="comment"
                             placeholder="Ex: Gostaria de alterar a cor de fundo para um tom mais claro..."
                             className="min-h-[120px] bg-background/50 dark:bg-black/20"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
                             required
                         />
                     </div>
@@ -393,7 +432,12 @@ const RequestChangeDialog = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
     )
 }
 
-const PostDialogContent = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
+type PostDialogContentProps = {
+    post: Post;
+    onRequestChange?: (postId: number, comment: string) => void;
+};
+
+const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) => {
     const isActionable = ['awaiting_approval'].includes(post.status);
     const canRequestChange = ['approved', 'scheduled', 'completed'].includes(post.status);
 
@@ -437,7 +481,11 @@ const PostDialogContent = ({ post }: { post: (typeof upcomingPosts)[0] }) => {
                                 <Button>Aprovar</Button>
                             </>
                          )}
-                         {canRequestChange && <RequestChangeDialog post={post} />}
+                         {canRequestChange && onRequestChange && (
+                             <RequestChangeDialog post={post} onConfirm={onRequestChange}>
+                                 <Button variant='outline'>Pedir alteração</Button>
+                             </RequestChangeDialog>
+                         )}
                     </div>
                 </div>
             </div>
