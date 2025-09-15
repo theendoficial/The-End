@@ -212,11 +212,11 @@ export function PendingApprovalsWidget() {
 
     return (
         <Link href={hasApprovals ? "/dashboard/approvals" : "#"} className="block h-full">
-            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full hover:bg-accent/50 dark:hover:bg-white/10 transition-colors">
+            <Card className="flex flex-col bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full hover:bg-accent/50 dark:hover:bg-white/10 transition-colors">
                 <CardHeader>
                     <CardTitle className="text-sm font-normal text-center">Conteúdos para Aprovar</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center text-center p-4 pt-0 h-full">
+                <CardContent className="flex flex-col flex-grow items-center justify-center text-center p-4 pt-0">
                     {hasApprovals ? (
                         <>
                             <div className="relative">
@@ -493,6 +493,8 @@ const PostDialogContent = ({ post, onRequestChange }: PostDialogContentProps) =>
 }
     
 
+
+    
 
     
 
