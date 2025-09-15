@@ -336,5 +336,3 @@ export const KanbanBoard = () => {
         </div>
     )
 }
-
-    
