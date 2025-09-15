@@ -37,18 +37,20 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { TheEndLogo } from '@/lib/images';
-import { pendingApprovalsCount } from '@/components/dashboard/dashboard-components';
+import { PostsProvider, usePosts } from '@/components/dashboard/dashboard-components';
 import { cn } from '@/lib/utils';
+import * as React from 'react';
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+  const { posts } = usePosts();
+  const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
 
-  // Placeholder for dynamic client data
   const clientData = {
     companyName: 'Nome da Empresa',
     email: 'contato@empresa.com',
@@ -269,4 +271,16 @@ export default function DashboardLayout({
       </div>
     </div>
   );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <PostsProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </PostsProvider>
+  )
 }

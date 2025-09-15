@@ -58,12 +58,67 @@ export const scheduledPosts: Record<string, { type: any }[]> = {
   '2024-09-13': [{ type: 'video' }, {type: 'image'}],
 };
 
-const pendingItems = {
-  approvals: 3,
-  documents: 1,
+const initialPostsData: Post[] = [
+    { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
+    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://mlabs-wordpress-site.s3.amazonaws.com/wp-content/uploads/2024/08/gerencie-conteudo.webp', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
+    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
+        images: [
+            { url: 'https://picsum.photos/seed/carousel1/600/600', hint: 'necklace accessory' },
+            { url: 'https://picsum.photos/seed/carousel2/600/600', hint: 'earrings fashion' },
+            { url: 'https://picsum.photos/seed/carousel3/600/600', hint: 'handbag style' },
+            { url: 'https://picsum.photos/seed/carousel4/600/600', hint: 'watch modern' },
+        ],
+        description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. Arraste para o lado e confira! #acessorios #transformeseulook #modafeminina', 
+        socials: ['instagram', 'youtube'] 
+    },
+    { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
+    { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
+    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
+    { id: 20, title: 'Carrossel Teste com 20 Imagens', date: '15 de Set, 2024', status: 'awaiting_approval', type: 'carousel',
+        images: Array.from({ length: 20 }, (_, i) => ({
+            url: `https://picsum.photos/seed/newcarousel${i + 1}/600/600`,
+            hint: `abstract photo ${i + 1}`,
+        })),
+        description: 'Navegue por este carrossel com 20 imagens geradas dinamicamente. Esta é uma demonstração da capacidade do novo componente de carrossel. #carrossel #teste #dev',
+        socials: ['instagram']
+    },
+]
+
+type PostsContextType = {
+    posts: Post[];
+    updatePostStatus: (postId: number, newStatus: Status) => void;
 };
 
-export const pendingApprovalsCount = pendingItems.approvals;
+const PostsContext = React.createContext<PostsContextType | undefined>(undefined);
+
+export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
+    const [posts, setPosts] = React.useState<Post[]>(initialPostsData);
+
+    const updatePostStatus = (postId: number, newStatus: Status) => {
+        setPosts(currentPosts => {
+            if (newStatus === 'approved' || newStatus === 'canceled') {
+                return currentPosts.filter(p => p.id !== postId);
+            }
+            return currentPosts.map(p =>
+                p.id === postId ? { ...p, status: newStatus } : p
+            );
+        });
+    };
+
+    return (
+        <PostsContext.Provider value={{ posts, updatePostStatus }}>
+            {children}
+        </PostsContext.Provider>
+    );
+};
+
+export const usePosts = () => {
+    const context = React.useContext(PostsContext);
+    if (!context) {
+        throw new Error('usePosts must be used within a PostsProvider');
+    }
+    return context;
+};
 
 export type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery' | 'strategy';
 type SocialNetwork = 'instagram' | 'tiktok' | 'youtube';
@@ -119,33 +174,6 @@ export const statusConfig: Record<Status, { label: string; className: string }> 
     canceled: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
     completed: { label: 'Concluído', className: 'bg-green-600/20 text-green-500 border-green-600/30' }
 };
-
-
-export const upcomingPosts: Post[] = [
-    { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
-    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://mlabs-wordpress-site.s3.amazonaws.com/wp-content/uploads/2024/08/gerencie-conteudo.webp', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
-    { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
-        images: [
-            { url: 'https://picsum.photos/seed/carousel1/600/600', hint: 'necklace accessory' },
-            { url: 'https://picsum.photos/seed/carousel2/600/600', hint: 'earrings fashion' },
-            { url: 'https://picsum.photos/seed/carousel3/600/600', hint: 'handbag style' },
-            { url: 'https://picsum.photos/seed/carousel4/600/600', hint: 'watch modern' },
-        ],
-        description: 'Um acessório pode mudar tudo! ✨ Veja como colares, brincos e bolsas podem dar um up no seu visual. Arraste para o lado e confira! #acessorios #transformeseulook #modafeminina', 
-        socials: ['instagram', 'youtube'] 
-    },
-    { id: 4, title: 'Promoção de Aniversário', date: '12 de Set, 2024', status: 'approved', imageUrl: 'https://picsum.photos/seed/post4/600/600', imageHint: 'sale promotion', type: 'image', description: 'É o nosso aniversário, mas quem ganha o presente é você! 🎁 Descontos imperdíveis em todo o site. Corra para aproveitar! #aniversario #promocao #descontos', socials: ['instagram', 'tiktok', 'youtube'] },
-    { id: 5, title: 'Post de engajamento semanal', date: '12 de Set, 2024', status: 'canceled', imageUrl: 'https://picsum.photos/seed/post5/600/600', imageHint: 'social media', type: 'image', description: 'Qual seu look preferido do nosso feed? Conta pra gente nos comentários! 👇 #enquete #interacao #modafashion', socials: ['instagram'] },
-    { id: 6, title: 'Tutorial em vídeo: Maquiagem para o dia a dia', date: '13 de Set, 2024', status: 'completed', imageUrl: 'https://picsum.photos/seed/post6/600/600', imageHint: 'makeup tutorial', type: 'video', description: 'Aprenda a fazer uma maquiagem linda e prática para o dia a dia em menos de 5 minutos! 💄 #makeuptutorial #maquiagemrapida #beleza', socials: ['youtube'] },
-    { id: 20, title: 'Carrossel Teste com 20 Imagens', date: '15 de Set, 2024', status: 'awaiting_approval', type: 'carousel',
-        images: Array.from({ length: 20 }, (_, i) => ({
-            url: `https://picsum.photos/seed/newcarousel${i + 1}/600/600`,
-            hint: `abstract photo ${i + 1}`,
-        })),
-        description: 'Navegue por este carrossel com 20 imagens geradas dinamicamente. Esta é uma demonstração da capacidade do novo componente de carrossel. #carrossel #teste #dev',
-        socials: ['instagram']
-    },
-]
 
 const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     instagram: (props) => <Instagram {...props} />,
@@ -261,7 +289,9 @@ export function CalendarWidget() {
 }
 
 export function PendingApprovalsWidget() {
-    const hasApprovals = pendingItems.approvals > 0;
+    const { posts } = usePosts();
+    const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
+    const hasApprovals = pendingApprovalsCount > 0;
 
     return (
         <Link href={hasApprovals ? "/dashboard/approvals" : "#"} className="block h-full">
@@ -274,7 +304,7 @@ export function PendingApprovalsWidget() {
                         <>
                             <div className="relative">
                                 <FileWarning className="h-8 w-8 text-yellow-500" />
-                                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0">{pendingItems.approvals}</Badge>
+                                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0">{pendingApprovalsCount}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground mt-2">Aguardando sua revisão</p>
                         </>
@@ -293,6 +323,7 @@ export function PendingApprovalsWidget() {
 
 
 export function UpcomingPostsList() {
+    const { posts } = usePosts();
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
              <CardHeader className="p-3">
@@ -304,7 +335,7 @@ export function UpcomingPostsList() {
                 </Link>
             </CardHeader>
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
-              {upcomingPosts.map((post) => (
+              {posts.map((post) => (
                   <PostListItem key={post.id} post={post} />
               ))}
             </CardContent>
@@ -312,17 +343,15 @@ export function UpcomingPostsList() {
     )
 }
 
-export function ProjectUpcomingPostsList({ onRequestChange }: { onRequestChange: (postId: number, comment: string) => void }) {
-    const [projectPosts, setProjectPosts] = React.useState<Post[]>(
-        upcomingPosts.filter(post =>
-            ['approved', 'scheduled', 'completed'].includes(post.status)
-        )
+export function ProjectUpcomingPostsList() {
+    const { posts, updatePostStatus } = usePosts();
+    const projectPosts = posts.filter(post =>
+        ['approved', 'scheduled', 'completed'].includes(post.status)
     );
 
     const handleRequestChange = (postId: number, comment: string) => {
         console.log(`Change request for post ID ${postId}: "${comment}". Status changed to in_revision.`);
-        setProjectPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
-        onRequestChange(postId, comment); 
+        updatePostStatus(postId, 'in_revision');
     };
 
     return (
@@ -371,6 +400,7 @@ export function ProjectUpcomingPostsList({ onRequestChange }: { onRequestChange:
 const PostListItem = ({ post }: { post: Post }) => {
     const postImage = post.imageUrl || (post.images && post.images[0].url);
     const postHint = post.imageHint || (post.images && post.images[0].hint);
+    const { updatePostStatus } = usePosts();
 
     return (
         <Dialog>
@@ -396,9 +426,9 @@ const PostListItem = ({ post }: { post: Post }) => {
               <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
                   {statusConfig[post.status].label}
               </Badge>
-              <PostActions post={post} />
+              <PostActions post={post} onRequestChange={(postId, comment) => updatePostStatus(postId, 'in_revision')} />
           </div>
-          <PostDialogContent post={post} />
+          <PostDialogContent post={post} onRequestChange={(postId, comment) => updatePostStatus(postId, 'in_revision')} />
         </Dialog>
     )
 }
@@ -639,7 +669,8 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
 }
 
 export function FeedPreview() {
-    const feedPosts = upcomingPosts
+    const { posts } = usePosts();
+    const feedPosts = posts
         .filter(post => ['approved', 'scheduled', 'completed'].includes(post.status))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 

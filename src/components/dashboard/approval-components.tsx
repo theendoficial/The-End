@@ -45,7 +45,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
              <Dialog>
                 <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
                     <DialogTrigger asChild>
-                        <div className="relative aspect-w-4 aspect-h-3 cursor-pointer">
+                        <div className="relative aspect-square cursor-pointer">
                             <Image
                                 src={image.url}
                                 alt={`Capa do post: ${post.title}`}
@@ -57,6 +57,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                     </DialogTrigger>
                     
                     <CardContent className="p-4 flex flex-col flex-grow">
+                         <h3 className="font-semibold text-sm mb-2 leading-tight h-10">{post.title}</h3>
                         <div className="flex items-center text-xs text-muted-foreground mb-4">
                             <Calendar className="h-4 w-4 mr-2" />
                             <span>Publicação: {post.date}</span>
@@ -68,9 +69,8 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                                     <div className="grid grid-cols-2 gap-2">
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm" className="w-full">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Cancelar
+                                                <Button variant="destructive" size="sm" className="w-full flex-1">
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
@@ -86,7 +86,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
-                                        <Button onClick={() => onAction(post.id, 'approved')} size="sm" className="w-full bg-green-500/90 hover:bg-green-500 text-white">
+                                        <Button onClick={() => onAction(post.id, 'approved')} size="sm" className="w-full bg-green-500/90 hover:bg-green-500 text-white flex-1">
                                             <Check className="mr-2 h-4 w-4" />
                                             Aprovar
                                         </Button>

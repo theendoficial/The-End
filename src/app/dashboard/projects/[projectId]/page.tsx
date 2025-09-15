@@ -104,13 +104,6 @@ export default function ProjectDetailsPage() {
     const project = projects.find(p => p.id.toString() === projectId);
 
     const projectName = project ? project.name : 'Projeto';
-    
-    // Dummy function for change requests
-    const handleRequestChange = (postId: number, comment: string) => {
-        console.log(`Solicitação de alteração para o post ${postId}: ${comment}`);
-        // In a real app, you'd send this to a server and update state
-    };
-
 
     // "Identidade Visual" has id 1
     if (projectId === '1') {
@@ -399,7 +392,7 @@ export default function ProjectDetailsPage() {
                 </div>
                 <div className="mt-6">
                     <h2 className="text-base font-semibold md:text-xl mb-3">Próximos Conteúdos:</h2>
-                    <ProjectUpcomingPostsList onRequestChange={handleRequestChange} />
+                    <ProjectUpcomingPostsList />
                 </div>
                 <div className="mt-6">
                     <h2 className="text-base font-semibold md:text-xl mb-4 text-center">Visualização do Feed</h2>
