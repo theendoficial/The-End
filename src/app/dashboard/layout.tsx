@@ -68,8 +68,8 @@ export default function DashboardLayout({
         <Link
           key={item.label}
           href={item.href}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:text-primary dark:text-gray-500 dark:hover:text-primary ${
-            pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground/60 dark:text-muted-foreground'
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
+            pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'
           }`}
         >
           <item.icon className="h-4 w-4" />
