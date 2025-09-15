@@ -83,7 +83,8 @@ export const postLegends: Record<string, string> = {
 const allPostLegends: Record<string, string> = {
     ...postLegends,
     meeting: 'Reunião',
-    delivery: 'Entrega'
+    delivery: 'Entrega',
+    strategy: 'Estratégia'
 }
 
 type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
@@ -117,7 +118,7 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
 };
 
 
-const upcomingPosts: Post[] = [
+export const upcomingPosts: Post[] = [
     { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
     { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post2/600/600', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
     { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
@@ -625,3 +626,5 @@ export function FeedPreview() {
         </div>
     );
 }
+
+    

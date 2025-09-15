@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { scheduledPosts, postColors, postLegends, PostType } from './dashboard-components';
+import { scheduledPosts, postColors, postLegends, PostType, Post, PostDialogContent, upcomingPosts } from './dashboard-components';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const allPostLegends: Record<string, string> = {
@@ -139,9 +139,11 @@ const getWeekTasks = () => {
     const today = new Date();
     // Setting a fixed date for deterministic testing, e.g., a Wednesday
     const referenceDate = new Date('2024-09-11T12:00:00');
-    const weekStart = startOfWeek(referenceDate, { weekStartsOn: 1 }); // Monday
-    const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 1 });
+    const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
+    const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
 
+    const postTask = upcomingPosts.find(p => p.id === 1); // Let's use an existing post
+    
     const allTasks = [
         // This Week's Tasks
         { id: 'task-1', status: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-09T10:00:00') },
@@ -152,26 +154,36 @@ const getWeekTasks = () => {
         { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') },
         { id: 'task-7', status: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date('2024-09-13T16:00:00') },
         { id: 'task-8', status: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-10T18:00:00') },
+        // Post-like task
+        ...(postTask ? [{
+            id: `post-${postTask.id}`,
+            status: 'done',
+            title: postTask.title,
+            type: 'post',
+            project: { id: 9, name: 'Vídeos curtos' },
+            date: new Date('2024-09-08T12:00:00'), // Sunday
+            postData: postTask
+        }] : []),
     ];
 
     return allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
 };
 
 const weekDaysColumns = [
+    { id: 0, title: 'Domingo' },
     { id: 1, title: 'Segunda' },
     { id: 2, title: 'Terça' },
     { id: 3, title: 'Quarta' },
     { id: 4, title: 'Quinta' },
     { id: 5, title: 'Sexta' },
     { id: 6, title: 'Sábado' },
-    { id: 0, title: 'Domingo' },
 ];
 
-const statusConfig: Record<TaskStatus, { label: string; color: string }> = {
-    todo: { label: 'A fazer', color: 'bg-gray-400' },
-    'in-progress': { label: 'Em progresso', color: 'bg-blue-500' },
-    approval: { label: 'Aprovação', color: 'bg-purple-500' },
-    done: { label: 'Concluído', color: 'bg-green-500' },
+const statusConfig: Record<TaskStatus, { label: string; color: string; className: string }> = {
+    todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
+    'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+    approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
 };
 
 
@@ -180,13 +192,14 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
     meeting: (props) => <Users {...props} />,
     content: (props) => <FileText {...props} />,
     strategy: (props) => <FileText {...props} />,
+    post: (props) => <Video {...props} />,
 };
 
 type Task = ReturnType<typeof getWeekTasks>[0];
 
 const TaskDialogContent = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
-    const statusInfo = statusConfig[task.status];
+    const statusInfo = statusConfig[task.status as TaskStatus];
     return (
         <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
             <DialogHeader>
@@ -208,7 +221,7 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
                 </div>
                 <div className="flex items-center gap-4">
                     <Tag className="h-4 w-4 text-muted-foreground" />
-                     <Badge className="text-xs font-normal border" style={{ backgroundColor: statusInfo.color, color: 'white', borderColor: 'transparent' }}>
+                     <Badge className={cn('text-xs font-normal border', statusInfo.className)}>
                         {statusInfo.label}
                     </Badge>
                 </div>
@@ -224,7 +237,26 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
 
 const TaskCard = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
-    const statusInfo = statusConfig[task.status];
+    const statusInfo = statusConfig[task.status as TaskStatus];
+    
+    // This is a special task that should render the post dialog
+    if (task.type === 'post' && 'postData' in task && task.postData) {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                    <div className={cn("w-full p-2 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 h-16 border-l-4", statusInfo.color)} style={{borderLeftColor: statusInfo.color}}>
+                        {Icon && <Icon className="h-5 w-5 text-foreground" />}
+                        <span className="text-xs font-semibold text-muted-foreground">
+                            {task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                    </div>
+                </DialogTrigger>
+                <PostDialogContent post={task.postData as Post} />
+            </Dialog>
+        );
+    }
+    
+    // This is a regular task
     return (
          <Dialog>
             <DialogTrigger asChild>
@@ -265,3 +297,5 @@ export const KanbanBoard = () => {
         </div>
     )
 }
+
+    
