@@ -3,49 +3,53 @@
 
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
-import { startOfWeek, endOfWeek, isWithinInterval, getDay } from 'date-fns';
+import { startOfWeek, endOfWeek, isWithinInterval, getDay, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical, Calendar as CalendarIcon, Tag, Info } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { scheduledPosts, postColors, postLegends, PostType } from './dashboard-components';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery';
-
-const postColors: Record<PostType, string> = {
-  image: 'bg-blue-500',
-  video: 'bg-pink-500',
-  carousel: 'bg-yellow-500',
-  meeting: 'bg-purple-500',
-  delivery: 'bg-green-500',
-};
-
-const postLegends: Record<PostType, string> = {
-    image: 'Imagem',
-    video: 'Vídeo/Reels',
-    carousel: 'Carrossel',
+const allPostLegends: Record<string, string> = {
+    ...postLegends,
     meeting: 'Reunião',
-    delivery: 'Entrega'
-}
-
-// Same data from dashboard-components, but could be fetched from an API
-const scheduledPosts: Record<string, { type: PostType }[]> = {
-  '2024-09-09': [{ type: 'video' }],
-  '2024-09-10': [{ type: 'image' }],
-  '2024-09-11': [{ type: 'carousel' }],
-  '2024-09-12': [{ type: 'image' }],
-  '2024-09-13': [{ type: 'video' }, {type: 'image'}],
-  '2024-09-20': [{ type: 'delivery' }],
-  '2024-09-25': [{ type: 'meeting' }],
+    delivery: 'Entrega',
+    strategy: 'Estratégia'
 };
+
+const allPostColors: Record<string, string> = {
+    ...postColors,
+    meeting: 'bg-purple-500',
+    delivery: 'bg-green-500',
+    strategy: 'bg-cyan-500'
+};
+
+const allScheduledEvents = { ...scheduledPosts };
+
+// Add other events to the main schedule object
+const otherEvents = [
+    { id: 'evt-1', date: new Date('2024-09-09T14:00:00'), type: 'meeting' },
+    { id: 'evt-2', date: new Date('2024-09-20T18:00:00'), type: 'delivery' },
+    { id: 'evt-3', date: new Date('2024-09-25T10:00:00'), type: 'meeting' },
+];
+
+otherEvents.forEach(event => {
+    const dateString = format(event.date, 'yyyy-MM-dd');
+    if (!allScheduledEvents[dateString]) {
+        allScheduledEvents[dateString] = [];
+    }
+    allScheduledEvents[dateString].push({ type: event.type as PostType });
+});
 
 
 function CalendarDots({ day }: { day: Date }) {
   const dateString = day.toISOString().split('T')[0];
-  const posts = scheduledPosts[dateString as keyof typeof scheduledPosts];
+  const posts = allScheduledEvents[dateString as keyof typeof allScheduledEvents];
 
   if (posts) {
     return (
@@ -53,7 +57,7 @@ function CalendarDots({ day }: { day: Date }) {
         {posts.map((post, index) => (
           <span
             key={index}
-            className={cn('h-1 w-1 rounded-full', postColors[post.type as PostType])}
+            className={cn('h-1 w-1 rounded-full', allPostColors[post.type])}
           />
         ))}
       </div>
@@ -73,7 +77,7 @@ export function FullCalendar() {
                 month={date}
                 onMonthChange={setDate}
                 modifiers={{
-                    scheduled: Object.keys(scheduledPosts).map(dateStr => new Date(dateStr + 'T00:00:00'))
+                    scheduled: Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'))
                 }}
                 components={{
                     DayContent: (props) => (
@@ -117,9 +121,9 @@ export function FullCalendar() {
                 }}
                 />
                 <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
-                    {Object.entries(postLegends).map(([type, label]) => (
+                    {Object.entries(allPostLegends).map(([type, label]) => (
                         <div key={type} className="flex items-center gap-2">
-                            <span className={cn('h-2 w-2 rounded-full', postColors[type as PostType])} />
+                            <span className={cn('h-2 w-2 rounded-full', allPostColors[type])} />
                             <span className="text-sm text-muted-foreground">{label}</span>
                         </div>
                     ))}
@@ -140,14 +144,14 @@ const getWeekTasks = () => {
 
     const allTasks = [
         // This Week's Tasks
-        { id: 'task-1', status: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-09T10:00:00') }, // Monday
-        { id: 'task-2', status: 'todo', title: 'Reunião de pauta semanal', type: 'meeting', date: new Date('2024-09-09T14:00:00') }, // Monday
-        { id: 'task-3', status: 'todo', title: 'Definir estratégia para campanha Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date('2024-09-10T11:00:00') }, // Tuesday
-        { id: 'task-4', status: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date('2024-09-11T09:00:00') }, // Wednesday
-        { id: 'task-5', status: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-12T15:00:00') }, // Thursday
-        { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') }, // Friday
-        { id: 'task-7', status: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date('2024-09-13T16:00:00') }, // Friday
-        { id: 'task-8', status: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-10T18:00:00') }, // Tuesday
+        { id: 'task-1', status: 'todo', title: 'Gravar reels "Look do dia"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-09T10:00:00') },
+        { id: 'task-2', status: 'done', title: 'Reunião de pauta semanal', type: 'meeting', project: {id: 6, name: 'Gestão de Mídias Sociais'}, date: new Date('2024-09-09T14:00:00') },
+        { id: 'task-3', status: 'todo', title: 'Definir estratégia para campanha Dia das Mães', type: 'strategy', project: { id: 8, name: 'Estratégia de Marketing' }, date: new Date('2024-09-10T11:00:00') },
+        { id: 'task-4', status: 'in-progress', title: 'Editando vídeo review de produto', type: 'video', project: { id: 10, name: 'Vídeos Longos' }, date: new Date('2024-09-11T09:00:00') },
+        { id: 'task-5', status: 'in-progress', title: 'Criando carrossel "5 dicas de estilo"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-12T15:00:00') },
+        { id: 'task-6', status: 'approval', title: 'Post "Promoção de Outono"', type: 'content', project: { id: 6, name: 'Gestão de Mídias Sociais' }, date: new Date('2024-09-13T10:00:00') },
+        { id: 'task-7', status: 'approval', title: 'Sequência de Stories "Bastidores"', type: 'video', project: { id: 11, name: 'Vídeos sequenciais' }, date: new Date('2024-09-13T16:00:00') },
+        { id: 'task-8', status: 'done', title: 'Vídeo "Tutorial de Maquiagem"', type: 'video', project: { id: 9, name: 'Vídeos curtos' }, date: new Date('2024-09-10T18:00:00') },
     ];
 
     return allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
@@ -163,11 +167,11 @@ const weekDaysColumns = [
     { id: 0, title: 'Domingo' },
 ];
 
-const statusColors: Record<TaskStatus, string> = {
-    todo: 'bg-gray-400',
-    'in-progress': 'bg-blue-500',
-    approval: 'bg-purple-500',
-    done: 'bg-green-500',
+const statusConfig: Record<TaskStatus, { label: string; color: string }> = {
+    todo: { label: 'A fazer', color: 'bg-gray-400' },
+    'in-progress': { label: 'Em progresso', color: 'bg-blue-500' },
+    approval: { label: 'Aprovação', color: 'bg-purple-500' },
+    done: { label: 'Concluído', color: 'bg-green-500' },
 };
 
 
@@ -178,26 +182,61 @@ const taskIcons: Record<string, React.ComponentType<any>> = {
     strategy: (props) => <FileText {...props} />,
 };
 
-const TaskCard = ({ task }: { task: ReturnType<typeof getWeekTasks>[0] }) => {
+type Task = ReturnType<typeof getWeekTasks>[0];
+
+const TaskDialogContent = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
+    const statusInfo = statusConfig[task.status];
     return (
-        <Card className="p-3 bg-card/80 dark:bg-black/50 border-l-4 cursor-grab active:cursor-grabbing" style={{ borderLeftColor: statusColors[task.status] }}>
-            <div className="flex items-start justify-between">
-                <p className="font-semibold text-sm mb-2">{task.title}</p>
-                <GripVertical className="h-5 w-5 text-muted-foreground/50" />
-            </div>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    {Icon && <Icon className="h-4 w-4" />}
+        <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+            <DialogHeader>
+                <DialogTitle>{task.title}</DialogTitle>
+                <DialogDescription>
                     {task.project ? (
-                        <Link href={`/dashboard/projects/${task.project.id}`} className="text-xs hover:underline">{task.project.name}</Link>
+                        <Link href={`/dashboard/projects/${task.project.id}`} className="hover:underline">
+                            {task.project.name}
+                        </Link>
                     ) : (
-                        <span className="text-xs capitalize">{task.type === 'meeting' ? 'Reunião' : 'Estratégia'}</span>
+                        <span className="capitalize">{allPostLegends[task.type]}</span>
                     )}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-4">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{format(task.date, "eeee, dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}</span>
                 </div>
-                 <Badge variant="outline" className="text-xs font-normal">{task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Badge>
+                <div className="flex items-center gap-4">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                     <Badge className="text-xs font-normal border" style={{ backgroundColor: statusInfo.color, color: 'white', borderColor: 'transparent' }}>
+                        {statusInfo.label}
+                    </Badge>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm capitalize">{allPostLegends[task.type]}</span>
+                </div>
             </div>
-        </Card>
+        </DialogContent>
+    );
+};
+
+
+const TaskCard = ({ task }: { task: Task }) => {
+    const Icon = taskIcons[task.type];
+    const statusInfo = statusConfig[task.status];
+    return (
+         <Dialog>
+            <DialogTrigger asChild>
+                <div className={cn("w-full p-2 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 h-16 border-l-4", statusInfo.color)} style={{borderLeftColor: statusInfo.color}}>
+                    {Icon && <Icon className="h-5 w-5 text-foreground" />}
+                    <span className="text-xs font-semibold text-muted-foreground">
+                        {task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                </div>
+            </DialogTrigger>
+            <TaskDialogContent task={task} />
+        </Dialog>
     );
 }
 
@@ -210,11 +249,11 @@ export const KanbanBoard = () => {
 
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
             {weekDaysColumns.map(column => (
-                <div key={column.id} className={cn("rounded-lg p-3 bg-card/40 dark:bg-black/20")}>
+                <div key={column.id} className={cn("rounded-lg p-2 bg-card/40 dark:bg-black/20")}>
                     <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
-                    <div className="flex flex-col gap-3 min-h-[100px]">
+                    <div className="flex flex-col gap-2 min-h-[100px]">
                         {tasks
                             .filter(task => getDay(task.date) === column.id)
                             .sort((a, b) => a.date.getTime() - b.date.getTime())
@@ -226,5 +265,3 @@ export const KanbanBoard = () => {
         </div>
     )
 }
-
-    

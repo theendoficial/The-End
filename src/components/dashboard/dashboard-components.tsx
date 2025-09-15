@@ -49,7 +49,7 @@ export const projects = [
     { id: 11, name: 'Vídeos sequenciais' },
 ];
 
-const scheduledPosts: Record<string, { type: PostType }[]> = {
+export const scheduledPosts: Record<string, { type: any }[]> = {
   '2024-09-09': [{ type: 'video' }],
   '2024-09-10': [{ type: 'image' }],
   '2024-09-11': [{ type: 'carousel' }],
@@ -62,19 +62,28 @@ const pendingItems = {
   documents: 1,
 };
 
-type PostType = 'image' | 'video' | 'carousel';
+export type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery' | 'strategy' | 'content';
 type SocialNetwork = 'instagram' | 'tiktok' | 'youtube';
 
-const postColors: Record<PostType, string> = {
+export const postColors: Record<string, string> = {
   image: 'bg-blue-500',
   video: 'bg-pink-500',
   carousel: 'bg-yellow-500',
+  meeting: 'bg-purple-500',
+  delivery: 'bg-green-500',
+  strategy: 'bg-cyan-500'
 };
 
-const postLegends: Record<PostType, string> = {
+export const postLegends: Record<string, string> = {
     image: 'Imagem',
     video: 'Vídeo/Reels',
     carousel: 'Carrossel'
+}
+
+const allPostLegends: Record<string, string> = {
+    ...postLegends,
+    meeting: 'Reunião',
+    delivery: 'Entrega'
 }
 
 type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
@@ -140,10 +149,25 @@ const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     youtube: (props) => <Youtube {...props} />,
 };
 
+const allScheduledEvents = { ...scheduledPosts };
+const otherEvents = [
+    { id: 'evt-1', date: new Date('2024-09-09T14:00:00'), type: 'meeting' },
+    { id: 'evt-2', date: new Date('2024-09-20T18:00:00'), type: 'delivery' },
+    { id: 'evt-3', date: new Date('2024-09-25T10:00:00'), type: 'meeting' },
+];
+
+otherEvents.forEach(event => {
+    const dateString = event.date.toISOString().split('T')[0];
+    if (!allScheduledEvents[dateString]) {
+        allScheduledEvents[dateString] = [];
+    }
+    allScheduledEvents[dateString].push({ type: event.type });
+});
+
 
 function CalendarDots({ day }: { day: Date }) {
   const dateString = day.toISOString().split('T')[0];
-  const posts = scheduledPosts[dateString as keyof typeof scheduledPosts];
+  const posts = allScheduledEvents[dateString as keyof typeof allScheduledEvents];
 
   if (posts) {
     return (
@@ -151,7 +175,7 @@ function CalendarDots({ day }: { day: Date }) {
         {posts.map((post, index) => (
           <span
             key={index}
-            className={cn('h-1 w-1 rounded-full', postColors[post.type as PostType])}
+            className={cn('h-1 w-1 rounded-full', postColors[post.type])}
           />
         ))}
       </div>
@@ -175,7 +199,7 @@ export function CalendarWidget() {
                 month={date}
                 onMonthChange={setDate}
                 modifiers={{
-                    scheduled: Object.keys(scheduledPosts).map(dateStr => new Date(dateStr + 'T00:00:00'))
+                    scheduled: Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'))
                 }}
                 components={{
                     DayContent: (props) => (
@@ -220,9 +244,9 @@ export function CalendarWidget() {
                 }}
                 />
                 <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
-                    {Object.entries(postLegends).map(([type, label]) => (
+                    {Object.entries(allPostLegends).map(([type, label]) => (
                         <div key={type} className="flex items-center gap-1.5">
-                            <span className={cn('h-1.5 w-1.5 rounded-full', postColors[type as PostType])} />
+                            <span className={cn('h-1.5 w-1.5 rounded-full', postColors[type])} />
                             <span className="text-xs text-muted-foreground">{label}</span>
                         </div>
                     ))}
@@ -293,11 +317,8 @@ export function ProjectUpcomingPostsList({ onRequestChange }: { onRequestChange:
 
     const handleRequestChange = (postId: number, comment: string) => {
         console.log(`Change request for post ID ${postId}: "${comment}". Status changed to in_revision.`);
-        // Here you would typically update the post on the server.
-        // For now, we just remove it from the local state.
         setProjectPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
-        onRequestChange(postId, comment); // Notify parent
-        // You might want to show a toast notification here
+        onRequestChange(postId, comment); 
     };
 
     return (
@@ -364,7 +385,7 @@ const PostListItem = ({ post }: { post: Post }) => {
                       )}
                       <div className="flex-grow">
                           <p className="font-semibold text-xs leading-tight">{post.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type]} - {post.date}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type as keyof typeof postLegends]} - {post.date}</p>
                       </div>
                   </button>
               </DialogTrigger>
@@ -604,15 +625,3 @@ export function FeedPreview() {
         </div>
     );
 }
-    
-
-
-    
-
-    
-
-    
-
-    
-
-    

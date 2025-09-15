@@ -12,7 +12,7 @@ export default function CalendarPage() {
       
       <div className="flex flex-col gap-6">
         <div>
-          <h2 className="text-base font-semibold md:text-xl mb-3">Quadro de Tarefas</h2>
+          <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
           <KanbanBoard />
         </div>
         
