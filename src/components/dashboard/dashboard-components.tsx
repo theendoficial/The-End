@@ -63,7 +63,9 @@ const pendingItems = {
   documents: 1,
 };
 
-export type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery' | 'strategy' | 'content';
+export const pendingApprovalsCount = pendingItems.approvals;
+
+export type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery' | 'strategy';
 type SocialNetwork = 'instagram' | 'tiktok' | 'youtube';
 
 export const postColors: Record<string, string> = {
@@ -121,7 +123,7 @@ export const statusConfig: Record<Status, { label: string; className: string }> 
 
 export const upcomingPosts: Post[] = [
     { id: 1, title: 'Lançamento da nova coleção de verão', date: '09 de Set, 2024', status: 'scheduled', imageUrl: 'https://picsum.photos/seed/post1/600/600', imageHint: 'fashion summer', type: 'video', description: 'Prepare-se para o verão com nossa nova coleção! ☀️ Peças leves, coloridas e cheias de estilo para você brilhar na estação mais quente do ano. #verao2024 #novacolecao #modapraia', socials: ['instagram', 'tiktok'] },
-    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://picsum.photos/seed/post2/600/600', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
+    { id: 2, title: 'Dicas de estilo para o trabalho', date: '10 de Set, 2024', status: 'awaiting_approval', imageUrl: 'https://mlabs-wordpress-site.s3.amazonaws.com/wp-content/uploads/2024/08/gerencie-conteudo.webp', imageHint: 'office style', type: 'image', description: 'Trabalhar com estilo nunca foi tão fácil. Confira nossas dicas para montar looks incríveis para o escritório. #modanotrabalho #officelook #dicasdeestilo', socials: ['instagram'] },
     { id: 3, title: 'Como usar acessórios para transformar o look', date: '11 de Set, 2024', status: 'in_revision', type: 'carousel', 
         images: [
             { url: 'https://picsum.photos/seed/carousel1/600/600', hint: 'necklace accessory' },
@@ -499,9 +501,8 @@ const ApprovalActions = ({ post, onAction }: ApprovalActionsProps) => {
             <div className="flex gap-2">
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Cancelar
+                        <Button variant="destructive" className="w-full flex items-center justify-center">
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">

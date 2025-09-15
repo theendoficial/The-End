@@ -37,6 +37,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { TheEndLogo } from '@/lib/images';
+import { pendingApprovalsCount } from '@/components/dashboard/dashboard-components';
 
 export default function DashboardLayout({
   children,
@@ -178,10 +179,30 @@ export default function DashboardLayout({
               <span className="hidden md:inline-block">The End.</span>
             </Link>
           <div className="w-full flex-1" />
-           <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
+                  <Bell className="h-4 w-4" />
+                  {pendingApprovalsCount > 0 && (
+                    <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+                  )}
+                  <span className="sr-only">Toggle notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
+              <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
+              {pendingApprovalsCount > 0 ? (
+                <Link href="/dashboard/approvals">
+                  <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">
+                    Você tem {pendingApprovalsCount} novos posts para aprovar.
+                  </DropdownMenuItem>
+                </Link>
+              ) : (
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Nenhuma notificação nova.</DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hover:bg-white/20 border-border/10 dark:border-white/10 border">
@@ -204,7 +225,7 @@ export default function DashboardLayout({
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hover:bg-white/20 border-border/10 dark:border-white/10 border">
+              <Button variant="secondary" size="icon" className="rounded-full bg-secondary dark:bg-white/10 hover:bg-secondary/80 dark:hoverbg-white/20 border-border/10 dark:border-white/10 border">
                 <Settings className="h-5 w-5 text-foreground dark:text-white" />
                 <span className="sr-only">Toggle user menu</span>
               </Button>
