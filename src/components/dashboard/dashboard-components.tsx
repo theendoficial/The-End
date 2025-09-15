@@ -52,7 +52,19 @@ export const projects = [
 
 export const scheduledPosts: Record<string, { type: any }[]> = {};
 
-export const initialPostsData: Post[] = [];
+export const initialPostsData: Post[] = [
+    {
+        id: 1,
+        title: 'Logo banner',
+        date: '20 de Set, 2025',
+        status: 'awaiting_approval',
+        imageUrl: 'https://picsum.photos/seed/barberpost/600/400',
+        imageHint: 'barbershop interior',
+        type: 'image',
+        description: 'Logo para ser usado em banners e materiais de divulgação.',
+        socials: ['instagram']
+    }
+];
 
 type PostsContextType = {
     posts: Post[];

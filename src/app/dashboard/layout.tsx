@@ -52,9 +52,9 @@ function DashboardLayoutContent({
   const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
 
   const clientData = {
-    companyName: 'Nome da Empresa',
-    email: 'contato@empresa.com',
-    logoUrl: 'https://picsum.photos/seed/clientlogo/40/40'
+    companyName: 'Major Style - Barbearia',
+    email: 'contato@majorstyle.com',
+    logoUrl: 'https://picsum.photos/seed/barberlogo/40/40'
   };
 
   const navItems = [
@@ -136,7 +136,7 @@ function DashboardLayoutContent({
                   height={40}
                   alt="Client Logo"
                   className="rounded-full"
-                  data-ai-hint="logo"
+                  data-ai-hint="logo barbershop"
               />
               <div>
                 <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
@@ -174,7 +174,7 @@ function DashboardLayoutContent({
                       height={40}
                       alt="Client Logo"
                       className="rounded-full"
-                      data-ai-hint="logo"
+                      data-ai-hint="logo barbershop"
                   />
                   <div>
                     <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
