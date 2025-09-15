@@ -199,7 +199,7 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
     const statusInfo = statusConfig[event.status];
 
     const EventContent = () => (
-        <div className={cn("w-full p-1.5 rounded-md cursor-pointer text-xs flex items-center gap-1.5", statusInfo.color)} style={{backgroundColor: statusInfo.color}}>
+        <div className={cn("w-full p-1.5 rounded-md cursor-pointer text-xs flex items-center gap-1.5", allPostColors[event.type])} style={{backgroundColor: allPostColors[event.type]}}>
             <span className="font-semibold truncate text-white">
                 {format(event.date, 'HH:mm')} - {event.title}
             </span>
@@ -243,17 +243,27 @@ export function FullCalendar() {
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-xl font-headline capitalize">
-                    {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
-                </CardTitle>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={goToNextMonth}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
+                <div className='flex items-center gap-4'>
+                    <CardTitle className="text-xl font-headline capitalize">
+                        {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
+                    </CardTitle>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={goToNextMonth}>
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+                 <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {Object.entries(allPostLegends).map(([type, label]) => (
+                        <div key={type} className="flex items-center gap-1.5">
+                            <span className={cn('h-2 w-2 rounded-full', allPostColors[type])} />
+                            <span className="text-xs text-muted-foreground">{label}</span>
+                        </div>
+                    ))}
                 </div>
             </CardHeader>
             <CardContent>
@@ -326,3 +336,5 @@ export const KanbanBoard = () => {
         </div>
     )
 }
+
+    
