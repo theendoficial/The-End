@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,41 +5,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import * as React from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/contexts/AdminContext';
 
-
-type AdminSettingsPageProps = {
-    adminData?: {
-        name: string;
-        email: string;
-        avatar: string;
-    };
-    onUpdateAdminData?: (newData: any) => void;
-}
-
-export default function AdminSettingsPage({ adminData, onUpdateAdminData }: AdminSettingsPageProps) {
+export default function AdminSettingsPage() {
+    const { adminData, setAdminData } = useAdmin();
     const { toast } = useToast();
-    const [name, setName] = React.useState(adminData?.name || '');
-    const [email, setEmail] = React.useState(adminData?.email || '');
-    const [avatar, setAvatar] = React.useState(adminData?.avatar || '');
+    
+    const [name, setName] = React.useState(adminData.name);
+    const [email, setEmail] = React.useState(adminData.email);
+    const [avatar, setAvatar] = React.useState(adminData.avatar);
     const [password, setPassword] = React.useState('');
 
     const handleSave = () => {
-        if (onUpdateAdminData) {
-            onUpdateAdminData({ name, email, avatar });
-            toast({
-                title: "Configurações Salvas!",
-                description: "Suas informações de perfil foram atualizadas.",
-                variant: "success",
-            });
+        setAdminData({ name, email, avatar });
+        toast({
+            title: "Configurações Salvas!",
+            description: "Suas informações de perfil foram atualizadas.",
+            variant: "success",
+        });
+        // Note: Password change would require a backend call in a real app.
+        if (password) {
+            console.log("Password change requested, but this is a frontend-only demo.");
         }
     }
 
+    // Sync local state if context data changes
     React.useEffect(() => {
-        if (adminData) {
-            setName(adminData.name);
-            setEmail(adminData.email);
-            setAvatar(adminData.avatar);
-        }
+        setName(adminData.name);
+        setEmail(adminData.email);
+        setAvatar(adminData.avatar);
     }, [adminData]);
     
     if (!adminData) return null;
