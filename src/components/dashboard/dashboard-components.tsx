@@ -158,6 +158,11 @@ const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
 };
 
 function parseDate(dateStr: string): Date {
+    // Handles both 'YYYY-MM-DD' and 'DD de Mmm, YYYY'
+    if (dateStr.includes('-')) {
+        return new Date(dateStr + 'T00:00:00'); // Assume start of day for YYYY-MM-DD
+    }
+
     const months: { [key: string]: number } = {
         'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
         'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
@@ -175,6 +180,7 @@ function parseDate(dateStr: string): Date {
     // Fallback for invalid formats
     return new Date();
 }
+
 
 function CalendarDots({ day, events }: { day: Date, events: Record<string, { type: any }[]> }) {
     const dateString = day.toISOString().split('T')[0];
@@ -322,7 +328,7 @@ export function PendingApprovalsWidget() {
 
 export function UpcomingPostsList() {
     const { posts, scheduledPosts } = usePosts();
-    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -348,10 +354,9 @@ export function UpcomingPostsList() {
 }
 
 export function ProjectUpcomingPostsList() {
-    const { scheduledPosts, updatePostStatus } = usePosts();
-    const projectPosts = scheduledPosts.filter(post =>
-        ['scheduled', 'completed'].includes(post.status)
-    );
+    const { posts, scheduledPosts, updatePostStatus } = usePosts();
+    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+
 
     const handleRequestChange = (postId: number, comment: string) => {
         console.log(`Change request for post ID ${postId}: "${comment}". Status changed to in_revision.`);
@@ -372,8 +377,8 @@ export function ProjectUpcomingPostsList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projectPosts.length > 0 ? (
-                projectPosts.map((post) => (
+              {allPosts.length > 0 ? (
+                allPosts.map((post) => (
                     <Dialog key={post.id}>
                         <TableRow className="border-b-white/10">
                             <TableCell>
@@ -684,7 +689,7 @@ export function FeedPreview() {
     const { scheduledPosts } = usePosts();
     const feedPosts = scheduledPosts
         .filter(post => ['scheduled', 'completed'].includes(post.status))
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        .sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
 
     const getPostImage = (post: Post): PostImage | null => {
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
@@ -730,6 +735,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 
