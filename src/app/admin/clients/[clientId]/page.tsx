@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon, Download, File as FileIcon, Folder, FolderPlus } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon, Download, File as FileIcon, Folder, FolderPlus, Eye, EyeOff, Send } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -17,7 +17,7 @@ import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -31,10 +31,33 @@ const clients = [
     { 
         id: 'major-style-barbearia', 
         name: 'Major Style - Barbearia',
+        email: 'majorstylemkt@gmail.com',
+        password: 'Barbeariaconteudos010102',
+        phone: '5511999998888',
+        whatsappLink: 'https://wa.me/5511999998888',
+        logo: 'https://instagram.fcgh2-1.fna.fbcdn.net/v/t51.2885-19/505749727_17862883392419934_6871962705883407866_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMjAuYzIifQ&_nc_ht=instagram.fcgh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2QEpRz7AiJPJvBRKa8KlS-dW2cMVN8TzuCNbzgE_z49xazIpgA-PWVjZfsuGeiwhyhyAZr5Y6jAxAUnkXQXpxNDp&_nc_ohc=0_zeMtGquPkQ7kNvwFZtDj9&_nc_gid=D-4UUHwMxstS5iH-C5C03g&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_AfY7-D26PBrUArYKGduva9J-hU9VPFs2yI9U4CC2_gHKfg&oe=68CE7482&_nc_sid=7a9f4b',
         projects: [6]
     },
-    { id: 'fitness-club', name: 'Fitness Club', projects: [] },
-    { id: 'doce-sonho', name: 'Doceria Doce Sonho', projects: [] },
+    { 
+        id: 'fitness-club',
+        name: 'Fitness Club',
+        email: 'contact@fitnessclub.com',
+        password: 'fitnesspassword123',
+        phone: '5521988887777',
+        whatsappLink: 'https://wa.me/5521988887777',
+        logo: 'https://picsum.photos/seed/fitnessclub/100/100',
+        projects: []
+    },
+    { 
+        id: 'doce-sonho',
+        name: 'Doceria Doce Sonho',
+        email: 'contato@docesonho.com',
+        password: 'doceriapassword123',
+        phone: '5531977776666',
+        whatsappLink: 'https://wa.me/5531977776666',
+        logo: 'https://picsum.photos/seed/docesonho/100/100',
+        projects: []
+    },
 ];
 
 function ClientDashboard() {
@@ -80,12 +103,13 @@ function ClientDashboard() {
             return;
         }
     
-        let finalUrl: string | undefined = postUrl; // Default to URL if provided
+        let finalUrl: string | undefined = undefined; 
         let finalCoverImageUrl: string | undefined = undefined;
     
-        // If a file is attached, it takes precedence for the main URL
         if (file) {
             finalUrl = URL.createObjectURL(file);
+        } else if (postUrl) {
+            finalUrl = postUrl;
         }
     
         if (videoCoverFile) {
@@ -98,7 +122,7 @@ function ClientDashboard() {
             type: type as PostType,
             description,
             socials: socials as any, // Cast for now
-            imageUrl: type.startsWith('video') ? finalCoverImageUrl : finalUrl, // Use cover for video thumb
+            imageUrl: type.startsWith('video') ? finalCoverImageUrl : (file ? finalUrl : postUrl),
             coverImageUrl: finalCoverImageUrl,
             imageHint: 'new post',
             url: finalUrl,
@@ -884,14 +908,157 @@ function ClientDocuments() {
     );
 }
 
-function ClientSettings() {
-    return <div>Configurações</div>
+function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClient: any) => void }) {
+    const { toast } = useToast();
+    const [name, setName] = React.useState(client.name);
+    const [email, setEmail] = React.useState(client.email);
+    const [password, setPassword] = React.useState(client.password);
+    const [phone, setPhone] = React.useState(client.phone || '');
+    const [whatsappLink, setWhatsappLink] = React.useState(client.whatsappLink || '');
+    const [logo, setLogo] = React.useState(client.logo || '');
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [notificationType, setNotificationType] = React.useState('');
+
+    const handleSaveChanges = () => {
+        onSave({ ...client, name, email, password, phone, whatsappLink, logo });
+        toast({
+            title: "Dados Salvos!",
+            description: "As informações do cliente foram atualizadas.",
+            variant: "success",
+        });
+    };
+
+    const handleSendNotification = () => {
+        if (!notificationType) {
+            toast({
+                title: "Selecione uma Notificação",
+                description: "Você precisa escolher um tipo de notificação para enviar.",
+                variant: "destructive",
+            });
+            return;
+        }
+        
+        toast({
+            title: "Notificação Enviada!",
+            description: `A notificação "${notificationType}" foi enviada para o cliente.`,
+            variant: "success",
+        });
+        setNotificationType('');
+    };
+
+    const notificationOptions = {
+        'posts_waiting': 'Lembrete: Novos posts aguardando sua aprovação.',
+        'posts_approved': 'Boa notícia! Seus posts foram aprovados e estão sendo agendados.',
+        'report_available': 'Seu novo relatório de performance já está disponível no painel.',
+        'document_added': 'Um novo documento foi adicionado à sua área de cliente.',
+        'payment_due': 'Lembrete amigável: Sua fatura está com o vencimento próximo.',
+    };
+
+    return (
+        <div className="grid md:grid-cols-2 gap-8">
+            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                <CardHeader>
+                    <CardTitle>Dados do Cliente</CardTitle>
+                    <CardDescription>
+                        Altere as informações de acesso e perfil do cliente.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="name">Nome da Empresa</Label>
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="email">Email de Acesso</Label>
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Senha de Acesso</Label>
+                        <div className="relative">
+                            <Input 
+                                id="password" 
+                                type={showPassword ? 'text' : 'password'}
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="bg-background/50 dark:bg-black/20 pr-10" 
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute inset-y-0 right-0 h-full px-3"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="phone">Telefone / WhatsApp</Label>
+                        <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="whatsappLink">Link do WhatsApp (Suporte)</Label>
+                        <Input id="whatsappLink" value={whatsappLink} onChange={(e) => setWhatsappLink(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="logo">URL do Logo</Label>
+                        <Input id="logo" value={logo} onChange={(e) => setLogo(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                </CardContent>
+                <CardFooter className="border-t border-border/10 px-6 py-4">
+                    <Button onClick={handleSaveChanges}>Salvar Alterações</Button>
+                </CardFooter>
+            </Card>
+
+            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                <CardHeader>
+                    <CardTitle>Central de Notificações</CardTitle>
+                    <CardDescription>
+                        Envie notificações e avisos diretamente para o painel do cliente.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="notification-type">Tipo de Notificação</Label>
+                         <Select onValueChange={setNotificationType} value={notificationType}>
+                            <SelectTrigger id="notification-type" className="bg-background/50 dark:bg-black/20">
+                                <SelectValue placeholder="Selecione uma notificação..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(notificationOptions).map(([key, value]) => (
+                                    <SelectItem key={key} value={value}>{value}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+                <CardFooter className="border-t border-border/10 px-6 py-4">
+                    <Button onClick={handleSendNotification}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Enviar Notificação
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
 }
 
 function ClientManagementPageContent() {
     const params = useParams();
     const { clientId } = params;
-    const client = clients.find(c => c.id === clientId);
+    const [client, setClient] = React.useState(clients.find(c => c.id === clientId));
+
+    const handleSaveClient = (updatedClient: any) => {
+        // In a real app, this would be an API call.
+        // Here, we update the mock data state.
+        const clientIndex = clients.findIndex(c => c.id === updatedClient.id);
+        if (clientIndex !== -1) {
+            clients[clientIndex] = updatedClient;
+        }
+        setClient(updatedClient);
+    };
+    
 
     if (!client) {
         return (
@@ -929,7 +1096,7 @@ function ClientManagementPageContent() {
                 <TabsContent value="projects"><ClientProjects client={client} /></TabsContent>
                 <TabsContent value="reports"><ClientReports /></TabsContent>
                 <TabsContent value="documents"><ClientDocuments /></TabsContent>
-                <TabsContent value="settings"><ClientSettings /></TabsContent>
+                <TabsContent value="settings"><ClientSettings client={client} onSave={handleSaveClient} /></TabsContent>
             </Tabs>
         </div>
     );
@@ -942,8 +1109,3 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
-
-    
-
-    
-
