@@ -85,7 +85,12 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
             }
         } else if (newStatus === 'canceled') {
             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-        } else {
+        } else if (newStatus === 'notified') {
+             setPosts(currentPosts => currentPosts.map(p =>
+                p.id === postId ? { ...p, status: newStatus } : p
+            ));
+        }
+        else {
              setPosts(currentPosts => currentPosts.map(p =>
                 p.id === postId ? { ...p, status: newStatus } : p
             ));
@@ -306,7 +311,7 @@ export function CalendarWidget() {
 
 export function PendingApprovalsWidget() {
     const { posts } = usePosts();
-    const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
+    const pendingApprovalsCount = posts.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length;
     const hasApprovals = pendingApprovalsCount > 0;
 
     return (
@@ -608,6 +613,17 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
     const isVideoProjectPost = post.type === 'video' && !onRequestChange;
 
     const PostMedia = () => {
+        if (post.type === 'video' && post.imageUrl) {
+            return (
+                <div className="rounded-lg overflow-hidden aspect-square bg-black flex items-center justify-center">
+                    <video
+                        src={post.imageUrl}
+                        controls
+                        className="w-full h-full object-contain"
+                    />
+                </div>
+            )
+        }
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
             return (
                 <Carousel className="w-full">
@@ -747,6 +763,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 
