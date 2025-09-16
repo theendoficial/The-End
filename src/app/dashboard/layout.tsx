@@ -55,7 +55,7 @@ const clientData = {
   companyName: 'Major Style - Barbearia',
   email: 'contato@majorstyle.com',
   logoUrl: 'https://picsum.photos/seed/barberlogo/40/40',
-  whatsappLink: 'https://wa.me/5511999999999' // Substitua pelo número real
+  whatsappLink: 'https://wa.me/5511961244558' // Substitua pelo número real
 };
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -339,4 +339,3 @@ export default function DashboardLayout({
     </PostsProvider>
   )
 }
-
