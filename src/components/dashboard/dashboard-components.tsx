@@ -235,9 +235,9 @@ export function CalendarWidget() {
     return (
         <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
             <CardHeader className="p-3">
-                <Link href="/dashboard/calendar" className="text-center">
+                <div className="text-center">
                     <CardTitle className="font-headline text-sm font-normal">Calendário de Conteúdo</CardTitle>
-                </Link>
+                </div>
             </CardHeader>
             <CardContent className="p-3 pt-0">
                 <DayPicker
@@ -745,6 +745,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 
