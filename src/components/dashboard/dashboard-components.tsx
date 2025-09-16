@@ -6,7 +6,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download, Edit, Clock, Check, Trash2 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, set } from 'date-fns/locale';
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
@@ -50,8 +50,6 @@ export const projects = [
     { id: 10, name: 'Vídeos Longos' },
     { id: 11, name: 'Vídeos sequenciais' },
 ];
-
-export const scheduledPosts: Record<string, { type: any }[]> = {};
 
 export const initialPostsData: Post[] = [
     {
@@ -171,95 +169,121 @@ const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     youtube: (props) => <Youtube {...props} />,
 };
 
-const allScheduledEvents: Record<string, { type: any }[]> = { ...scheduledPosts };
-const otherEvents: any[] = [];
-
-otherEvents.forEach(event => {
-    const dateString = event.date.toISOString().split('T')[0];
-    if (!allScheduledEvents[dateString]) {
-        allScheduledEvents[dateString] = [];
+function parseDate(dateStr: string): Date {
+    const months: { [key: string]: number } = {
+        'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
+        'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
+    };
+    // "20 de Set, 2025" -> ["20", "Set", "2025"]
+    const parts = dateStr.replace(/,/g, '').replace('de ', '').split(' ');
+    if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+            return new Date(year, month, day);
+        }
     }
-    allScheduledEvents[dateString].push({ type: event.type });
-});
+    // Fallback for invalid formats
+    return new Date();
+}
 
+function CalendarDots({ day, events }: { day: Date, events: Record<string, { type: any }[]> }) {
+    const dateString = day.toISOString().split('T')[0];
+    const postsForDay = events[dateString];
 
-function CalendarDots({ day }: { day: Date }) {
-  const dateString = day.toISOString().split('T')[0];
-  const posts = allScheduledEvents[dateString as keyof typeof allScheduledEvents];
-
-  if (posts) {
-    return (
-      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1">
-        {posts.map((post, index) => (
-          <span
-            key={index}
-            className={cn('h-1 w-1 rounded-full', postColors[post.type])}
-          />
-        ))}
-      </div>
-    );
-  }
-  return null;
+    if (postsForDay) {
+        return (
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1">
+                {postsForDay.slice(0, 3).map((post, index) => (
+                    <span
+                        key={index}
+                        className={cn('h-1 w-1 rounded-full', postColors[post.type])}
+                    />
+                ))}
+            </div>
+        );
+    }
+    return null;
 }
 
 export function CalendarWidget() {
+    const { scheduledPosts } = usePosts();
     const [date, setDate] = React.useState<Date>(new Date());
+
+    const allScheduledEvents = React.useMemo(() => {
+        const events: Record<string, { type: any }[]> = {};
+        scheduledPosts.forEach(post => {
+            const postDate = parseDate(post.date);
+            const dateString = postDate.toISOString().split('T')[0];
+            if (!events[dateString]) {
+                events[dateString] = [];
+            }
+            events[dateString].push({ type: post.type });
+        });
+        return events;
+    }, [scheduledPosts]);
+
+    const scheduledDays = React.useMemo(() => {
+        return Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'));
+    }, [allScheduledEvents]);
+
     return (
         <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
-             <CardHeader className="p-3">
+            <CardHeader className="p-3">
                 <Link href="/dashboard/calendar" className="text-center">
                     <CardTitle className="font-headline text-sm font-normal">Calendário de Conteúdo</CardTitle>
                 </Link>
             </CardHeader>
             <CardContent className="p-3 pt-0">
                 <DayPicker
-                locale={ptBR}
-                month={date}
-                onMonthChange={setDate}
-                modifiers={{
-                    scheduled: Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'))
-                }}
-                components={{
-                    DayContent: (props) => (
-                    <div className="relative h-full w-full flex items-center justify-center">
-                        <span className="relative z-10">{props.date.getDate()}</span>
-                        <CalendarDots day={props.date} />
-                    </div>
-                    ),
-                    IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-                    IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-                }}
-                className="p-0"
-                classNames={{
-                    months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
-                    month: 'space-y-2 w-full',
-                    caption: 'flex justify-center pt-1 relative items-center text-foreground',
-                    caption_label: 'text-xs font-semibold font-headline',
-                    nav: 'space-x-1 flex items-center',
-                    nav_button: cn(
-                    buttonVariants({ variant: 'outline' }),
-                    'h-5 w-5 bg-transparent p-0 opacity-50 hover:opacity-100 border-muted-foreground/50 text-foreground'
-                    ),
-                    nav_button_previous: 'absolute left-1',
-                    nav_button_next: 'absolute right-1',
-                    table: 'w-full border-collapse space-y-1',
-                    head_row: 'flex',
-                    head_cell: 'text-muted-foreground rounded-md w-full font-normal text-[0.6rem]',
-                    row: 'flex w-full mt-1',
-                    cell: 'text-center text-xs p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 w-full rounded-md',
-                    day: cn(
-                    buttonVariants({ variant: 'ghost' }),
-                    'h-7 w-7 p-0 font-normal aria-selected:opacity-100 rounded-md'
-                    ),
-                    day_selected:
-                    'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
-                    day_today: 'bg-accent text-accent-foreground',
-                    day_outside: 'text-muted-foreground opacity-50',
-                    day_disabled: 'text-muted-foreground opacity-50',
-                    day_range_middle:
-                    'aria-selected:bg-accent aria-selected:text-accent-foreground',
-                    day_hidden: 'invisible',
-                }}
+                    locale={ptBR}
+                    month={date}
+                    onMonthChange={setDate}
+                    modifiers={{
+                        scheduled: scheduledDays
+                    }}
+                    components={{
+                        DayContent: (props) => (
+                            <div className="relative h-full w-full flex items-center justify-center">
+                                <span className="relative z-10">{props.date.getDate()}</span>
+                                <CalendarDots day={props.date} events={allScheduledEvents} />
+                            </div>
+                        ),
+                        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+                        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+                    }}
+                    className="p-0"
+                    classNames={{
+                        months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+                        month: 'space-y-2 w-full',
+                        caption: 'flex justify-center pt-1 relative items-center text-foreground',
+                        caption_label: 'text-xs font-semibold font-headline',
+                        nav: 'space-x-1 flex items-center',
+                        nav_button: cn(
+                            buttonVariants({ variant: 'outline' }),
+                            'h-5 w-5 bg-transparent p-0 opacity-50 hover:opacity-100 border-muted-foreground/50 text-foreground'
+                        ),
+                        nav_button_previous: 'absolute left-1',
+                        nav_button_next: 'absolute right-1',
+                        table: 'w-full border-collapse space-y-1',
+                        head_row: 'flex',
+                        head_cell: 'text-muted-foreground rounded-md w-full font-normal text-[0.6rem]',
+                        row: 'flex w-full mt-1',
+                        cell: 'text-center text-xs p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 w-full rounded-md',
+                        day: cn(
+                            buttonVariants({ variant: 'ghost' }),
+                            'h-7 w-7 p-0 font-normal aria-selected:opacity-100 rounded-md'
+                        ),
+                        day_selected:
+                            'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
+                        day_today: 'bg-accent text-accent-foreground',
+                        day_outside: 'text-muted-foreground opacity-50',
+                        day_disabled: 'text-muted-foreground opacity-50',
+                        day_range_middle:
+                            'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                        day_hidden: 'invisible',
+                    }}
                 />
                 <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
                     {Object.entries(allPostLegends).map(([type, label]) => (
@@ -718,5 +742,6 @@ export function FeedPreview() {
     
 
     
+
 
 

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -46,12 +47,32 @@ const allPostColors: Record<string, string> = {
 
 type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done' | 'awaiting_approval' | 'in_revision' | 'scheduled' | 'approved' | 'canceled' | 'completed';
 
+function parseDate(dateStr: string): Date {
+    const months: { [key: string]: number } = {
+        'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
+        'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
+    };
+    const parts = dateStr.replace(/,/g, '').replace('de ', '').split(' ');
+    if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+            // Setting a fixed time for demonstration, e.g., 18:00
+            return new Date(year, month, day, 18, 0, 0);
+        }
+    }
+    // Fallback for invalid formats
+    return new Date();
+}
+
+
 const getWeekTasks = (posts: Post[], scheduledPosts: Post[]) => {
     const allPosts = [...posts, ...scheduledPosts];
     const allTasks: (Task | PostTask)[] = allPosts.map(post => ({
         id: `post-${post.id}`,
         title: post.title,
-        date: new Date(post.date.replace(/(\d{2}) de (.*?), (\d{4})/, '$2 $1, $3')), // Convert date format
+        date: parseDate(post.date),
         type: post.type,
         project: { id: 6, name: 'Gestão de Mídias Sociais' },
         status: post.status,
@@ -210,6 +231,12 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
 export function FullCalendar() {
     const { posts, scheduledPosts } = usePosts();
     const [currentDate, setCurrentDate] = React.useState(new Date());
+    const [events, setEvents] = React.useState<(Task | PostTask)[]>([]);
+    
+    React.useEffect(() => {
+        setEvents(getWeekTasks(posts, scheduledPosts));
+    }, [posts, scheduledPosts]);
+
 
     const firstDayOfMonth = startOfMonth(currentDate);
     const lastDayOfMonth = endOfMonth(currentDate);
@@ -221,7 +248,6 @@ export function FullCalendar() {
 
     const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
     const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
-    const events = getWeekTasks(posts, scheduledPosts);
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -337,4 +363,5 @@ export const KanbanBoard = () => {
     
 
     
+
 
