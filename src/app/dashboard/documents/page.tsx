@@ -14,26 +14,7 @@ import * as React from 'react';
 
 // Dados de exemplo para visualização. 
 // No futuro, estes dados virão do seu painel de administração.
-const documentFolders = [
-  {
-    title: "Identidade Visual",
-    icon: Briefcase,
-    assets: [
-      { name: "Logotipo Principal (Colorido)", type: "PNG", url: "#" },
-      { name: "Manual da Marca v1.2", type: "PDF", url: "#" },
-      { name: "Paleta de Cores", type: "PDF", url: "#" },
-    ],
-  },
-  {
-    title: "Templates",
-    icon: ClipboardList,
-    assets: [
-      { name: "Template de Post (Feed)", type: "FIGMA", url: "#" },
-      { name: "Template de Story", type: "FIGMA", url: "#" },
-      { name: "Template de Apresentação", type: "PPTX", url: "#" },
-    ],
-  },
-];
+const documentFolders: any[] = [];
 
 
 export default function DocumentsPage() {

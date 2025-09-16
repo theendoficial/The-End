@@ -14,16 +14,7 @@ import * as React from 'react';
 
 // Dados de exemplo para visualização.
 // No futuro, estes dados virão do seu painel de administração.
-const reportFolders = [
-  {
-    title: "Performance de Redes Sociais",
-    icon: Instagram,
-    assets: [
-      { name: "Relatório de Engajamento - Agosto/2024", type: "PDF", url: "#" },
-      { name: "Análise de Crescimento de Seguidores - Q3 2024", type: "PDF", url: "#" },
-    ],
-  },
-];
+const reportFolders: any[] = [];
 
 
 export default function ReportsPage() {

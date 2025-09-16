@@ -37,9 +37,8 @@ const categories = {
 
 
 // In a real app, this would be fetched based on the logged-in user's client data.
-// For this demo, we'll hardcode the project IDs for "Major Style - Barbearia".
-// This will reflect the choices made in the admin panel.
-const clientProjectIds: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; 
+// For this demo, we'll start with an empty list. The admin will assign projects.
+const clientProjectIds: number[] = []; 
 
 // Filter allProjects to get only the ones the client has access to
 const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
