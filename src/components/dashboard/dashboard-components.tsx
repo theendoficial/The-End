@@ -219,12 +219,13 @@ function CalendarDots({ day, events }: { day: Date, events: Record<string, { typ
 }
 
 export function CalendarWidget() {
-    const { scheduledPosts } = usePosts();
+    const { posts, scheduledPosts } = usePosts();
     const [date, setDate] = React.useState<Date>(new Date());
-
-    const allScheduledEvents = React.useMemo(() => {
+    
+    const allEvents = React.useMemo(() => {
         const events: Record<string, { type: any }[]> = {};
-        scheduledPosts.forEach(post => {
+        const combinedPosts = [...posts, ...scheduledPosts];
+        combinedPosts.forEach(post => {
             const postDate = parseDate(post.date);
             const dateString = postDate.toISOString().split('T')[0];
             if (!events[dateString]) {
@@ -233,14 +234,14 @@ export function CalendarWidget() {
             events[dateString].push({ type: post.type });
         });
         return events;
-    }, [scheduledPosts]);
+    }, [posts, scheduledPosts]);
 
     const scheduledDays = React.useMemo(() => {
-        return Object.keys(allScheduledEvents).map(dateStr => new Date(dateStr + 'T00:00:00'));
-    }, [allScheduledEvents]);
+        return Object.keys(allEvents).map(dateStr => new Date(dateStr + 'T00:00:00'));
+    }, [allEvents]);
 
     return (
-        <Card className="hover:bg-accent/50 dark:hover:bg-white/10 transition-colors bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
+        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
             <CardHeader className="p-3">
                 <div className="text-center">
                     <CardTitle className="font-headline text-sm font-normal">Calendário de Conteúdo</CardTitle>
@@ -258,7 +259,7 @@ export function CalendarWidget() {
                         DayContent: (props) => (
                             <div className="relative h-full w-full flex items-center justify-center">
                                 <span className="relative z-10">{props.date.getDate()}</span>
-                                <CalendarDots day={props.date} events={allScheduledEvents} />
+                                <CalendarDots day={props.date} events={allEvents} />
                             </div>
                         ),
                         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
@@ -350,7 +351,7 @@ export function UpcomingPostsList() {
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
              <CardHeader className="p-3">
-                <div className="cursor-pointer">
+                <div>
                     <CardTitle className="font-headline text-sm font-normal">Próximos Posts</CardTitle>
                     <CardDescription className="text-xs">
                         Acompanhe o status das próximas publicações.
@@ -613,16 +614,17 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
     const isVideoProjectPost = post.type === 'video' && !onRequestChange;
 
     const PostMedia = () => {
-        if (post.type === 'video' && post.imageUrl) {
+        if (post.type === 'video' && post.url) {
+            // If it's a video and has a direct URL, render an iframe for embedding (e.g., Google Drive)
             return (
-                <div className="rounded-lg overflow-hidden aspect-square bg-black flex items-center justify-center">
-                    <video
-                        src={post.imageUrl}
-                        controls
-                        className="w-full h-full object-contain"
+                <div className="rounded-lg overflow-hidden aspect-video bg-black flex items-center justify-center">
+                    <iframe
+                        src={post.url}
+                        className="w-full h-full"
+                        allow="autoplay"
                     />
                 </div>
-            )
+            );
         }
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
             return (
@@ -773,3 +775,6 @@ export function FeedPreview() {
 
 
 
+
+
+    

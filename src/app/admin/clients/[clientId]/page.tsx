@@ -76,17 +76,22 @@ function ClientDashboard() {
         const date = new Date(dateTime);
         const formattedDate = format(date, "dd 'de' MMM, yyyy", { locale: ptBR });
 
+        let finalImageUrl = 'https://picsum.photos/seed/newpost/600/400';
+        if (type === 'video' && videoCoverFile) {
+            finalImageUrl = URL.createObjectURL(videoCoverFile);
+        } else if (file) {
+            finalImageUrl = URL.createObjectURL(file);
+        }
+
         const newPost: Omit<Post, 'id' | 'status'> = {
             title,
             date: formattedDate,
             type,
             description,
             socials: socials as any, // Cast for now
-            // In a real app, you would handle file upload and get a URL
-            // For now, we use a placeholder or the provided URL
-            imageUrl: file ? URL.createObjectURL(file) : (videoCoverFile ? URL.createObjectURL(videoCoverFile) : 'https://picsum.photos/seed/newpost/600/400'),
+            imageUrl: finalImageUrl,
             imageHint: 'new post',
-            url: postUrl,
+            url: postUrl, // Always pass the URL
         };
 
         addPost(newPost);
@@ -133,6 +138,19 @@ function ClientDashboard() {
                                 <Input id="date" type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="type" className="text-right">Tipo de Post</Label>
+                                <Select onValueChange={(value) => setType(value as PostType)} value={type}>
+                                    <SelectTrigger className="col-span-3 bg-background/50 dark:bg-black/20">
+                                        <SelectValue placeholder="Selecione o tipo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="image">Imagem</SelectItem>
+                                        <SelectItem value="video">Vídeo/Reels</SelectItem>
+                                        <SelectItem value="carousel">Carrossel</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="attachment" className="text-right">Conteúdo</Label>
                                 <div className="col-span-3 flex items-center gap-2">
                                      <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
@@ -144,6 +162,7 @@ function ClientDashboard() {
                                         ref={fileInputRef} 
                                         className="hidden" 
                                         onChange={handleFileChange}
+                                        accept={type === 'video' ? 'video/*' : 'image/*'}
                                     />
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
@@ -173,19 +192,6 @@ function ClientDashboard() {
                                     <LinkIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
                                     <Input id="postUrl" placeholder="https://..." value={postUrl} onChange={(e) => setPostUrl(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20 pl-10" />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="type" className="text-right">Tipo de Post</Label>
-                                <Select onValueChange={(value) => setType(value as PostType)} value={type}>
-                                    <SelectTrigger className="col-span-3 bg-background/50 dark:bg-black/20">
-                                        <SelectValue placeholder="Selecione o tipo" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="image">Imagem</SelectItem>
-                                        <SelectItem value="video">Vídeo/Reels</SelectItem>
-                                        <SelectItem value="carousel">Carrossel</SelectItem>
-                                    </SelectContent>
-                                </Select>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="description" className="text-right">Legenda</Label>
@@ -273,7 +279,7 @@ function AdminApprovalCard({ post, onNotify }: { post: Post, onNotify: (postId: 
                         {statusInfo.label}
                     </div>
                     <div className="mt-auto">
-                        {post.status !== 'notified' && (
+                        {post.status === 'awaiting_approval' && (
                             <Button size="sm" className="w-full" onClick={() => onNotify(post.id)}>
                                 <Bell className="mr-2 h-4 w-4" />
                                 Notificar Cliente
@@ -305,14 +311,12 @@ function ClientApprovals() {
     const notifiedPosts = posts.filter(p => p.status === 'notified');
     const otherPosts = posts.filter(p => ['in_revision', 'approved', 'scheduled'].includes(p.status));
 
-    const postsToShow = [...awaitingApprovalPosts, ...notifiedPosts, ...otherPosts];
-
     return (
         <>
-            {postsToShow.length > 0 ? (
+            {posts.length > 0 ? (
                 <div className="space-y-8">
                      <div>
-                        <h2 className="text-xl font-semibold mb-4">Aguardando Aprovação</h2>
+                        <h2 className="text-xl font-semibold mb-4">Aguardando Envio</h2>
                         {awaitingApprovalPosts.length > 0 ? (
                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {awaitingApprovalPosts.map((post) => (
@@ -325,7 +329,7 @@ function ClientApprovals() {
                     </div>
 
                     <div>
-                        <h2 className="text-xl font-semibold mb-4">Notificado</h2>
+                        <h2 className="text-xl font-semibold mb-4">Notificado (Aguardando Cliente)</h2>
                         {notifiedPosts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {notifiedPosts.map((post) => (
@@ -446,3 +450,5 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
+
+    
