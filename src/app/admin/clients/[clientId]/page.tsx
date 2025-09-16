@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon, Download, File as FileIcon } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon, Download, File as FileIcon, Folder, FolderPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 // Mock data, this would come from a DB
@@ -78,47 +79,31 @@ function ClientDashboard() {
             alert("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
-
-        let finalImageUrl: string | undefined = undefined;
+    
+        let finalUrl: string | undefined = postUrl; // Default to URL if provided
         let finalCoverImageUrl: string | undefined = undefined;
-        let finalUrl = postUrl; // Use postUrl by default
-
+    
         // If a file is attached, it takes precedence for the main URL
         if (file) {
             finalUrl = URL.createObjectURL(file);
         }
-
+    
         if (videoCoverFile) {
             finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
         }
-
-        // For image posts, ensure there's an image URL
-        if (type === 'image') {
-            if (file) {
-                finalImageUrl = URL.createObjectURL(file);
-            } else if (!finalImageUrl) {
-                finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
-            }
-        }
-        
-        // For videos, the cover image becomes the main imageUrl for card display
-        if ((type === 'video_horizontal' || type === 'reels') && finalCoverImageUrl) {
-            finalImageUrl = finalCoverImageUrl;
-        }
-
-
+    
         const newPost: Omit<Post, 'id' | 'status'> = {
             title,
             date: new Date(dateTime).toISOString(), // Store as ISO string
             type: type as PostType,
             description,
             socials: socials as any, // Cast for now
-            imageUrl: finalImageUrl,
+            imageUrl: type.startsWith('video') ? finalCoverImageUrl : finalUrl, // Use cover for video thumb
             coverImageUrl: finalCoverImageUrl,
             imageHint: 'new post',
             url: finalUrl,
         };
-    
+        
         addPost(newPost);
         
         setOpenNewPost(false);
@@ -679,9 +664,226 @@ function ClientReports() {
         </div>
     )
 }
+
+type Document = {
+    id: number;
+    title: string;
+    url: string;
+    date: string;
+    fileName?: string;
+};
+
+type Folder = {
+    id: number;
+    name: string;
+    documents: Document[];
+};
+
 function ClientDocuments() {
-    return <div>Documentos</div>
+    const [folders, setFolders] = React.useState<Folder[]>([]);
+    const [openNewFolder, setOpenNewFolder] = React.useState(false);
+    const [openNewDoc, setOpenNewDoc] = React.useState(false);
+    
+    // New Folder State
+    const [folderName, setFolderName] = React.useState('');
+
+    // New Document State
+    const [docTitle, setDocTitle] = React.useState('');
+    const [docFolderId, setDocFolderId] = React.useState<string | undefined>(undefined);
+    const [docFile, setDocFile] = React.useState<File | null>(null);
+    const [docFileName, setDocFileName] = React.useState('');
+    const [docUrl, setDocUrl] = React.useState('');
+    const docFileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleSaveFolder = () => {
+        if (!folderName) return;
+        const newFolder: Folder = {
+            id: Date.now(),
+            name: folderName,
+            documents: [],
+        };
+        setFolders(prev => [...prev, newFolder]);
+        setFolderName('');
+        setOpenNewFolder(false);
+    };
+    
+    const handleDocFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const selectedFile = event.target.files[0];
+            setDocFile(selectedFile);
+            setDocFileName(selectedFile.name);
+        }
+    };
+    
+    const handleSaveDocument = () => {
+        if (!docTitle || !docFolderId || (!docFile && !docUrl)) {
+            alert("Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        let finalUrl = docUrl;
+        if (docFile) {
+            finalUrl = URL.createObjectURL(docFile);
+        }
+
+        const newDocument: Document = {
+            id: Date.now() + 1,
+            title: docTitle,
+            url: finalUrl,
+            date: new Date().toISOString(),
+            fileName: docFile ? docFile.name : undefined,
+        };
+
+        setFolders(prev => prev.map(folder => 
+            folder.id === parseInt(docFolderId, 10)
+                ? { ...folder, documents: [newDocument, ...folder.documents] }
+                : folder
+        ));
+
+        // Reset form and close dialog
+        setOpenNewDoc(false);
+        setDocTitle('');
+        setDocFolderId(undefined);
+        setDocFile(null);
+        setDocFileName('');
+        setDocUrl('');
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Documentos do Cliente</h2>
+                <div className="flex gap-2">
+                    <Dialog open={openNewFolder} onOpenChange={setOpenNewFolder}>
+                        <DialogTrigger asChild><Button variant="outline"><FolderPlus className="mr-2 h-4 w-4" /> Nova Pasta</Button></DialogTrigger>
+                        <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                            <DialogHeader>
+                                <DialogTitle>Criar Nova Pasta</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4 space-y-2">
+                                <Label htmlFor="folder-name">Nome da Pasta</Label>
+                                <Input id="folder-name" value={folderName} onChange={(e) => setFolderName(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild><Button type="button" variant="secondary">Cancelar</Button></DialogClose>
+                                <Button type="button" onClick={handleSaveFolder}>Salvar Pasta</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={openNewDoc} onOpenChange={setOpenNewDoc}>
+                        <DialogTrigger asChild><Button><PlusCircle className="mr-2 h-4 w-4" /> Novo Documento</Button></DialogTrigger>
+                         <DialogContent className="sm:max-w-lg bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                            <DialogHeader>
+                                <DialogTitle>Adicionar Novo Documento</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="doc-title" className="text-right">Título</Label>
+                                    <Input id="doc-title" value={docTitle} onChange={(e) => setDocTitle(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="doc-folder" className="text-right">Pasta</Label>
+                                    <Select onValueChange={setDocFolderId} value={docFolderId}>
+                                        <SelectTrigger className="col-span-3 bg-background/50 dark:bg-black/20">
+                                            <SelectValue placeholder="Selecione uma pasta" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {folders.map(folder => <SelectItem key={folder.id} value={String(folder.id)}>{folder.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label className="text-right">Arquivo</Label>
+                                    <div className="col-span-3 flex items-center gap-2">
+                                         <Button variant="outline" onClick={() => docFileInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4" /> Anexar
+                                        </Button>
+                                        <Input type="file" ref={docFileInputRef} className="hidden" onChange={handleDocFileChange} />
+                                        {docFileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{docFileName}</span>}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="doc-url" className="text-right">URL</Label>
+                                    <div className="col-span-3 relative flex items-center">
+                                        <LinkIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                                        <Input id="doc-url" placeholder="Ou cole um link externo..." value={docUrl} onChange={(e) => setDocUrl(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20 pl-10" />
+                                    </div>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild><Button type="button" variant="secondary">Cancelar</Button></DialogClose>
+                                <Button type="button" onClick={handleSaveDocument}>Salvar Documento</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </div>
+
+            {folders.length > 0 ? (
+                 <Accordion type="single" collapsible className="w-full space-y-4">
+                    {folders.map((folder) => (
+                        <AccordionItem value={`folder-${folder.id}`} key={folder.id} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border border-white/10 shadow-lg rounded-2xl px-4">
+                            <AccordionTrigger className="hover:no-underline">
+                                <div className="flex items-center gap-3">
+                                    <Folder className="h-5 w-5 text-primary" />
+                                    <span className="font-semibold text-base">{folder.name}</span>
+                                </div>
+                            </AccordionTrigger>
+                             <AccordionContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="border-b-white/10 hover:bg-transparent">
+                                            <TableHead>Título do Documento</TableHead>
+                                            <TableHead>Data de Envio</TableHead>
+                                            <TableHead className="text-right">Ação</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {folder.documents.length > 0 ? (
+                                            folder.documents.map((doc) => (
+                                                <TableRow key={doc.id} className="border-b-white/10">
+                                                    <TableCell className="font-medium flex items-center gap-3">
+                                                        <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                        {doc.title}
+                                                    </TableCell>
+                                                    <TableCell>{format(new Date(doc.date), "dd 'de' MMM, yyyy", { locale: ptBR })}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button asChild variant="outline" size="sm">
+                                                            <a href={doc.url} download={doc.fileName} target="_blank" rel="noopener noreferrer">
+                                                                <Download className="mr-2 h-4 w-4" />
+                                                                {doc.fileName ? 'Baixar' : 'Visualizar'}
+                                                            </a>
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                                    Nenhum documento nesta pasta.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                 </Accordion>
+            ) : (
+                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-lg bg-card/60 dark:bg-black/40 backdrop-blur-lg min-h-[40vh]">
+                    <div className="flex flex-col items-center gap-2 text-center text-muted-foreground">
+                         <Folder className="h-12 w-12" />
+                        <h3 className="text-xl font-bold tracking-tight mt-4">Nenhuma pasta encontrada</h3>
+                        <p className="text-sm">Comece criando uma pasta para organizar os documentos do cliente.</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
+
 function ClientSettings() {
     return <div>Configurações</div>
 }
@@ -744,3 +946,4 @@ export default function ClientManagementPage() {
     
 
     
+
