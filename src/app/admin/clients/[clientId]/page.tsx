@@ -72,28 +72,39 @@ function ClientDashboard() {
             alert("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
-
+    
         const date = new Date(dateTime);
         const formattedDate = format(date, "dd 'de' MMM, yyyy", { locale: ptBR });
-
-        let finalImageUrl = 'https://picsum.photos/seed/newpost/600/400';
-        if (type === 'video' && videoCoverFile) {
-            finalImageUrl = URL.createObjectURL(videoCoverFile);
+    
+        let finalImageUrl: string | undefined = undefined;
+        let finalCoverImageUrl: string | undefined = undefined;
+        let finalUrl = postUrl;
+    
+        if (type.startsWith('video') && file) {
+            finalUrl = URL.createObjectURL(file);
+        }
+    
+        if (type.startsWith('video') && videoCoverFile) {
+            finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
+            finalImageUrl = finalCoverImageUrl; // Use cover as the main preview image for cards
         } else if (file) {
             finalImageUrl = URL.createObjectURL(file);
+        } else {
+            finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`
         }
-
+    
         const newPost: Omit<Post, 'id' | 'status'> = {
             title,
             date: formattedDate,
-            type,
+            type: type as PostType,
             description,
             socials: socials as any, // Cast for now
             imageUrl: finalImageUrl,
+            coverImageUrl: finalCoverImageUrl,
             imageHint: 'new post',
-            url: postUrl, // Always pass the URL
+            url: finalUrl,
         };
-
+    
         addPost(newPost);
         
         setOpenNewPost(false);
@@ -145,7 +156,8 @@ function ClientDashboard() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="image">Imagem</SelectItem>
-                                        <SelectItem value="video">Vídeo/Reels</SelectItem>
+                                        <SelectItem value="video_horizontal">Vídeo Horizontal</SelectItem>
+                                        <SelectItem value="reels">Reels (Vertical)</SelectItem>
                                         <SelectItem value="carousel">Carrossel</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -162,12 +174,12 @@ function ClientDashboard() {
                                         ref={fileInputRef} 
                                         className="hidden" 
                                         onChange={handleFileChange}
-                                        accept={type === 'video' ? 'video/*' : 'image/*'}
+                                        accept={type.startsWith('video') ? 'video/*' : 'image/*'}
                                     />
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
                             </div>
-                             {type === 'video' && (
+                             {type.startsWith('video') && (
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="video-cover" className="text-right">Capa do Vídeo</Label>
                                     <div className="col-span-3 flex items-center gap-2">

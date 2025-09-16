@@ -112,12 +112,13 @@ export const usePosts = () => {
     return context;
 };
 
-export type PostType = 'image' | 'video' | 'carousel' | 'meeting' | 'delivery' | 'strategy';
+export type PostType = 'image' | 'video_horizontal' | 'reels' | 'carousel' | 'meeting' | 'delivery' | 'strategy';
 type SocialNetwork = 'instagram' | 'tiktok' | 'youtube';
 
 export const postColors: Record<string, string> = {
   image: 'bg-blue-500',
-  video: 'bg-pink-500',
+  video_horizontal: 'bg-pink-500',
+  reels: 'bg-pink-500',
   carousel: 'bg-yellow-500',
   meeting: 'bg-purple-500',
   delivery: 'bg-green-500',
@@ -126,7 +127,8 @@ export const postColors: Record<string, string> = {
 
 export const postLegends: Record<string, string> = {
     image: 'Imagem',
-    video: 'Vídeo/Reels',
+    video_horizontal: 'Vídeo Horizontal',
+    reels: 'Reels (Vertical)',
     carousel: 'Carrossel'
 }
 
@@ -150,6 +152,7 @@ export type Post = {
     date: string;
     status: Status;
     imageUrl?: string;
+    coverImageUrl?: string;
     imageHint?: string;
     images?: PostImage[];
     type: PostType;
@@ -611,17 +614,17 @@ export type PostDialogContentProps = {
 
 export const PostDialogContent = ({ post, onRequestChange, children, showExtraActions, onAction }: PostDialogContentProps) => {
     const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
-    const isVideoProjectPost = post.type === 'video' && !onRequestChange;
+    const isVideo = post.type === 'video_horizontal' || post.type === 'reels';
+    const isReels = post.type === 'reels';
 
     const PostMedia = () => {
-        if (post.type === 'video' && post.url) {
-            // If it's a video and has a direct URL, render an iframe for embedding (e.g., Google Drive)
+        if (isVideo && post.url) {
             return (
-                <div className="rounded-lg overflow-hidden aspect-video bg-black flex items-center justify-center">
-                    <iframe
+                <div className={cn("rounded-lg overflow-hidden bg-black flex items-center justify-center", isReels ? "aspect-[9/16]" : "aspect-video")}>
+                     <video
                         src={post.url}
                         className="w-full h-full"
-                        allow="autoplay"
+                        controls
                     />
                 </div>
             );
@@ -668,10 +671,34 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
     }
 
     return (
-        <UiDialogContent className="sm:max-w-[800px] bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                <PostMedia />
-                <div className="flex flex-col gap-4">
+        <UiDialogContent className={cn(
+            "bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10",
+            isReels ? "sm:max-w-[1000px]" : "sm:max-w-[800px]"
+        )}>
+            <div className={cn(
+                "grid gap-6 items-start",
+                 isReels ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
+            )}>
+                 <div className={cn(isReels ? "md:col-span-1" : "md:col-span-1")}>
+                    <PostMedia />
+                </div>
+
+                <div className={cn("flex flex-col gap-4", isReels ? "md:col-span-2" : "md:col-span-1")}>
+                    {isVideo && post.coverImageUrl && (
+                        <div className='space-y-2'>
+                             <h4 className="font-semibold text-sm">Capa do Vídeo</h4>
+                             <div className="rounded-lg overflow-hidden aspect-square max-w-[200px]">
+                                <Image
+                                    src={post.coverImageUrl}
+                                    width={200}
+                                    height={200}
+                                    alt={`Capa do vídeo: ${post.title}`}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     <DialogHeader>
                         <DialogTitle className="text-xl">{post.title}</DialogTitle>
                         <DialogDescription>{post.date}</DialogDescription>
@@ -679,7 +706,7 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                     
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Legenda</h4>
-                        <p className="text-sm text-muted-foreground">{post.description}</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{post.description}</p>
                     </div>
                     
                     <div>
@@ -698,7 +725,7 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                                  <Button variant='outline'>Pedir alteração</Button>
                              </RequestChangeDialog>
                          )}
-                         {isVideoProjectPost && post.url && (
+                         {isVideo && post.url && (
                              <Button asChild>
                                  <a href={post.url} download>
                                      <Download className="mr-2 h-4 w-4" />
