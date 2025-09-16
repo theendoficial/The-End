@@ -30,6 +30,10 @@ export async function login(
   // Mock authentication
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
+  if (email === 'admin@example.com' && password === 'password123') {
+    redirect('/admin');
+  }
+
   const validUser1 = email === 'user@example.com' && password === 'password123';
   const validUser2 = email === 'jhokkehgames@gmail.com' && password === '1234567890';
 
@@ -42,7 +46,7 @@ export async function login(
     };
   }
   
-  redirect('/verify');
+  redirect('/dashboard');
 }
 
 
@@ -113,6 +117,7 @@ export async function verifyCode(
       message: 'Verification failed.',
     };
   }
-
+  // This is a simplified redirect logic. In a real app, you'd check the user's role.
+  // For now, we assume a verified user is a client.
   redirect('/dashboard');
 }
