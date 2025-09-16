@@ -1,10 +1,11 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { MoreHorizontal, PlusCircle, UserPlus, Users } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, UserPlus, Users, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -16,6 +17,8 @@ const clients: any[] = [
 ];
 
 export default function AdminClientsPage() {
+    const [showPassword, setShowPassword] = useState(false);
+
     return (
         <>
             <div className="flex items-center justify-between mb-6">
@@ -47,11 +50,28 @@ export default function AdminClientsPage() {
                                 </Label>
                                 <Input id="email" type="email" placeholder="email@cliente.com" className="col-span-3 bg-background/50 dark:bg-black/20" />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
+                            <div className="grid grid-cols-4 items-center gap-4 relative">
                                 <Label htmlFor="password" className="text-right">
                                     Senha
                                 </Label>
-                                <Input id="password" type="password" placeholder="••••••••" className="col-span-3 bg-background/50 dark:bg-black/20" />
+                                <div className="col-span-3 relative">
+                                    <Input 
+                                        id="password" 
+                                        type={showPassword ? 'text' : 'password'} 
+                                        placeholder="••••••••" 
+                                        className="bg-background/50 dark:bg-black/20 pr-10" 
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute inset-y-0 right-0 h-full px-3"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        <span className="sr-only">{showPassword ? 'Ocultar senha' : 'Mostrar senha'}</span>
+                                    </Button>
+                                </div>
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="logo" className="text-right">
