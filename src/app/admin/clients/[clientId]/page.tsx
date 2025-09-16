@@ -11,7 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType } from '@/components/dashboard/dashboard-components';
+import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post } from '@/components/dashboard/dashboard-components';
+import { ApprovalPostCard } from '@/components/dashboard/approval-components';
+import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
+import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -192,12 +195,78 @@ function ClientDashboard() {
         </div>
     )
 }
+
 function ClientApprovals() {
-    return <div>Aprovações</div>
+    const { posts, updatePostStatus } = usePosts();
+
+    const handlePostAction = (postId: number, newStatus: Post['status']) => {
+        updatePostStatus(postId, newStatus);
+    };
+
+    const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision'].includes(p.status));
+    const awaitingApprovalPosts = postsToShow.filter(p => p.status === 'awaiting_approval');
+    const inRevisionPosts = postsToShow.filter(p => p.status === 'in_revision');
+
+    return (
+        <>
+            {postsToShow.length > 0 ? (
+                <div className="flex flex-col gap-8">
+                    <div>
+                        <h2 className="text-base font-semibold md:text-xl mb-4">Aguardando Aprovação ({awaitingApprovalPosts.length})</h2>
+                        {awaitingApprovalPosts.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                <AnimatePresence>
+                                    {awaitingApprovalPosts.map((post) => (
+                                        <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Nenhum post aguardando aprovação no momento.</p>
+                        )}
+                    </div>
+
+                    {inRevisionPosts.length > 0 && (
+                        <div>
+                            <h2 className="text-base font-semibold md:text-xl mb-4">Em Alteração ({inRevisionPosts.length})</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                <AnimatePresence>
+                                    {inRevisionPosts.map((post) => (
+                                        <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            ) : (
+                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-lg bg-card/60 dark:bg-black/40 backdrop-blur-lg min-h-[40vh]">
+                    <div className="flex flex-col items-center gap-1 text-center">
+                        <h3 className="text-2xl font-bold tracking-tight">Nenhum post para aprovar</h3>
+                        <p className="text-sm text-muted-foreground">Posts enviados para o cliente aparecerão aqui.</p>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }
+
 function ClientCalendar() {
-    return <div>Calendário</div>
+    return (
+        <div className="flex flex-col gap-6">
+            <div>
+                <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
+                <KanbanBoard />
+            </div>
+            <div>
+                <h2 className="text-base font-semibold md:text-xl mb-3">Calendário de Conteúdo</h2>
+                <FullCalendar />
+            </div>
+        </div>
+    );
 }
+
 function ClientProjects() {
     return <div>Projetos</div>
 }
