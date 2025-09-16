@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -58,8 +59,8 @@ export const initialPostsData: Post[] = [
         title: 'Logo banner',
         date: '20 de Set, 2025',
         status: 'awaiting_approval',
-        imageUrl: 'https://picsum.photos/seed/barberpost/600/400',
-        imageHint: 'barbershop interior',
+        imageUrl: 'https://blog.vertixprofessional.com.br/wp-content/uploads/2024/10/como-montar-uma-barbearia.jpg',
+        imageHint: 'barbearia interior',
         type: 'image',
         description: 'Logo para ser usado em banners e materiais de divulgação.',
         socials: ['instagram']
@@ -88,7 +89,7 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <PostsContext.Provider value={{ posts, setPosts }}>
+        <PostsContext.Provider value={{ posts, updatePostStatus }}>
             {children}
         </PostsContext.Provider>
     );
@@ -708,3 +709,4 @@ export function FeedPreview() {
     
 
     
+
