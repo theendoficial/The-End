@@ -9,28 +9,30 @@ import { useToast } from '@/hooks/use-toast';
 
 
 type AdminSettingsPageProps = {
-    adminData: {
+    adminData?: {
         name: string;
         email: string;
         avatar: string;
     };
-    onUpdateAdminData: (newData: any) => void;
+    onUpdateAdminData?: (newData: any) => void;
 }
 
 export default function AdminSettingsPage({ adminData, onUpdateAdminData }: AdminSettingsPageProps) {
     const { toast } = useToast();
-    const [name, setName] = React.useState(adminData?.name || 'Admin');
-    const [email, setEmail] = React.useState(adminData?.email || 'admin@example.com');
+    const [name, setName] = React.useState(adminData?.name || '');
+    const [email, setEmail] = React.useState(adminData?.email || '');
     const [avatar, setAvatar] = React.useState(adminData?.avatar || '');
     const [password, setPassword] = React.useState('');
 
     const handleSave = () => {
-        onUpdateAdminData({ name, email, avatar });
-        toast({
-            title: "Configurações Salvas!",
-            description: "Suas informações de perfil foram atualizadas.",
-            variant: "success",
-        });
+        if (onUpdateAdminData) {
+            onUpdateAdminData({ name, email, avatar });
+            toast({
+                title: "Configurações Salvas!",
+                description: "Suas informações de perfil foram atualizadas.",
+                variant: "success",
+            });
+        }
     }
 
     React.useEffect(() => {
