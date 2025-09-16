@@ -17,20 +17,28 @@ type ApprovalPostCardProps = {
     onAction: (postId: number, newStatus: Status) => void;
 };
 
-const getPostImage = (post: Post): PostImage => {
+const getPostImage = (post: Post): string => {
     if (post.type === 'carousel' && post.images && post.images.length > 0) {
-        return post.images[0];
+        return post.images[0].url;
     }
     if (post.imageUrl) {
-        return { url: post.imageUrl, hint: post.imageHint || '' };
+        return post.imageUrl;
     }
     // Consistent placeholder
-    return { url: `https://picsum.photos/seed/post${post.id}/600/400`, hint: 'placeholder' };
+    return `https://picsum.photos/seed/post${post.id}/600/400`;
 };
 
-export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
-    const image = getPostImage(post);
+const getImageHint = (post: Post): string => {
+    if (post.type === 'carousel' && post.images && post.images.length > 0) {
+        return post.images[0].hint;
+    }
+    return post.imageHint || 'placeholder';
+}
 
+export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
+    const imageUrl = getPostImage(post);
+    const imageHint = getImageHint(post);
+    
     const isAwaitingApproval = post.status === 'awaiting_approval';
     const isInRevision = post.status === 'in_revision';
 
@@ -47,11 +55,11 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                     <DialogTrigger asChild>
                         <div className="relative aspect-square cursor-pointer">
                             <Image
-                                src={image.url}
+                                src={imageUrl}
                                 alt={`Capa do post: ${post.title}`}
                                 fill
                                 className="object-cover"
-                                data-ai-hint={image.hint}
+                                data-ai-hint={imageHint}
                             />
                         </div>
                     </DialogTrigger>
