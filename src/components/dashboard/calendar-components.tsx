@@ -113,7 +113,7 @@ type BaseTask = {
 type Task = BaseTask & { type: Exclude<PostType, 'post'> };
 type PostTask = BaseTask & { type: 'video_horizontal' | 'reels' | 'image' | 'carousel'; postData: Post };
 
-const TaskDialogContent = ({ task, onUpdateStatus, isAdminView }: { task: Task, onUpdateStatus?: (postId: number, status: Status) => void, isAdminView?: boolean }) => {
+const TaskDialogContent = ({ task, onUpdateStatus, isAdminView }: { task: Task | PostTask, onUpdateStatus?: (postId: number, status: Status) => void, isAdminView?: boolean }) => {
     const Icon = taskIcons[task.type];
     const statusInfo = statusConfig[task.status as TaskStatus];
     return (
@@ -243,8 +243,7 @@ const CalendarEvent = ({ event, isAdminView }: { event: Task | PostTask, isAdmin
     );
 };
 
-export function FullCalendar({ isAdminView }: { isAdminView?: boolean }) {
-    const { posts, scheduledPosts } = usePosts();
+export function FullCalendar({ posts, scheduledPosts, isAdminView }: { posts: Post[], scheduledPosts: Post[], isAdminView?: boolean }) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [events, setEvents] = React.useState<(Task | PostTask)[]>([]);
     
@@ -356,8 +355,7 @@ const weekDaysColumns = [
     { id: 6, title: 'Sábado' },
 ];
 
-export const KanbanBoard = ({ isAdminView }: { isAdminView?: boolean }) => {
-    const { posts, scheduledPosts, updatePostDate } = usePosts();
+export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView }: { posts: Post[], scheduledPosts: Post[], updatePostDate: (postId: number, newDate: string) => void, isAdminView?: boolean }) => {
     const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
     const [referenceDate, setReferenceDate] = React.useState(new Date());
     const [isClient, setIsClient] = React.useState(false);

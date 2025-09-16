@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download, Edit, Clock, Check, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download, Edit, Clock, Check, Trash2, Palette, LayoutTemplate, MonitorPlay, FileText as RoteiroIcon, DollarSign, Users, BarChart, Megaphone, Video, Film, ListVideo } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
@@ -49,6 +49,23 @@ export const projects = [
     { id: 9, name: 'Vídeos curtos' },
     { id: 10, name: 'Vídeos Longos' },
     { id: 11, name: 'Vídeos sequenciais' },
+];
+
+export const allProjects = [
+  // Creative
+  { id: 1, name: 'Identidade Visual', category: 'creative', icon: <Palette className="h-8 w-8 text-blue-500" /> },
+  { id: 2, name: 'Design', category: 'creative', icon: <LayoutTemplate className="h-8 w-8 text-blue-500" /> },
+  { id: 3, name: 'Elaboração de sites', category: 'creative', icon: <MonitorPlay className="h-8 w-8 text-blue-500" /> },
+  { id: 4, name: 'Roteiros - Estratégia de conteúdo', category: 'creative', icon: <RoteiroIcon className="h-8 w-8 text-blue-500" /> },
+  // Marketing
+  { id: 5, name: 'Trafego Pago', category: 'marketing', icon: <DollarSign className="h-8 w-8 text-cyan-500" /> },
+  { id: 6, name: 'Gestão de Mídias Sociais', category: 'marketing', icon: <Users className="h-8 w-8 text-cyan-500" /> },
+  { id: 7, name: 'Análise de perfil', category: 'marketing', icon: <BarChart className="h-8 w-8 text-cyan-500" /> },
+  { id: 8, name: 'Estratégia de Marketing', category: 'marketing', icon: <Megaphone className="h-8 w-8 text-cyan-500" /> },
+  // Audiovisual
+  { id: 9, name: 'Vídeos curtos', category: 'audiovisual', icon: <Video className="h-8 w-8 text-pink-500" /> },
+  { id: 10, name: 'Vídeos Longos', category: 'audiovisual', icon: <Film className="h-8 w-8 text-pink-500" /> },
+  { id: 11, name: 'Vídeos sequenciais', category: 'audiovisual', icon: <ListVideo className="h-8 w-8 text-pink-500" /> },
 ];
 
 export const initialPostsData: Post[] = [];
@@ -833,3 +850,5 @@ export function FeedPreview() {
         </div>
     );
 }
+
+    

@@ -11,9 +11,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { allProjects } from '@/app/dashboard/projects/page';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { allProjects } from '@/components/dashboard/dashboard-components';
 
 export default function AdminClientsPage() {
     const [clients, setClients] = useState<any[]>([
@@ -23,7 +21,7 @@ export default function AdminClientsPage() {
             email: 'majorstylemkt@gmail.com',
             password: 'Barbeariaconteudos010102',
             logo: 'https://instagram.fcgh2-1.fna.fbcdn.net/v/t51.2885-19/505749727_17862883392419934_6871962705883407866_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMjAuYzIifQ&_nc_ht=instagram.fcgh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2QEpRz7AiJPJvBRKa8KlS-dW2cMVN8TzuCNbzgE_z49xazIpgA-PWVjZfsuGeiwhyhyAZr5Y6jAxAUnkXQXpxNDp&_nc_ohc=0_zeMtGquPkQ7kNvwFZtDj9&_nc_gid=D-4UUHwMxstS5iH-C5C03g&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_AfY7-D26PBrUArYKGduva9J-hU9VPFs2yI9U4CC2_gHKfg&oe=68CE7482&_nc_sid=7a9f4b',
-            projects: allProjects.filter(p => [6]),
+            projects: allProjects.filter(p => [6].includes(p.id)),
             pendingApprovals: 0,
         }
     ]);
@@ -36,22 +34,12 @@ export default function AdminClientsPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [logo, setLogo] = useState('');
-    const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
 
-    const handleSelectProject = (projectId: number) => {
-        setSelectedProjects(prev => 
-            prev.includes(projectId) 
-                ? prev.filter(id => id !== projectId) 
-                : [...prev, projectId]
-        );
-    };
-    
     const resetForm = () => {
         setName('');
         setEmail('');
         setPassword('');
         setLogo('');
-        setSelectedProjects([]);
         setShowPassword(false);
         setIsEditing(null);
     }
@@ -67,7 +55,6 @@ export default function AdminClientsPage() {
         setEmail(client.email);
         setPassword(client.password);
         setLogo(client.logo);
-        setSelectedProjects(client.projects.map((p: any) => p.id));
         setOpen(true);
     };
 
@@ -76,7 +63,7 @@ export default function AdminClientsPage() {
             // Update existing client
              setClients(prev => prev.map(c => 
                 c.id === isEditing 
-                    ? { ...c, name, email, password, logo, projects: allProjects.filter(p => selectedProjects.includes(p.id)) } 
+                    ? { ...c, name, email, password, logo } 
                     : c
             ));
         } else {
@@ -87,7 +74,7 @@ export default function AdminClientsPage() {
                 email,
                 password,
                 logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
-                projects: allProjects.filter(p => selectedProjects.includes(p.id)),
+                projects: [], // Projects are managed on the client's project page now
                 pendingApprovals: 0,
             };
             setClients(prev => [...prev, newClient]);
@@ -110,14 +97,14 @@ export default function AdminClientsPage() {
                             Adicionar Cliente
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                    <DialogContent className="sm:max-w-lg bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
                         <DialogHeader>
                             <DialogTitle>{isEditing ? 'Editar Cliente' : 'Novo Cliente'}</DialogTitle>
                             <DialogDescription>
                                 {isEditing ? 'Altere os dados do cliente abaixo.' : 'Preencha os dados abaixo para cadastrar um novo cliente.'}
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                        <div className="grid gap-6 py-4">
                             <div className="space-y-4">
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="name" className="text-right">
@@ -162,28 +149,6 @@ export default function AdminClientsPage() {
                                     </Label>
                                     <Input id="logo" placeholder="https://..." value={logo} onChange={(e) => setLogo(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Serviços Contratados</Label>
-                                <ScrollArea className="h-48 w-full rounded-md border p-4 bg-background/50 dark:bg-black/20">
-                                    <div className="space-y-2">
-                                        {allProjects.map((project) => (
-                                            <div key={project.id} className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={`project-${project.id}`}
-                                                    checked={selectedProjects.includes(project.id)}
-                                                    onCheckedChange={() => handleSelectProject(project.id)}
-                                                />
-                                                <label
-                                                    htmlFor={`project-${project.id}`}
-                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                >
-                                                    {project.name}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
                             </div>
                         </div>
                         <DialogFooter>
@@ -253,3 +218,5 @@ export default function AdminClientsPage() {
         </>
     );
 }
+
+    

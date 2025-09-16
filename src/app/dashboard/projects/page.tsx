@@ -18,6 +18,7 @@ import {
   FolderKanban,
 } from 'lucide-react';
 import Link from 'next/link';
+import { allProjects } from '@/components/dashboard/dashboard-components';
 
 const categories = {
   creative: {
@@ -34,27 +35,13 @@ const categories = {
   },
 };
 
-export const allProjects = [
-  // Creative
-  { id: 1, name: 'Identidade Visual', category: 'creative', icon: <Palette className="h-8 w-8 text-blue-500" /> },
-  { id: 2, name: 'Design', category: 'creative', icon: <LayoutTemplate className="h-8 w-8 text-blue-500" /> },
-  { id: 3, name: 'Elaboração de sites', category: 'creative', icon: <MonitorPlay className="h-8 w-8 text-blue-500" /> },
-  { id: 4, name: 'Roteiros - Estratégia de conteúdo', category: 'creative', icon: <FileText className="h-8 w-8 text-blue-500" /> },
-  // Marketing
-  { id: 5, name: 'Trafego Pago', category: 'marketing', icon: <DollarSign className="h-8 w-8 text-cyan-500" /> },
-  { id: 6, name: 'Gestão de Mídias Sociais', category: 'marketing', icon: <Users className="h-8 w-8 text-cyan-500" /> },
-  { id: 7, name: 'Análise de perfil', category: 'marketing', icon: <BarChart className="h-8 w-8 text-cyan-500" /> },
-  { id: 8, name: 'Estratégia de Marketing', category: 'marketing', icon: <Megaphone className="h-8 w-8 text-cyan-500" /> },
-  // Audiovisual
-  { id: 9, name: 'Vídeos curtos', category: 'audiovisual', icon: <Video className="h-8 w-8 text-pink-500" /> },
-  { id: 10, name: 'Vídeos Longos', category: 'audiovisual', icon: <Film className="h-8 w-8 text-pink-500" /> },
-  { id: 11, name: 'Vídeos sequenciais', category: 'audiovisual', icon: <ListVideo className="h-8 w-8 text-pink-500" /> },
-];
 
-// No futuro, esta lista virá do seu painel de administração.
-// Por enquanto, mostra apenas os projetos selecionados para um cliente específico.
-const clientProjectIds: number[] = [6]; 
+// In a real app, this would be fetched based on the logged-in user's client data.
+// For this demo, we'll hardcode the project IDs for "Major Style - Barbearia".
+// This will reflect the choices made in the admin panel.
+const clientProjectIds: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; 
 
+// Filter allProjects to get only the ones the client has access to
 const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
 
 export default function ProjectsPage() {
@@ -105,3 +92,5 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    

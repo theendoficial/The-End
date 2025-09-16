@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig, PostDialogContent } from '@/components/dashboard/dashboard-components';
+import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig, PostDialogContent, allProjects } from '@/components/dashboard/dashboard-components';
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
 import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
@@ -21,13 +21,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 // Mock data, this would come from a DB
 const clients = [
-    { id: 'major-style-barbearia', name: 'Major Style - Barbearia' },
-    { id: 'fitness-club', name: 'Fitness Club' },
-    { id: 'doce-sonho', name: 'Doceria Doce Sonho' },
+    { 
+        id: 'major-style-barbearia', 
+        name: 'Major Style - Barbearia',
+        projects: [6]
+    },
+    { id: 'fitness-club', name: 'Fitness Club', projects: [] },
+    { id: 'doce-sonho', name: 'Doceria Doce Sonho', projects: [] },
 ];
 
 function ClientDashboard() {
@@ -183,7 +188,7 @@ function ClientDashboard() {
                                         ref={fileInputRef} 
                                         className="hidden" 
                                         onChange={handleFileChange}
-                                        accept={type === 'video_horizontal' || type === 'reels' ? 'video/*' : 'image/*'}
+                                        accept={(type === 'video_horizontal' || type === 'reels') ? 'video/*' : 'image/*'}
                                     />
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
@@ -393,23 +398,103 @@ function ClientApprovals() {
 
 
 function ClientCalendar() {
+    const { posts, scheduledPosts, updatePostDate } = usePosts();
     return (
         <div className="flex flex-col gap-6">
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
-                <KanbanBoard isAdminView={true} />
+                <KanbanBoard 
+                    posts={posts} 
+                    scheduledPosts={scheduledPosts} 
+                    updatePostDate={updatePostDate} 
+                    isAdminView={true} 
+                />
             </div>
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Calendário de Conteúdo</h2>
-                <FullCalendar isAdminView={true} />
+                <FullCalendar 
+                    posts={posts} 
+                    scheduledPosts={scheduledPosts} 
+                    isAdminView={true} 
+                />
             </div>
         </div>
     );
 }
 
-function ClientProjects() {
-    return <div>Projetos</div>
+function ClientProjects({ client }: { client: any }) {
+    const [open, setOpen] = React.useState(false);
+    const [selectedProjects, setSelectedProjects] = React.useState<number[]>(client.projects || []);
+
+    const handleSelectProject = (projectId: number) => {
+        setSelectedProjects(prev =>
+            prev.includes(projectId)
+                ? prev.filter(id => id !== projectId)
+                : [...prev, projectId]
+        );
+    };
+
+    const handleSave = () => {
+        // In a real app, you'd save this to your database.
+        // For now, we just log it and close the dialog.
+        console.log(`Saving projects for client ${client.id}:`, selectedProjects);
+        client.projects = selectedProjects; // Mutating mock data for demo
+        setOpen(false);
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Serviços Contratados</h2>
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">
+                            <SettingsIcon className="mr-2 h-4 w-4" />
+                            Gerenciar Serviços
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                        <DialogHeader>
+                            <DialogTitle>Gerenciar Serviços</DialogTitle>
+                            <DialogDescription>
+                                Selecione os serviços que este cliente contratou.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                             <ScrollArea className="h-64 w-full rounded-md border p-4 bg-background/50 dark:bg-black/20">
+                                <div className="space-y-2">
+                                    {allProjects.map((project) => (
+                                        <div key={project.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`project-${project.id}`}
+                                                checked={selectedProjects.includes(project.id)}
+                                                onCheckedChange={() => handleSelectProject(project.id)}
+                                            />
+                                            <label
+                                                htmlFor={`project-${project.id}`}
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                {project.name}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="secondary">Cancelar</Button>
+                            </DialogClose>
+                            <Button type="button" onClick={handleSave}>Salvar</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            <p className="text-muted-foreground">A seção de projetos será preenchida com base nos serviços selecionados.</p>
+        </div>
+    )
 }
+
 function ClientReports() {
     return <div>Relatórios</div>
 }
@@ -458,7 +543,7 @@ function ClientManagementPageContent() {
                 <TabsContent value="dashboard"><ClientDashboard /></TabsContent>
                 <TabsContent value="approvals"><ClientApprovals /></TabsContent>
                 <TabsContent value="calendar"><ClientCalendar /></TabsContent>
-                <TabsContent value="projects"><ClientProjects /></TabsContent>
+                <TabsContent value="projects"><ClientProjects client={client} /></TabsContent>
                 <TabsContent value="reports"><ClientReports /></TabsContent>
                 <TabsContent value="documents"><ClientDocuments /></TabsContent>
                 <TabsContent value="settings"><ClientSettings /></TabsContent>
@@ -474,3 +559,5 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
+
+    
