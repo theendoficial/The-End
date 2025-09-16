@@ -88,7 +88,7 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <PostsContext.Provider value={{ posts, updatePostStatus }}>
+        <PostsContext.Provider value={{ posts, setPosts }}>
             {children}
         </PostsContext.Provider>
     );
