@@ -13,6 +13,7 @@ import {
   Settings,
   FolderKanban,
   Menu,
+  MessageSquare,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { usePathname } from 'next/navigation';
 import { Moon, Sun } from 'lucide-react';
@@ -44,8 +54,29 @@ import * as React from 'react';
 const clientData = {
   companyName: 'Major Style - Barbearia',
   email: 'contato@majorstyle.com',
-  logoUrl: 'https://picsum.photos/seed/barberlogo/40/40'
+  logoUrl: 'https://picsum.photos/seed/barberlogo/40/40',
+  whatsappLink: 'https://wa.me/5511999999999' // Substitua pelo número real
 };
+
+const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+      <path d="M14.05 14.05a2.79 2.79 0 0 1 2.52 2.52" />
+      <path d="M14.05 10.53a7.07 7.07 0 0 1 7.07 7.07" />
+    </svg>
+);
+
 
 function DashboardLayoutContent({
   children,
@@ -257,12 +288,34 @@ function DashboardLayoutContent({
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
               <Link href="/dashboard/settings">
-                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Configurações</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Configurações</DropdownMenuItem>
               </Link>
-              <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Suporte</DropdownMenuItem>
+              <Dialog>
+                <DialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">
+                      Suporte
+                    </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                    <DialogHeader>
+                        <DialogTitle>Fale com nosso Suporte</DialogTitle>
+                        <DialogDescription>
+                            Precisa de ajuda ou tem alguma dúvida? Clique no botão abaixo para ser redirecionado para o nosso WhatsApp.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-start">
+                        <Button asChild className="bg-green-500 hover:bg-green-600 text-white">
+                            <a href={clientData.whatsappLink} target="_blank" rel="noopener noreferrer">
+                                <WhatsappIcon className="mr-2 h-4 w-4" />
+                                Abrir WhatsApp
+                            </a>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+              </Dialog>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
               <Link href="/login">
-                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Sair</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Sair</DropdownMenuItem>
               </Link>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -286,3 +339,4 @@ export default function DashboardLayout({
     </PostsProvider>
   )
 }
+
