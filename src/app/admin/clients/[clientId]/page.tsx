@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig } from '@/components/dashboard/dashboard-components';
+import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig, PostDialogContent } from '@/components/dashboard/dashboard-components';
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
 import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
@@ -20,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 
 // Mock data, this would come from a DB
@@ -42,14 +43,26 @@ function ClientDashboard() {
     const [file, setFile] = React.useState<File | null>(null);
     const [fileName, setFileName] = React.useState('');
     const [postUrl, setPostUrl] = React.useState('');
+    const [videoCoverFile, setVideoCoverFile] = React.useState<File | null>(null);
+    const [videoCoverFileName, setVideoCoverFileName] = React.useState('');
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const videoCoverInputRef = React.useRef<HTMLInputElement>(null);
+
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             const selectedFile = event.target.files[0];
             setFile(selectedFile);
             setFileName(selectedFile.name);
+        }
+    };
+
+    const handleVideoCoverFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const selectedFile = event.target.files[0];
+            setVideoCoverFile(selectedFile);
+            setVideoCoverFileName(selectedFile.name);
         }
     };
     
@@ -63,7 +76,7 @@ function ClientDashboard() {
         const date = new Date(dateTime);
         const formattedDate = format(date, "dd 'de' MMM, yyyy", { locale: ptBR });
 
-        const newPost = {
+        const newPost: Omit<Post, 'id' | 'status'> = {
             title,
             date: formattedDate,
             type,
@@ -71,7 +84,7 @@ function ClientDashboard() {
             socials: socials as any, // Cast for now
             // In a real app, you would handle file upload and get a URL
             // For now, we use a placeholder or the provided URL
-            imageUrl: file ? URL.createObjectURL(file) : 'https://picsum.photos/seed/newpost/600/400',
+            imageUrl: file ? URL.createObjectURL(file) : (videoCoverFile ? URL.createObjectURL(videoCoverFile) : 'https://picsum.photos/seed/newpost/600/400'),
             imageHint: 'new post',
             url: postUrl,
         };
@@ -88,6 +101,8 @@ function ClientDashboard() {
         setFile(null);
         setFileName('');
         setPostUrl('');
+        setVideoCoverFile(null);
+        setVideoCoverFileName('');
     };
     
     return (
@@ -133,6 +148,25 @@ function ClientDashboard() {
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
                             </div>
+                             {type === 'video' && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="video-cover" className="text-right">Capa do Vídeo</Label>
+                                    <div className="col-span-3 flex items-center gap-2">
+                                        <Button variant="outline" onClick={() => videoCoverInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            Anexar Capa
+                                        </Button>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            ref={videoCoverInputRef}
+                                            className="hidden"
+                                            onChange={handleVideoCoverFileChange}
+                                        />
+                                        {videoCoverFileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{videoCoverFileName}</span>}
+                                    </div>
+                                </div>
+                            )}
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="postUrl" className="text-right">URL</Label>
                                 <div className="col-span-3 relative flex items-center">
@@ -187,7 +221,6 @@ function ClientDashboard() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CalendarWidget />
-                {/* This could be a summary of pending approvals or other KPIs */}
                 <div></div>
             </div>
 
@@ -213,52 +246,111 @@ const getImageHint = (post: Post): string => {
     return post.imageHint || 'placeholder';
 }
 
-function AdminApprovalCard({ post }: { post: Post }) {
+function AdminApprovalCard({ post, onNotify }: { post: Post, onNotify: (postId: number) => void }) {
     const imageUrl = getPostImage(post);
     const imageHint = getImageHint(post);
     const statusInfo = statusConfig[post.status];
 
     return (
-        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
-            <div className="relative aspect-square">
-                <Image
-                    src={imageUrl}
-                    alt={`Capa do post: ${post.title}`}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={imageHint}
-                />
-            </div>
-            <CardContent className="p-3 flex flex-col flex-grow">
-                <h3 className="font-semibold text-sm mb-2 leading-tight h-10">{post.title}</h3>
-                <div className={cn("text-xs font-semibold px-2 py-1 rounded-md text-center border mb-3", statusInfo.className)}>
-                    {statusInfo.label}
-                </div>
-                <div className="mt-auto">
-                    <Button size="sm" className="w-full">
-                        <Bell className="mr-2 h-4 w-4" />
-                        Notificar Cliente
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+        <Dialog>
+            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
+                <DialogTrigger asChild>
+                    <div className="relative aspect-square cursor-pointer">
+                        <Image
+                            src={imageUrl}
+                            alt={`Capa do post: ${post.title}`}
+                            fill
+                            className="object-cover"
+                            data-ai-hint={imageHint}
+                        />
+                    </div>
+                </DialogTrigger>
+                <CardContent className="p-3 flex flex-col flex-grow">
+                    <DialogTrigger asChild>
+                        <h3 className="font-semibold text-sm mb-2 leading-tight h-10 cursor-pointer hover:underline">{post.title}</h3>
+                    </DialogTrigger>
+                    <div className={cn("text-xs font-semibold px-2 py-1 rounded-md text-center border mb-3", statusInfo.className)}>
+                        {statusInfo.label}
+                    </div>
+                    <div className="mt-auto">
+                        {post.status !== 'notified' && (
+                            <Button size="sm" className="w-full" onClick={() => onNotify(post.id)}>
+                                <Bell className="mr-2 h-4 w-4" />
+                                Notificar Cliente
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+            <PostDialogContent post={post} />
+        </Dialog>
+
     );
 }
 
 function ClientApprovals() {
-    const { posts } = usePosts();
-    const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision', 'approved', 'scheduled'].includes(p.status));
+    const { posts, updatePostStatus } = usePosts();
+    const { toast } = useToast();
+
+    const handleNotify = (postId: number) => {
+        updatePostStatus(postId, 'notified');
+        toast({
+            title: "Cliente Notificado!",
+            description: "O cliente foi notificado sobre o novo post para aprovação.",
+            variant: "success",
+        });
+    };
+    
+    const awaitingApprovalPosts = posts.filter(p => p.status === 'awaiting_approval');
+    const notifiedPosts = posts.filter(p => p.status === 'notified');
+    const otherPosts = posts.filter(p => ['in_revision', 'approved', 'scheduled'].includes(p.status));
+
+    const postsToShow = [...awaitingApprovalPosts, ...notifiedPosts, ...otherPosts];
 
     return (
         <>
             {postsToShow.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    <AnimatePresence>
-                        {postsToShow.map((post) => (
-                           <AdminApprovalCard key={post.id} post={post} />
-                        ))}
-                    </AnimatePresence>
+                <div className="space-y-8">
+                     <div>
+                        <h2 className="text-xl font-semibold mb-4">Aguardando Aprovação</h2>
+                        {awaitingApprovalPosts.length > 0 ? (
+                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                {awaitingApprovalPosts.map((post) => (
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Nenhum post aguardando para ser enviado para aprovação.</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <h2 className="text-xl font-semibold mb-4">Notificado</h2>
+                        {notifiedPosts.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                {notifiedPosts.map((post) => (
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Nenhum post pendente de aprovação do cliente.</p>
+                        )}
+                    </div>
+                    
+                    <div>
+                        <h2 className="text-xl font-semibold mb-4">Outros Status</h2>
+                         {otherPosts.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                {otherPosts.map((post) => (
+                                <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                ))}
+                            </div>
+                        ) : (
+                             <p className="text-sm text-muted-foreground">Nenhum post com outros status.</p>
+                        )}
+                    </div>
                 </div>
+
             ) : (
                 <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-lg bg-card/60 dark:bg-black/40 backdrop-blur-lg min-h-[40vh]">
                     <div className="flex flex-col items-center gap-1 text-center">
@@ -275,6 +367,9 @@ function ClientApprovals() {
 function ClientCalendar() {
     return (
         <div className="flex flex-col gap-6">
+            <div>
+                 <CalendarWidget />
+            </div>
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
                 <KanbanBoard />
@@ -354,4 +449,3 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
-

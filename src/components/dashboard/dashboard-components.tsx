@@ -76,16 +76,17 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const updatePostStatus = (postId: number, newStatus: Status) => {
+        const postToMove = posts.find(p => p.id === postId);
+
         if (newStatus === 'approved') {
-            const postToSchedule = posts.find(p => p.id === postId);
-            if (postToSchedule) {
-                setScheduledPosts(prev => [...prev, { ...postToSchedule, status: 'scheduled' }]);
+            if (postToMove) {
+                setScheduledPosts(prev => [...prev, { ...postToMove, status: 'scheduled' }]);
                 setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
             }
         } else if (newStatus === 'canceled') {
             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
         } else {
-            setPosts(currentPosts => currentPosts.map(p =>
+             setPosts(currentPosts => currentPosts.map(p =>
                 p.id === postId ? { ...p, status: newStatus } : p
             ));
         }
@@ -131,7 +132,7 @@ const allPostLegends: Record<string, string> = {
     strategy: 'Estratégia'
 }
 
-export type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed';
+export type Status = 'awaiting_approval' | 'approved' | 'in_revision' | 'scheduled' | 'canceled' | 'completed' | 'notified';
 
 export type PostImage = {
     url: string;
@@ -153,9 +154,10 @@ export type Post = {
 };
 
 export const statusConfig: Record<Status, { label: string; className: string }> = {
-    awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    awaiting_approval: { label: 'Aguardando envio', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    notified: { label: 'Aguardando aprovação', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
     approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
-    in_revision: { label: 'Em alteração', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+    in_revision: { label: 'Em alteração', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
     scheduled: { label: 'Agendado', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
     canceled: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
     completed: { label: 'Concluído', className: 'bg-green-600/20 text-green-500 border-green-600/30' }
@@ -343,12 +345,12 @@ export function UpcomingPostsList() {
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
              <CardHeader className="p-3">
-                <Link href="/dashboard/approvals">
+                <div className="cursor-pointer">
                     <CardTitle className="font-headline text-sm font-normal">Próximos Posts</CardTitle>
                     <CardDescription className="text-xs">
                         Acompanhe o status das próximas publicações.
                     </CardDescription>
-                </Link>
+                </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
                 {allPosts.length > 0 ? (
@@ -745,6 +747,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 
