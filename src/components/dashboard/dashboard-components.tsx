@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -246,7 +245,7 @@ export function CalendarWidget() {
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl h-full">
             <CardHeader className="p-3">
-                <div className="text-center">
+                 <div className="text-center">
                     <CardTitle className="font-headline text-sm font-normal">Calendário de Conteúdo</CardTitle>
                 </div>
             </CardHeader>
@@ -619,6 +618,23 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
 
     const PostMedia = () => {
         if (isVideo && post.url) {
+            // If the URL is external (e.g., Google Drive embed), use an iframe.
+            // Otherwise (blob URL from local file), use a video tag.
+            const isExternalUrl = post.url.startsWith('http');
+            if (isExternalUrl) {
+                return (
+                    <div className={cn("rounded-lg overflow-hidden bg-black flex items-center justify-center", isReels ? "aspect-[9/16]" : "aspect-video")}>
+                        <iframe
+                            src={post.url}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={post.title}
+                        ></iframe>
+                    </div>
+                );
+            }
+            // Local file upload
             return (
                 <div className={cn("rounded-lg overflow-hidden bg-black flex items-center justify-center", isReels ? "aspect-[9/16]" : "aspect-video")}>
                      <video
@@ -685,13 +701,8 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
 
                 <div className={cn("flex flex-col gap-4", isReels ? "md:col-span-2" : "md:col-span-1")}>
                     
-                    <DialogHeader>
-                        <DialogTitle className="text-xl">{post.title}</DialogTitle>
-                        <DialogDescription>{post.date}</DialogDescription>
-                    </DialogHeader>
-
                     {isVideo && post.coverImageUrl && (
-                        <div className='space-y-2'>
+                        <div className='space-y-2 mb-2'>
                              <h4 className="font-semibold text-sm">Capa do Vídeo</h4>
                              <div className="rounded-lg overflow-hidden aspect-square max-w-[200px]">
                                 <Image
@@ -704,6 +715,11 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                             </div>
                         </div>
                     )}
+                    
+                    <DialogHeader className="mt-0 pt-0">
+                        <DialogTitle className="text-xl">{post.title}</DialogTitle>
+                        <DialogDescription>{post.date}</DialogDescription>
+                    </DialogHeader>
                     
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Legenda</h4>
@@ -789,3 +805,4 @@ export function FeedPreview() {
         </div>
     );
 }
+

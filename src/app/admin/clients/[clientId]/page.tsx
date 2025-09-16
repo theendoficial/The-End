@@ -80,17 +80,30 @@ function ClientDashboard() {
         let finalCoverImageUrl: string | undefined = undefined;
         let finalUrl = postUrl;
     
-        if (type.startsWith('video') && file) {
-            finalUrl = URL.createObjectURL(file);
+        if (file) { // An uploaded file takes precedence
+            if (type.startsWith('video')) {
+                finalUrl = URL.createObjectURL(file);
+            } else {
+                finalImageUrl = URL.createObjectURL(file);
+            }
         }
     
-        if (type.startsWith('video') && videoCoverFile) {
+        if (videoCoverFile) {
             finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
-            finalImageUrl = finalCoverImageUrl; // Use cover as the main preview image for cards
-        } else if (file) {
-            finalImageUrl = URL.createObjectURL(file);
-        } else if (!type.startsWith('video')) {
-            finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`
+            // If it's not a video, the cover can be the main image
+            if (!type.startsWith('video')) {
+                finalImageUrl = finalCoverImageUrl;
+            }
+        }
+    
+        // If it's an image post with no file, use a placeholder
+        if (type === 'image' && !finalImageUrl) {
+            finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
+        }
+    
+        // For video posts, if a cover is uploaded, use it as the preview `imageUrl` for cards.
+        if (type.startsWith('video') && finalCoverImageUrl) {
+            finalImageUrl = finalCoverImageUrl;
         }
     
         const newPost: Omit<Post, 'id' | 'status'> = {
