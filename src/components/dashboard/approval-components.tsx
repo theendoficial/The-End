@@ -4,8 +4,8 @@
 import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, Edit, Download, Calendar, Info, Trash2 } from 'lucide-react';
-import { Post, PostImage, PostDialogContent, RequestChangeDialog, Status } from './dashboard-components';
+import { Check, Edit, Calendar, Trash2 } from 'lucide-react';
+import { Post, PostDialogContent, RequestChangeDialog, Status } from './dashboard-components';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
@@ -21,11 +21,7 @@ const getPostImage = (post: Post): string => {
     if (post.type === 'carousel' && post.images && post.images.length > 0) {
         return post.images[0].url;
     }
-    if (post.imageUrl) {
-        return post.imageUrl;
-    }
-    // Consistent placeholder
-    return `https://picsum.photos/seed/post${post.id}/600/400`;
+    return post.imageUrl || `https://picsum.photos/seed/post${post.id}/600/400`;
 };
 
 const getImageHint = (post: Post): string => {
