@@ -77,35 +77,68 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     };
     
     const updatePostDate = (postId: number, newDate: string) => {
-        setPosts(currentPosts => currentPosts.map(p =>
-            p.id === postId ? { ...p, date: newDate } : p
-        ));
-        setScheduledPosts(currentPosts => currentPosts.map(p =>
-            p.id === postId ? { ...p, date: newDate } : p
-        ));
+        const postInPosts = posts.find(p => p.id === postId);
+        const postInScheduled = scheduledPosts.find(p => p.id === postId);
+
+        if (postInPosts) {
+            setPosts(currentPosts => currentPosts.map(p =>
+                p.id === postId ? { ...p, date: newDate } : p
+            ));
+        } else if (postInScheduled) {
+            setScheduledPosts(currentPosts => currentPosts.map(p =>
+                p.id === postId ? { ...p, date: newDate } : p
+            ));
+        }
     };
 
     const updatePostStatus = (postId: number, newStatus: Status) => {
         const postToMove = posts.find(p => p.id === postId) || scheduledPosts.find(p => p.id === postId);
     
-        if (newStatus === 'approved') {
-            if (postToMove) {
-                // Move from 'posts' to 'scheduledPosts'
-                setScheduledPosts(prev => [...prev, { ...postToMove, status: 'scheduled' }]);
-                setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-            }
-        } else if (newStatus === 'canceled') {
+        if (!postToMove) return;
+
+        // If moving to a "scheduled" state from an "approved" state (client-side)
+        if ((newStatus === 'approved') && postToMove.status !== 'approved') {
+            setScheduledPosts(prev => [...prev, { ...postToMove, status: 'approved' }]);
+            setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
+            return;
+        }
+        
+        // If an admin schedules a post
+        if (newStatus === 'scheduled' && postToMove.status === 'approved') {
+            setScheduledPosts(currentPosts => currentPosts.map(p =>
+                p.id === postId ? { ...p, status: newStatus } : p
+            ));
+             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
+             return;
+        }
+
+        if (newStatus === 'canceled') {
             // Remove from both lists
             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
             setScheduledPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
         } else {
-             // Update status in whichever list it's in
-            setPosts(currentPosts => currentPosts.map(p =>
-                p.id === postId ? { ...p, status: newStatus } : p
-            ));
-            setScheduledPosts(currentPosts => currentPosts.map(p =>
-                p.id === postId ? { ...p, status: newStatus } : p
-            ));
+             // Update status in whichever list it's in, or move it if needed
+            const isCurrentlyScheduled = scheduledPosts.some(p => p.id === postId);
+            const isMovingToPending = ['in_revision', 'awaiting_approval', 'notified'].includes(newStatus);
+
+            if (isCurrentlyScheduled && isMovingToPending) {
+                // Move from scheduled back to posts
+                setPosts(prev => [...prev, { ...postToMove, status: newStatus }]);
+                setScheduledPosts(current => current.filter(p => p.id !== postId));
+            } else if (!isCurrentlyScheduled && !isMovingToPending) {
+                 // Move from posts to scheduled
+                setScheduledPosts(prev => [...prev, { ...postToMove, status: newStatus }]);
+                setPosts(current => current.filter(p => p.id !== postId));
+            }
+             else {
+                 // Just update status in the current list
+                setPosts(currentPosts => currentPosts.map(p =>
+                    p.id === postId ? { ...p, status: newStatus } : p
+                ));
+                setScheduledPosts(currentPosts => currentPosts.map(p =>
+                    p.id === postId ? { ...p, status: newStatus } : p
+                ));
+            }
         }
     };
 
@@ -402,10 +435,10 @@ export function ProjectUpcomingPostsList() {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <PostActions post={post} onRequestChange={handleRequestChange} />
+                                <PostActions post={post} onUpdateStatus={updatePostStatus} isAdminView={true} />
                             </TableCell>
                         </TableRow>
-                        <PostDialogContent post={post} onRequestChange={handleRequestChange} />
+                        <PostDialogContent post={post} onUpdateStatus={updatePostStatus} isAdminView={true} />
                     </Dialog>
                 ))
               ) : (
@@ -451,19 +484,20 @@ const PostListItem = ({ post }: { post: Post }) => {
               <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
                   {statusConfig[post.status].label}
               </Badge>
-              <PostActions post={post} onRequestChange={(postId, comment) => updatePostStatus(postId, 'in_revision')} />
+              <PostActions post={post} onUpdateStatus={updatePostStatus} isAdminView={false}/>
           </div>
-          <PostDialogContent post={post} onRequestChange={(postId, comment) => updatePostStatus(postId, 'in_revision')} />
+          <PostDialogContent post={post} onUpdateStatus={updatePostStatus} isAdminView={false}/>
         </Dialog>
     )
 }
 
 type PostActionsProps = {
     post: Post;
-    onRequestChange?: (postId: number, comment: string) => void;
+    onUpdateStatus: (postId: number, status: Status) => void;
+    isAdminView: boolean;
 };
 
-const PostActions = ({ post, onRequestChange }: PostActionsProps) => {
+const PostActions = ({ post, onUpdateStatus, isAdminView }: PostActionsProps) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -475,10 +509,10 @@ const PostActions = ({ post, onRequestChange }: PostActionsProps) => {
                 <DialogTrigger asChild>
                     <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
                 </DialogTrigger>
-                {onRequestChange && ['awaiting_approval', 'scheduled'].includes(post.status) && (
-                    <RequestChangeDialog post={post} onConfirm={onRequestChange}>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
-                    </RequestChangeDialog>
+                {isAdminView && post.status === 'approved' && (
+                    <DropdownMenuItem onClick={() => onUpdateStatus(post.id, 'scheduled')} className="focus:bg-accent dark:focus:bg-white/10">
+                        Agendar Post
+                    </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
@@ -593,21 +627,20 @@ const ApprovalActions = ({ post, onAction }: ApprovalActionsProps) => {
 
 export type PostDialogContentProps = {
     post: Post;
-    onRequestChange?: (postId: number, comment: string) => void;
     children?: React.ReactNode;
     showExtraActions?: boolean;
     onAction?: (postId: number, newStatus: Status) => void;
+    onUpdateStatus?: (postId: number, newStatus: Status) => void;
+    isAdminView?: boolean;
 };
 
-export const PostDialogContent = ({ post, onRequestChange, children, showExtraActions, onAction }: PostDialogContentProps) => {
-    const canRequestChange = onRequestChange && ['approved', 'scheduled', 'completed'].includes(post.status);
+export const PostDialogContent = ({ post, children, showExtraActions, onAction, onUpdateStatus, isAdminView }: PostDialogContentProps) => {
+    const canRequestChange = onUpdateStatus && ['approved', 'scheduled', 'completed'].includes(post.status);
     const isVideo = post.type === 'video_horizontal' || post.type === 'reels';
     const isReels = post.type === 'reels';
 
     const PostMedia = () => {
         if (isVideo && post.url) {
-            // If the URL is external (e.g., Google Drive embed), use an iframe.
-            // Otherwise (blob URL from local file), use a video tag.
             const isExternalUrl = post.url.startsWith('http');
             if (isExternalUrl) {
                 return (
@@ -622,7 +655,6 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                     </div>
                 );
             }
-            // Local file upload
             return (
                 <div className={cn("rounded-lg overflow-hidden bg-black flex items-center justify-center", isReels ? "aspect-[9/16]" : "aspect-video")}>
                      <video
@@ -725,20 +757,28 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                     </div>
 
                     <div className="mt-4 flex flex-col gap-2">
-                         {canRequestChange && onRequestChange && (
-                             <RequestChangeDialog post={post} onConfirm={onRequestChange}>
+                        {isAdminView && post.status === 'approved' && onUpdateStatus && (
+                             <Button onClick={() => onUpdateStatus(post.id, 'scheduled')}>
+                                <Check className="mr-2 h-4 w-4" /> Agendar Post
+                             </Button>
+                        )}
+
+                        {canRequestChange && onUpdateStatus && (
+                             <RequestChangeDialog post={post} onConfirm={(postId, comment) => onUpdateStatus(postId, 'in_revision')}>
                                  <Button variant='outline'>Pedir alteração</Button>
                              </RequestChangeDialog>
                          )}
-                         {isVideo && post.url && (
+
+                         {isVideo && post.url && post.url.startsWith('blob:') && (
                              <Button asChild>
-                                 <a href={post.url} download>
+                                 <a href={post.url} download={`${post.title}.mp4`}>
                                      <Download className="mr-2 h-4 w-4" />
                                      Baixar Vídeo
                                  </a>
                              </Button>
                          )}
-                          {showExtraActions && onAction && <ApprovalActions post={post} onAction={onAction} />}
+
+                         {showExtraActions && onAction && <ApprovalActions post={post} onAction={onAction} />}
                     </div>
                      {children}
                 </div>

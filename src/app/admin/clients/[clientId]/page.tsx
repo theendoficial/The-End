@@ -75,7 +75,7 @@ function ClientDashboard() {
 
         let finalImageUrl: string | undefined = undefined;
         let finalCoverImageUrl: string | undefined = undefined;
-        let finalUrl = postUrl;
+        let finalUrl = postUrl; // Use URL from input by default
 
         if (file) { // An uploaded file takes precedence
              finalUrl = URL.createObjectURL(file);
@@ -98,7 +98,7 @@ function ClientDashboard() {
         // For video posts, if a cover is uploaded, use it as the preview `imageUrl` for cards.
         if ((type === 'video_horizontal' || type === 'reels') && finalCoverImageUrl) {
             finalImageUrl = finalCoverImageUrl;
-        } else if (type.startsWith('video') && !finalImageUrl && file) {
+        } else if ((type === 'video_horizontal' || type === 'reels') && !finalCoverImageUrl && file) {
              // If no cover, try to use a frame or just show nothing for video on card
         }
 
@@ -183,7 +183,7 @@ function ClientDashboard() {
                                         ref={fileInputRef} 
                                         className="hidden" 
                                         onChange={handleFileChange}
-                                        accept={type.startsWith('video') || type === 'reels' ? 'video/*' : 'image/*'}
+                                        accept={type === 'video_horizontal' || type === 'reels' ? 'video/*' : 'image/*'}
                                     />
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
@@ -276,7 +276,7 @@ const getImageHint = (post: Post): string => {
     return post.imageHint || 'placeholder';
 }
 
-function AdminApprovalCard({ post, onNotify }: { post: Post, onNotify: (postId: number) => void }) {
+function AdminApprovalCard({ post, onNotify, onUpdateStatus }: { post: Post, onNotify: (postId: number) => void, onUpdateStatus: (postId: number, status: Status) => void }) {
     const imageUrl = getPostImage(post);
     const imageHint = getImageHint(post);
     const statusInfo = statusConfig[post.status];
@@ -312,7 +312,7 @@ function AdminApprovalCard({ post, onNotify }: { post: Post, onNotify: (postId: 
                     </div>
                 </CardContent>
             </Card>
-            <PostDialogContent post={post} />
+            <PostDialogContent post={post} onUpdateStatus={onUpdateStatus} isAdminView={true} />
         </Dialog>
 
     );
@@ -344,7 +344,7 @@ function ClientApprovals() {
                         {awaitingApprovalPosts.length > 0 ? (
                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {awaitingApprovalPosts.map((post) => (
-                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
                                 ))}
                             </div>
                         ) : (
@@ -357,7 +357,7 @@ function ClientApprovals() {
                         {notifiedPosts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {notifiedPosts.map((post) => (
-                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
                                 ))}
                             </div>
                         ) : (
@@ -370,7 +370,7 @@ function ClientApprovals() {
                          {otherPosts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {otherPosts.map((post) => (
-                                <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} />
+                                <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
                                 ))}
                             </div>
                         ) : (
@@ -397,11 +397,11 @@ function ClientCalendar() {
         <div className="flex flex-col gap-6">
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
-                <KanbanBoard />
+                <KanbanBoard isAdminView={true} />
             </div>
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Calendário de Conteúdo</h2>
-                <FullCalendar />
+                <FullCalendar isAdminView={true} />
             </div>
         </div>
     );
