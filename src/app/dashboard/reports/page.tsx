@@ -9,12 +9,22 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, File as FileIcon, LineChart, FolderOpen } from "lucide-react";
+import { Download, File as FileIcon, LineChart, FolderOpen, Instagram } from "lucide-react";
 import * as React from 'react';
 
+// Dados de exemplo para visualização.
 // No futuro, estes dados virão do seu painel de administração.
-// Por enquanto, está vazio como solicitado.
-const reportFolders: any[] = [];
+const reportFolders = [
+  {
+    title: "Performance de Redes Sociais",
+    icon: Instagram,
+    assets: [
+      { name: "Relatório de Engajamento - Agosto/2024", type: "PDF", url: "#" },
+      { name: "Análise de Crescimento de Seguidores - Q3 2024", type: "PDF", url: "#" },
+    ],
+  },
+];
+
 
 export default function ReportsPage() {
   return (

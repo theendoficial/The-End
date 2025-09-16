@@ -9,12 +9,32 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ClipboardList, Download, File as FileIcon, FileText, Briefcase, FolderOpen } from "lucide-react";
+import { ClipboardList, Download, File as FileIcon, Briefcase, FolderOpen } from "lucide-react";
 import * as React from 'react';
 
+// Dados de exemplo para visualização. 
 // No futuro, estes dados virão do seu painel de administração.
-// Por enquanto, está vazio como solicitado.
-const documentFolders: any[] = [];
+const documentFolders = [
+  {
+    title: "Identidade Visual",
+    icon: Briefcase,
+    assets: [
+      { name: "Logotipo Principal (Colorido)", type: "PNG", url: "#" },
+      { name: "Manual da Marca v1.2", type: "PDF", url: "#" },
+      { name: "Paleta de Cores", type: "PDF", url: "#" },
+    ],
+  },
+  {
+    title: "Templates",
+    icon: ClipboardList,
+    assets: [
+      { name: "Template de Post (Feed)", type: "FIGMA", url: "#" },
+      { name: "Template de Story", type: "FIGMA", url: "#" },
+      { name: "Template de Apresentação", type: "PPTX", url: "#" },
+    ],
+  },
+];
+
 
 export default function DocumentsPage() {
   return (
