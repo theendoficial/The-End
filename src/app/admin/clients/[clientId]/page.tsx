@@ -17,7 +17,7 @@ import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -80,31 +80,24 @@ function ClientDashboard() {
 
         let finalImageUrl: string | undefined = undefined;
         let finalCoverImageUrl: string | undefined = undefined;
-        let finalUrl = postUrl; // Use URL from input by default
+        let finalUrl = postUrl;
 
-        if (file) { // An uploaded file takes precedence
-             finalUrl = URL.createObjectURL(file);
+        if (file) {
+            finalUrl = URL.createObjectURL(file);
         }
-        
+
         if (videoCoverFile) {
             finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
         }
-        
-        // If it's an image post, the main file is the image
+
         if (type === 'image' && file) {
             finalImageUrl = URL.createObjectURL(file);
-        }
-
-        // If it's an image post with no file, use a placeholder
-        if (type === 'image' && !finalImageUrl) {
+        } else if (type === 'image' && !finalImageUrl) {
             finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
         }
 
-        // For video posts, if a cover is uploaded, use it as the preview `imageUrl` for cards.
         if ((type === 'video_horizontal' || type === 'reels') && finalCoverImageUrl) {
             finalImageUrl = finalCoverImageUrl;
-        } else if ((type === 'video_horizontal' || type === 'reels') && !finalCoverImageUrl && file) {
-             // If no cover, try to use a frame or just show nothing for video on card
         }
 
         const newPost: Omit<Post, 'id' | 'status'> = {
@@ -399,6 +392,9 @@ function ClientApprovals() {
 
 function ClientCalendar() {
     const { posts, scheduledPosts, updatePostDate } = usePosts();
+    if (!posts || !scheduledPosts || !updatePostDate) {
+        return <div>Carregando calendário...</div>; // Or a loading spinner
+    }
     return (
         <div className="flex flex-col gap-6">
             <div>
@@ -436,11 +432,11 @@ function ClientProjects({ client }: { client: any }) {
 
     const handleSave = () => {
         // In a real app, you'd save this to your database.
-        // For now, we just log it and close the dialog.
-        console.log(`Saving projects for client ${client.id}:`, selectedProjects);
         client.projects = selectedProjects; // Mutating mock data for demo
         setOpen(false);
     };
+    
+    const activeProjects = allProjects.filter(p => selectedProjects.includes(p.id));
 
     return (
         <div>
@@ -490,7 +486,31 @@ function ClientProjects({ client }: { client: any }) {
                     </DialogContent>
                 </Dialog>
             </div>
-            <p className="text-muted-foreground">A seção de projetos será preenchida com base nos serviços selecionados.</p>
+            
+             {activeProjects.length > 0 ? (
+                <div className="space-y-6">
+                    {activeProjects.map(project => (
+                        <Card key={project.id} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                             <CardHeader>
+                                <CardTitle className="flex items-center gap-3">
+                                    {project.icon}
+                                    {project.name}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {project.id === 6 ? ( // "Gestão de Mídias Sociais"
+                                    <ProjectUpcomingPostsList />
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">O conteúdo para este tipo de projeto é estático. Gerencie-o na seção de arquivos globais.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-muted-foreground">Nenhum serviço selecionado para este cliente. Use o botão "Gerenciar Serviços" para adicioná-los.</p>
+            )}
+
         </div>
     )
 }
@@ -559,5 +579,7 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
+
+    
 
     
