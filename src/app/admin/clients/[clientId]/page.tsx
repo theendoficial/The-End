@@ -185,8 +185,10 @@ function ClientDashboard() {
                 </Dialog>
             </div>
             
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CalendarWidget />
                 {/* This could be a summary of pending approvals or other KPIs */}
+                <div></div>
             </div>
 
             <div>
@@ -273,11 +275,6 @@ function ClientApprovals() {
 function ClientCalendar() {
     return (
         <div className="flex flex-col gap-6">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CalendarWidget />
-                 {/* This would be a summary of pending approvals, we can build it out later */}
-                <div></div>
-            </div>
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
                 <KanbanBoard />
@@ -357,3 +354,4 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
+
