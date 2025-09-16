@@ -9,7 +9,6 @@ import {
   FolderArchive,
   Settings,
   Menu,
-  FileUp,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,10 +28,12 @@ import Image from 'next/image';
 import { TheEndLogo } from '@/lib/images';
 import * as React from 'react';
 
-const adminData = {
+const initialAdminData = {
   name: 'Admin',
   email: 'admin@example.com',
+  avatar: '',
 };
+
 
 function AdminLayout({
   children,
@@ -41,6 +42,11 @@ function AdminLayout({
 }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+  const [adminData, setAdminData] = React.useState(initialAdminData);
+  
+  const handleUpdateAdminData = (newData: Partial<typeof initialAdminData>) => {
+    setAdminData(prev => ({...prev, ...newData}));
+  }
 
   const navItems = [
     { href: '/admin', icon: Home, label: 'Painel de Controle' },
@@ -125,19 +131,12 @@ function AdminLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-            <Button size="sm">
-                <FileUp className="mr-2 h-4 w-4" />
-                Novo Upload
-            </Button>
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative h-8 w-8 text-foreground hover:bg-accent/50 dark:hover:bg-white/10 hover:text-primary-foreground dark:hover:text-white">
                   <Bell className="h-4 w-4" />
-                   <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                      5
-                   </span>
                   <span className="sr-only">Toggle notifications</span>
               </Button>
             </DropdownMenuTrigger>
@@ -145,7 +144,7 @@ function AdminLayout({
               <DropdownMenuLabel>Notificações</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
                 <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">
-                    Você tem 5 novos posts para aprovar.
+                    Nenhuma notificação nova.
                 </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -174,9 +173,13 @@ function AdminLayout({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-3 cursor-pointer">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <span className="font-semibold text-muted-foreground">A</span>
-                </div>
+                {adminData.avatar ? (
+                     <Image src={adminData.avatar} alt={adminData.name} width={32} height={32} className="w-8 h-8 rounded-full bg-muted object-cover" />
+                ) : (
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                        <span className="font-semibold text-muted-foreground">{adminData.name.charAt(0)}</span>
+                    </div>
+                )}
                 <div>
                   <p className="font-semibold text-foreground text-sm">{adminData.name}</p>
                   <p className="text-xs text-muted-foreground">{adminData.email}</p>
@@ -197,7 +200,13 @@ function AdminLayout({
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-4 lg:p-4 text-foreground">
-          {children}
+          {React.Children.map(children, child => {
+              if (React.isValidElement(child)) {
+                  // @ts-ignore
+                  return React.cloneElement(child, { adminData, onUpdateAdminData: handleUpdateAdminData });
+              }
+              return child;
+          })}
         </main>
       </div>
     </div>

@@ -4,8 +4,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import * as React from 'react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function AdminSettingsPage() {
+
+type AdminSettingsPageProps = {
+    adminData: {
+        name: string;
+        email: string;
+        avatar: string;
+    };
+    onUpdateAdminData: (newData: any) => void;
+}
+
+export default function AdminSettingsPage({ adminData, onUpdateAdminData }: AdminSettingsPageProps) {
+    const { toast } = useToast();
+    const [name, setName] = React.useState(adminData?.name || 'Admin');
+    const [email, setEmail] = React.useState(adminData?.email || 'admin@example.com');
+    const [avatar, setAvatar] = React.useState(adminData?.avatar || '');
+    const [password, setPassword] = React.useState('');
+
+    const handleSave = () => {
+        onUpdateAdminData({ name, email, avatar });
+        toast({
+            title: "Configurações Salvas!",
+            description: "Suas informações de perfil foram atualizadas.",
+            variant: "success",
+        });
+    }
+
+    React.useEffect(() => {
+        if (adminData) {
+            setName(adminData.name);
+            setEmail(adminData.email);
+            setAvatar(adminData.avatar);
+        }
+    }, [adminData]);
+    
+    if (!adminData) return null;
+
     return (
         <>
             <div className="flex items-center mb-6">
@@ -22,19 +59,23 @@ export default function AdminSettingsPage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Nome</Label>
-                        <Input id="name" defaultValue="Admin" className="bg-background/50 dark:bg-black/20" />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="bg-background/50 dark:bg-black/20" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" defaultValue="admin@example.com" className="bg-background/50 dark:bg-black/20" />
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background/50 dark:bg-black/20" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="avatar">URL do Avatar</Label>
+                        <Input id="avatar" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://..." className="bg-background/50 dark:bg-black/20" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="password">Nova Senha</Label>
-                        <Input id="password" type="password" placeholder="Deixe em branco para não alterar" className="bg-background/50 dark:bg-black/20" />
+                        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Deixe em branco para não alterar" className="bg-background/50 dark:bg-black/20" />
                     </div>
                 </CardContent>
                 <CardFooter className="border-t border-border/10 px-6 py-4">
-                    <Button>Salvar Alterações</Button>
+                    <Button onClick={handleSave}>Salvar Alterações</Button>
                 </CardFooter>
             </Card>
         </>
