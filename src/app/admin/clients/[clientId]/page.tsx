@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -11,13 +11,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post } from '@/components/dashboard/dashboard-components';
-import { ApprovalPostCard } from '@/components/dashboard/approval-components';
+import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig } from '@/components/dashboard/dashboard-components';
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
 import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+
 
 // Mock data, this would come from a DB
 const clients = [
@@ -182,10 +185,8 @@ function ClientDashboard() {
                 </Dialog>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CalendarWidget />
-                 {/* This would be a summary of pending approvals, we can build it out later */}
-                <div></div>
+            <div>
+                {/* This could be a summary of pending approvals or other KPIs */}
             </div>
 
             <div>
@@ -196,55 +197,71 @@ function ClientDashboard() {
     )
 }
 
+const getPostImage = (post: Post): string => {
+    if (post.type === 'carousel' && post.images && post.images.length > 0) {
+        return post.images[0].url;
+    }
+    return post.imageUrl || `https://picsum.photos/seed/post${post.id}/600/400`;
+};
+
+const getImageHint = (post: Post): string => {
+    if (post.type === 'carousel' && post.images && post.images.length > 0) {
+        return post.images[0].hint;
+    }
+    return post.imageHint || 'placeholder';
+}
+
+function AdminApprovalCard({ post }: { post: Post }) {
+    const imageUrl = getPostImage(post);
+    const imageHint = getImageHint(post);
+    const statusInfo = statusConfig[post.status];
+
+    return (
+        <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl overflow-hidden group w-full flex flex-col h-full">
+            <div className="relative aspect-square">
+                <Image
+                    src={imageUrl}
+                    alt={`Capa do post: ${post.title}`}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={imageHint}
+                />
+            </div>
+            <CardContent className="p-3 flex flex-col flex-grow">
+                <h3 className="font-semibold text-sm mb-2 leading-tight h-10">{post.title}</h3>
+                <div className={cn("text-xs font-semibold px-2 py-1 rounded-md text-center border mb-3", statusInfo.className)}>
+                    {statusInfo.label}
+                </div>
+                <div className="mt-auto">
+                    <Button size="sm" className="w-full">
+                        <Bell className="mr-2 h-4 w-4" />
+                        Notificar Cliente
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 function ClientApprovals() {
-    const { posts, updatePostStatus } = usePosts();
-
-    const handlePostAction = (postId: number, newStatus: Post['status']) => {
-        updatePostStatus(postId, newStatus);
-    };
-
-    const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision'].includes(p.status));
-    const awaitingApprovalPosts = postsToShow.filter(p => p.status === 'awaiting_approval');
-    const inRevisionPosts = postsToShow.filter(p => p.status === 'in_revision');
+    const { posts } = usePosts();
+    const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision', 'approved', 'scheduled'].includes(p.status));
 
     return (
         <>
             {postsToShow.length > 0 ? (
-                <div className="flex flex-col gap-8">
-                    <div>
-                        <h2 className="text-base font-semibold md:text-xl mb-4">Aguardando Aprovação ({awaitingApprovalPosts.length})</h2>
-                        {awaitingApprovalPosts.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                <AnimatePresence>
-                                    {awaitingApprovalPosts.map((post) => (
-                                        <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
-                                    ))}
-                                </AnimatePresence>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">Nenhum post aguardando aprovação no momento.</p>
-                        )}
-                    </div>
-
-                    {inRevisionPosts.length > 0 && (
-                        <div>
-                            <h2 className="text-base font-semibold md:text-xl mb-4">Em Alteração ({inRevisionPosts.length})</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                <AnimatePresence>
-                                    {inRevisionPosts.map((post) => (
-                                        <ApprovalPostCard key={post.id} post={post} onAction={handlePostAction} />
-                                    ))}
-                                </AnimatePresence>
-                            </div>
-                        </div>
-                    )}
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <AnimatePresence>
+                        {postsToShow.map((post) => (
+                           <AdminApprovalCard key={post.id} post={post} />
+                        ))}
+                    </AnimatePresence>
                 </div>
             ) : (
                 <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-lg bg-card/60 dark:bg-black/40 backdrop-blur-lg min-h-[40vh]">
                     <div className="flex flex-col items-center gap-1 text-center">
-                        <h3 className="text-2xl font-bold tracking-tight">Nenhum post para aprovar</h3>
-                        <p className="text-sm text-muted-foreground">Posts enviados para o cliente aparecerão aqui.</p>
+                        <h3 className="text-2xl font-bold tracking-tight">Nenhum post na fila</h3>
+                        <p className="text-sm text-muted-foreground">Crie um novo post para enviar para aprovação.</p>
                     </div>
                 </div>
             )}
@@ -252,9 +269,15 @@ function ClientApprovals() {
     );
 }
 
+
 function ClientCalendar() {
     return (
         <div className="flex flex-col gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CalendarWidget />
+                 {/* This would be a summary of pending approvals, we can build it out later */}
+                <div></div>
+            </div>
             <div>
                 <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
                 <KanbanBoard />
