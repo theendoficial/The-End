@@ -917,7 +917,15 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
     const [whatsappLink, setWhatsappLink] = React.useState(client.whatsappLink || '');
     const [logo, setLogo] = React.useState(client.logo || '');
     const [showPassword, setShowPassword] = React.useState(false);
-    const [notificationType, setNotificationType] = React.useState('');
+    const [notificationMessage, setNotificationMessage] = React.useState('');
+
+    const notificationOptions = {
+        'posts_waiting': 'Lembrete: Novos posts aguardando sua aprovação.',
+        'posts_approved': 'Boa notícia! Seus posts foram aprovados e estão sendo agendados.',
+        'report_available': 'Seu novo relatório de performance já está disponível no painel.',
+        'document_added': 'Um novo documento foi adicionado à sua área de cliente.',
+        'payment_due': 'Lembrete amigável: Sua fatura está com o vencimento próximo.',
+    };
 
     const handleSaveChanges = () => {
         onSave({ ...client, name, email, password, phone, whatsappLink, logo });
@@ -929,10 +937,10 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
     };
 
     const handleSendNotification = () => {
-        if (!notificationType) {
+        if (!notificationMessage) {
             toast({
-                title: "Selecione uma Notificação",
-                description: "Você precisa escolher um tipo de notificação para enviar.",
+                title: "Escreva uma Notificação",
+                description: "Você precisa escrever uma mensagem para enviar.",
                 variant: "destructive",
             });
             return;
@@ -940,18 +948,10 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
         
         toast({
             title: "Notificação Enviada!",
-            description: `A notificação "${notificationType}" foi enviada para o cliente.`,
+            description: `A notificação "${notificationMessage}" foi enviada para o cliente.`,
             variant: "success",
         });
-        setNotificationType('');
-    };
-
-    const notificationOptions = {
-        'posts_waiting': 'Lembrete: Novos posts aguardando sua aprovação.',
-        'posts_approved': 'Boa notícia! Seus posts foram aprovados e estão sendo agendados.',
-        'report_available': 'Seu novo relatório de performance já está disponível no painel.',
-        'document_added': 'Um novo documento foi adicionado à sua área de cliente.',
-        'payment_due': 'Lembrete amigável: Sua fatura está com o vencimento próximo.',
+        setNotificationMessage('');
     };
 
     return (
@@ -1020,10 +1020,10 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="notification-type">Tipo de Notificação</Label>
-                         <Select onValueChange={setNotificationType} value={notificationType}>
+                        <Label htmlFor="notification-type">Templates de Notificação</Label>
+                         <Select onValueChange={(value) => setNotificationMessage(value)}>
                             <SelectTrigger id="notification-type" className="bg-background/50 dark:bg-black/20">
-                                <SelectValue placeholder="Selecione uma notificação..." />
+                                <SelectValue placeholder="Selecione um template..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(notificationOptions).map(([key, value]) => (
@@ -1031,6 +1031,16 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="custom-notification">Mensagem Personalizada</Label>
+                        <Textarea
+                            id="custom-notification"
+                            value={notificationMessage}
+                            onChange={(e) => setNotificationMessage(e.target.value)}
+                            placeholder="Ou escreva uma notificação personalizada..."
+                            className="bg-background/50 dark:bg-black/20"
+                        />
                     </div>
                 </CardContent>
                 <CardFooter className="border-t border-border/10 px-6 py-4">
