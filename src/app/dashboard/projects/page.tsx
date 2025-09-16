@@ -52,8 +52,8 @@ export const allProjects = [
 ];
 
 // No futuro, esta lista virá do seu painel de administração.
-// Por enquanto, mostra apenas os projetos selecionados.
-const clientProjectIds: number[] = []; 
+// Por enquanto, mostra apenas os projetos selecionados para um cliente específico.
+const clientProjectIds: number[] = [1,2,3,4,5,6,7,8,9,10,11]; 
 
 const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
 

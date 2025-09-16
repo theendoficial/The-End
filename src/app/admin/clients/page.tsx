@@ -29,6 +29,7 @@ export default function AdminClientsPage() {
     ]);
     const [showPassword, setShowPassword] = useState(false);
     const [open, setOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState<string | null>(null);
     
     // Form state
     const [name, setName] = useState('');
@@ -52,19 +53,45 @@ export default function AdminClientsPage() {
         setLogo('');
         setSelectedProjects([]);
         setShowPassword(false);
+        setIsEditing(null);
     }
+    
+    const handleOpenNew = () => {
+        resetForm();
+        setOpen(true);
+    };
+
+    const handleOpenEdit = (client: any) => {
+        setIsEditing(client.id);
+        setName(client.name);
+        setEmail(client.email);
+        setPassword(client.password);
+        setLogo(client.logo);
+        setSelectedProjects(client.projects.map((p: any) => p.id));
+        setOpen(true);
+    };
 
     const handleSaveClient = () => {
-        const newClient = {
-            id: name.toLowerCase().replace(/\s+/g, '-'),
-            name,
-            email,
-            password,
-            logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
-            projects: allProjects.filter(p => selectedProjects.includes(p.id)),
-            pendingApprovals: 0,
-        };
-        setClients(prev => [...prev, newClient]);
+        if (isEditing) {
+            // Update existing client
+             setClients(prev => prev.map(c => 
+                c.id === isEditing 
+                    ? { ...c, name, email, password, logo, projects: allProjects.filter(p => selectedProjects.includes(p.id)) } 
+                    : c
+            ));
+        } else {
+            // Add new client
+            const newClient = {
+                id: name.toLowerCase().replace(/\s+/g, '-'),
+                name,
+                email,
+                password,
+                logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
+                projects: allProjects.filter(p => selectedProjects.includes(p.id)),
+                pendingApprovals: 0,
+            };
+            setClients(prev => [...prev, newClient]);
+        }
         setOpen(false);
         resetForm();
     };
@@ -78,16 +105,16 @@ export default function AdminClientsPage() {
                     if (!isOpen) resetForm();
                 }}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => setOpen(true)}>
+                        <Button onClick={handleOpenNew}>
                             <UserPlus className="mr-2 h-4 w-4" />
                             Adicionar Cliente
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-2xl bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
                         <DialogHeader>
-                            <DialogTitle>Novo Cliente</DialogTitle>
+                            <DialogTitle>{isEditing ? 'Editar Cliente' : 'Novo Cliente'}</DialogTitle>
                             <DialogDescription>
-                                Preencha os dados abaixo para cadastrar um novo cliente.
+                                {isEditing ? 'Altere os dados do cliente abaixo.' : 'Preencha os dados abaixo para cadastrar um novo cliente.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
@@ -161,7 +188,7 @@ export default function AdminClientsPage() {
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
-                                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+                                <Button type="button" variant="secondary">
                                 Cancelar
                                 </Button>
                             </DialogClose>
@@ -186,7 +213,7 @@ export default function AdminClientsPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
-                                        <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Editar</DropdownMenuItem>
+                                        <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer" onClick={() => handleOpenEdit(client)}>Editar</DropdownMenuItem>
                                         <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer text-red-500 focus:text-red-500">Excluir</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
