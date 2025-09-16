@@ -5,88 +5,157 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { MoreHorizontal, PlusCircle, UserPlus, Users, Eye, EyeOff } from 'lucide-react';
+import { MoreHorizontal, UserPlus, Users, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-const clients: any[] = [
-   
-];
+import { Checkbox } from '@/components/ui/checkbox';
+import { allProjects } from '@/app/dashboard/projects/page';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function AdminClientsPage() {
+    const [clients, setClients] = useState<any[]>([]);
     const [showPassword, setShowPassword] = useState(false);
+    const [open, setOpen] = useState(false);
+    
+    // Form state
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [logo, setLogo] = useState('');
+    const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
+
+    const handleSelectProject = (projectId: number) => {
+        setSelectedProjects(prev => 
+            prev.includes(projectId) 
+                ? prev.filter(id => id !== projectId) 
+                : [...prev, projectId]
+        );
+    };
+    
+    const resetForm = () => {
+        setName('');
+        setEmail('');
+        setPassword('');
+        setLogo('');
+        setSelectedProjects([]);
+        setShowPassword(false);
+    }
+
+    const handleSaveClient = () => {
+        const newClient = {
+            id: name.toLowerCase().replace(/\s+/g, '-'),
+            name,
+            email,
+            password,
+            logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
+            projects: allProjects.filter(p => selectedProjects.includes(p.id)),
+            pendingApprovals: 0,
+        };
+        setClients(prev => [...prev, newClient]);
+        setOpen(false);
+        resetForm();
+    };
 
     return (
         <>
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-lg font-semibold md:text-2xl">Clientes</h1>
-                <Dialog>
+                <Dialog open={open} onOpenChange={(isOpen) => {
+                    setOpen(isOpen);
+                    if (!isOpen) resetForm();
+                }}>
                     <DialogTrigger asChild>
-                        <Button>
+                        <Button onClick={() => setOpen(true)}>
                             <UserPlus className="mr-2 h-4 w-4" />
                             Adicionar Cliente
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                    <DialogContent className="sm:max-w-2xl bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
                         <DialogHeader>
                             <DialogTitle>Novo Cliente</DialogTitle>
                             <DialogDescription>
                                 Preencha os dados abaixo para cadastrar um novo cliente.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">
-                                    Nome
-                                </Label>
-                                <Input id="name" placeholder="Nome da Empresa" className="col-span-3 bg-background/50 dark:bg-black/20" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="email" className="text-right">
-                                    Email
-                                </Label>
-                                <Input id="email" type="email" placeholder="email@cliente.com" className="col-span-3 bg-background/50 dark:bg-black/20" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4 relative">
-                                <Label htmlFor="password" className="text-right">
-                                    Senha
-                                </Label>
-                                <div className="col-span-3 relative">
-                                    <Input 
-                                        id="password" 
-                                        type={showPassword ? 'text' : 'password'} 
-                                        placeholder="••••••••" 
-                                        className="bg-background/50 dark:bg-black/20 pr-10" 
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute inset-y-0 right-0 h-full px-3"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        <span className="sr-only">{showPassword ? 'Ocultar senha' : 'Mostrar senha'}</span>
-                                    </Button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="name" className="text-right">
+                                        Nome
+                                    </Label>
+                                    <Input id="name" placeholder="Nome da Empresa" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="email" className="text-right">
+                                        Email
+                                    </Label>
+                                    <Input id="email" type="email" placeholder="email@cliente.com" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4 relative">
+                                    <Label htmlFor="password" className="text-right">
+                                        Senha
+                                    </Label>
+                                    <div className="col-span-3 relative">
+                                        <Input 
+                                            id="password" 
+                                            type={showPassword ? 'text' : 'password'} 
+                                            placeholder="••••••••" 
+                                            value={password} 
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="bg-background/50 dark:bg-black/20 pr-10" 
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute inset-y-0 right-0 h-full px-3"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            <span className="sr-only">{showPassword ? 'Ocultar senha' : 'Mostrar senha'}</span>
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="logo" className="text-right">
+                                        URL do Logo
+                                    </Label>
+                                    <Input id="logo" placeholder="https://..." value={logo} onChange={(e) => setLogo(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
                                 </div>
                             </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="logo" className="text-right">
-                                    URL do Logo
-                                </Label>
-                                <Input id="logo" placeholder="https://..." className="col-span-3 bg-background/50 dark:bg-black/20" />
+                            <div className="space-y-2">
+                                <Label>Serviços Contratados</Label>
+                                <ScrollArea className="h-48 w-full rounded-md border p-4 bg-background/50 dark:bg-black/20">
+                                    <div className="space-y-2">
+                                        {allProjects.map((project) => (
+                                            <div key={project.id} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={`project-${project.id}`}
+                                                    checked={selectedProjects.includes(project.id)}
+                                                    onCheckedChange={() => handleSelectProject(project.id)}
+                                                />
+                                                <label
+                                                    htmlFor={`project-${project.id}`}
+                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                >
+                                                    {project.name}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
                             </div>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
-                                <Button type="button" variant="secondary">
+                                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                                 Cancelar
                                 </Button>
                             </DialogClose>
-                             <Button type="submit">Salvar Cliente</Button>
+                             <Button type="button" onClick={handleSaveClient}>Salvar Cliente</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -116,7 +185,7 @@ export default function AdminClientsPage() {
                                 <div>
                                     <CardDescription className="mb-4">Projetos Ativos:</CardDescription>
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {client.projects.map(p => <Badge key={p} variant="secondary">{p}</Badge>)}
+                                        {client.projects.map((p: any) => <Badge key={p.id} variant="secondary">{p.name}</Badge>)}
                                     </div>
                                 </div>
                                 <Link href={`/admin/clients/${client.id}`} className="w-full">

@@ -34,7 +34,7 @@ const categories = {
   },
 };
 
-const allProjects = [
+export const allProjects = [
   // Creative
   { id: 1, name: 'Identidade Visual', category: 'creative', icon: <Palette className="h-8 w-8 text-blue-500" /> },
   { id: 2, name: 'Design', category: 'creative', icon: <LayoutTemplate className="h-8 w-8 text-blue-500" /> },
