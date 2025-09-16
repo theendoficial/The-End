@@ -256,7 +256,9 @@ function DashboardLayoutContent({
             <DropdownMenuContent align="end" className="bg-popover dark:bg-black/80 backdrop-blur-lg text-popover-foreground dark:text-white border-border dark:border-white/20">
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
-              <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Configurações</DropdownMenuItem>
+              <Link href="/dashboard/settings">
+                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Configurações</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Suporte</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
               <Link href="/login">
