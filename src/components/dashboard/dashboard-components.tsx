@@ -14,7 +14,7 @@ import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent as UiDialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent as UiDialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -51,19 +51,7 @@ export const projects = [
     { id: 11, name: 'Vídeos sequenciais' },
 ];
 
-export const initialPostsData: Post[] = [
-    {
-        id: 1,
-        title: 'Logo banner',
-        date: '20 de Set, 2025',
-        status: 'awaiting_approval',
-        imageUrl: 'https://blog.vertixprofessional.com.br/wp-content/uploads/2024/10/como-montar-uma-barbearia.jpg',
-        imageHint: 'barbearia interior',
-        type: 'image',
-        description: 'Logo para ser usado em banners e materiais de divulgação.',
-        socials: ['instagram']
-    }
-];
+export const initialPostsData: Post[] = [];
 
 type PostsContextType = {
     posts: Post[];
@@ -742,6 +730,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 

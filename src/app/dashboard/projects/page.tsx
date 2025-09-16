@@ -53,7 +53,7 @@ const allProjects = [
 
 // No futuro, esta lista virá do seu painel de administração.
 // Por enquanto, mostra apenas os projetos selecionados.
-const clientProjectIds: number[] = [6]; 
+const clientProjectIds: number[] = []; 
 
 const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
 

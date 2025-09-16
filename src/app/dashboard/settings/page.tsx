@@ -20,8 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Settings } from 'lucide-react';
 
 const clientData = {
-  companyName: 'Major Style - Barbearia',
-  email: 'contato@majorstyle.com',
+  companyName: 'Nome da Empresa',
+  email: 'email@exemplo.com',
 };
 
 const settingsSchema = z.object({

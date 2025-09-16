@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -31,12 +32,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'mlabs-wordpress-site.s3.amazonaws.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'blog.vertixprofessional.com.br',
         port: '',
         pathname: '/**',
       },

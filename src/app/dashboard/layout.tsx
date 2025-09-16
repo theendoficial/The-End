@@ -52,10 +52,10 @@ import { cn } from '@/lib/utils';
 import * as React from 'react';
 
 const clientData = {
-  companyName: 'Major Style - Barbearia',
-  email: 'contato@majorstyle.com',
-  logoUrl: 'https://picsum.photos/seed/barberlogo/40/40',
-  whatsappLink: 'https://wa.me/5511961244558' // Substitua pelo número real
+  companyName: 'Nome da Empresa',
+  email: 'email@exemplo.com',
+  logoUrl: 'https://picsum.photos/seed/clientlogo/40/40',
+  whatsappLink: 'https://wa.me/SEUNUMERO'
 };
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -167,7 +167,7 @@ function DashboardLayoutContent({
                   height={40}
                   alt="Client Logo"
                   className="rounded-full"
-                  data-ai-hint="logo barbershop"
+                  data-ai-hint="logo"
               />
               <div>
                 <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
@@ -205,7 +205,7 @@ function DashboardLayoutContent({
                       height={40}
                       alt="Client Logo"
                       className="rounded-full"
-                      data-ai-hint="logo barbershop"
+                      data-ai-hint="logo"
                   />
                   <div>
                     <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
