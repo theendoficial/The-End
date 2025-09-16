@@ -3,7 +3,6 @@
 'use client';
 
 import * as React from 'react';
-import { DayPicker } from 'react-day-picker';
 import { 
     startOfWeek, 
     endOfWeek, 
@@ -17,14 +16,17 @@ import {
     isToday,
     addMonths,
     subMonths,
-    isSameDay
+    isSameDay,
+    addDays,
+    setDate
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Video, Users, FileText, GripVertical, Calendar as CalendarIcon, Tag, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Video, Users, FileText, Calendar as CalendarIcon, Tag, Info } from 'lucide-react';
 import Link from 'next/link';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants, Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { postColors, postLegends, PostType, Post, PostDialogContent, usePosts } from './dashboard-components';
@@ -47,32 +49,12 @@ const allPostColors: Record<string, string> = {
 
 type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done' | 'awaiting_approval' | 'in_revision' | 'scheduled' | 'approved' | 'canceled' | 'completed';
 
-function parseDate(dateStr: string): Date {
-    const months: { [key: string]: number } = {
-        'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
-        'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
-    };
-    const parts = dateStr.replace(/,/g, '').replace('de ', '').split(' ');
-    if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = months[parts[1]];
-        const year = parseInt(parts[2], 10);
-        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-            // Setting a fixed time for demonstration, e.g., 18:00
-            return new Date(year, month, day, 18, 0, 0);
-        }
-    }
-    // Fallback for invalid formats
-    return new Date();
-}
-
-
 const getWeekTasks = (posts: Post[], scheduledPosts: Post[]) => {
     const allPosts = [...posts, ...scheduledPosts];
     const allTasks: (Task | PostTask)[] = allPosts.map(post => ({
         id: `post-${post.id}`,
         title: post.title,
-        date: parseDate(post.date),
+        date: new Date(post.date),
         type: post.type,
         project: { id: 6, name: 'Gestão de Mídias Sociais' },
         status: post.status,
@@ -98,7 +80,8 @@ const statusConfig: Record<TaskStatus, { label: string; color: string; className
 
 
 const taskIcons: Record<string, React.ComponentType<any>> = {
-    video: (props) => <Video {...props} />,
+    video_horizontal: (props) => <Video {...props} />,
+    reels: (props) => <Video {...props} />,
     meeting: (props) => <Users {...props} />,
     image: (props) => <FileText {...props} />,
     carousel: (props) => <FileText {...props} />,
@@ -115,7 +98,7 @@ type BaseTask = {
     status: TaskStatus;
 }
 type Task = BaseTask & { type: Exclude<PostType, 'post'> };
-type PostTask = BaseTask & { type: 'video' | 'image' | 'carousel'; postData: Post };
+type PostTask = BaseTask & { type: 'video_horizontal' | 'reels' | 'image' | 'carousel'; postData: Post };
 
 const TaskDialogContent = ({ task }: { task: Task }) => {
     const Icon = taskIcons[task.type];
@@ -155,40 +138,51 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
 };
 
 
-const TaskCard = ({ task }: { task: Task | PostTask }) => {
+const TaskCard = ({ task, provided, isDragging }: { task: Task | PostTask, provided: any, isDragging: boolean }) => {
     const Icon = taskIcons[task.type];
     const statusInfo = statusConfig[task.status as TaskStatus] || statusConfig.todo;
+    
+    const CardInner = ({...props}) => (
+        <div 
+             {...props}
+             className={cn(
+                "w-full p-2 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 h-16 border-l-4", 
+                statusInfo.color,
+                isDragging ? 'shadow-lg' : ''
+             )} 
+             style={{...props.style, borderLeftColor: statusInfo.color}}
+        >
+            {Icon && <Icon className="h-5 w-5 text-foreground" />}
+            <span className="text-xs font-semibold text-muted-foreground">
+                {task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+        </div>
+    );
     
     // This is a special task that should render the post dialog
     if ('postData' in task && task.postData) {
         return (
-            <Dialog>
-                <DialogTrigger asChild>
-                    <div className={cn("w-full p-2 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 h-16 border-l-4", statusInfo.color)} style={{borderLeftColor: statusInfo.color}}>
-                        {Icon && <Icon className="h-5 w-5 text-foreground" />}
-                        <span className="text-xs font-semibold text-muted-foreground">
-                            {task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
-                </DialogTrigger>
-                <PostDialogContent post={task.postData as Post} />
-            </Dialog>
+            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <button className="w-full text-left"><CardInner /></button>
+                    </DialogTrigger>
+                    <PostDialogContent post={task.postData as Post} />
+                </Dialog>
+            </div>
         );
     }
     
     // This is a regular task
     return (
-         <Dialog>
-            <DialogTrigger asChild>
-                <div className={cn("w-full p-2 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 h-16 border-l-4", statusInfo.color)} style={{borderLeftColor: statusInfo.color}}>
-                    {Icon && <Icon className="h-5 w-5 text-foreground" />}
-                    <span className="text-xs font-semibold text-muted-foreground">
-                        {task.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                </div>
-            </DialogTrigger>
-            <TaskDialogContent task={task as Task} />
-        </Dialog>
+        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+             <Dialog>
+                <DialogTrigger asChild>
+                    <button className="w-full text-left"><CardInner /></button>
+                </DialogTrigger>
+                <TaskDialogContent task={task as Task} />
+            </Dialog>
+        </div>
     );
 }
 
@@ -326,42 +320,91 @@ const weekDaysColumns = [
 ];
 
 export const KanbanBoard = () => {
-    const { posts, scheduledPosts } = usePosts();
-    const [tasks, setTasks] = React.useState<(Task | PostTask)[]>([]);
+    const { posts, scheduledPosts, updatePostDate } = usePosts();
+    const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
+    const [referenceDate, setReferenceDate] = React.useState(new Date());
 
     React.useEffect(() => {
-        const referenceDate = new Date();
         const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
         const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
         const allTasks = getWeekTasks(posts, scheduledPosts);
-        const weekTasks = allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
-        setTasks(weekTasks);
-    }, [posts, scheduledPosts]);
+        const currentWeekTasks = allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
+        
+        const groupedTasks: Record<number, (Task | PostTask)[]> = {};
+        for (let i = 0; i < 7; i++) {
+            groupedTasks[i] = [];
+        }
+        currentWeekTasks.forEach(task => {
+            const dayIndex = getDay(task.date);
+            if (groupedTasks[dayIndex]) {
+                groupedTasks[dayIndex].push(task);
+            }
+        });
+        
+        for (let i = 0; i < 7; i++) {
+             groupedTasks[i].sort((a, b) => a.date.getTime() - b.date.getTime());
+        }
+
+        setWeekTasks(groupedTasks);
+    }, [posts, scheduledPosts, referenceDate]);
+
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination, draggableId } = result;
+
+        if (!destination) {
+            return;
+        }
+
+        const sourceDayIndex = parseInt(source.droppableId, 10);
+        const destDayIndex = parseInt(destination.droppableId, 10);
+        
+        const taskId = draggableId;
+        const postId = parseInt(taskId.replace('post-', ''));
+        
+        const task = weekTasks[sourceDayIndex].find(t => t.id === taskId);
+
+        if (task && sourceDayIndex !== destDayIndex) {
+            const dayDifference = destDayIndex - sourceDayIndex;
+            const newDate = addDays(task.date, dayDifference);
+            updatePostDate(postId, newDate.toISOString());
+        }
+    };
 
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
-            {weekDaysColumns.map(column => (
-                <div key={column.id} className={cn("rounded-lg p-2 bg-card/40 dark:bg-black/20")}>
-                    <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
-                    <div className="flex flex-col gap-2 min-h-[100px]">
-                        {tasks.length > 0 ? (
-                            tasks
-                                .filter(task => getDay(task.date) === column.id)
-                                .sort((a, b) => a.date.getTime() - b.date.getTime())
-                                .map(task => <TaskCard key={task.id} task={task} />)
-                        ) : (
-                            <></>
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
+                {weekDaysColumns.map(column => (
+                    <Droppable key={column.id} droppableId={String(column.id)}>
+                        {(provided, snapshot) => (
+                             <div 
+                                ref={provided.innerRef} 
+                                {...provided.droppableProps}
+                                className={cn(
+                                    "rounded-lg p-2 bg-card/40 dark:bg-black/20",
+                                    snapshot.isDraggingOver && 'bg-accent/50'
+                                )}
+                             >
+                                <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
+                                <div className="flex flex-col gap-2 min-h-[100px]">
+                                    {weekTasks[column.id] && weekTasks[column.id].map((task, index) => (
+                                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                                            {(provided, snapshot) => (
+                                                <TaskCard 
+                                                    task={task} 
+                                                    provided={provided}
+                                                    isDragging={snapshot.isDragging}
+                                                />
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            </div>
                         )}
-                    </div>
-                </div>
-            ))}
-        </div>
+                    </Droppable>
+                ))}
+            </div>
+        </DragDropContext>
     )
 }
-
-    
-
-    
-
-

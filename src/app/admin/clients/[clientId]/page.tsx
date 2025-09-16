@@ -72,43 +72,39 @@ function ClientDashboard() {
             alert("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
-    
-        const date = new Date(dateTime);
-        const formattedDate = format(date, "dd 'de' MMM, yyyy", { locale: ptBR });
-    
+
         let finalImageUrl: string | undefined = undefined;
         let finalCoverImageUrl: string | undefined = undefined;
         let finalUrl = postUrl;
-    
+
         if (file) { // An uploaded file takes precedence
-            if (type.startsWith('video')) {
-                finalUrl = URL.createObjectURL(file);
-            } else {
-                finalImageUrl = URL.createObjectURL(file);
-            }
+             finalUrl = URL.createObjectURL(file);
         }
-    
+        
         if (videoCoverFile) {
             finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
-            // If it's not a video, the cover can be the main image
-            if (!type.startsWith('video')) {
-                finalImageUrl = finalCoverImageUrl;
-            }
         }
-    
+        
+        // If it's an image post, the main file is the image
+        if (type === 'image' && file) {
+            finalImageUrl = URL.createObjectURL(file);
+        }
+
         // If it's an image post with no file, use a placeholder
         if (type === 'image' && !finalImageUrl) {
             finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
         }
-    
+
         // For video posts, if a cover is uploaded, use it as the preview `imageUrl` for cards.
-        if (type.startsWith('video') && finalCoverImageUrl) {
+        if ((type === 'video_horizontal' || type === 'reels') && finalCoverImageUrl) {
             finalImageUrl = finalCoverImageUrl;
+        } else if (type.startsWith('video') && !finalImageUrl && file) {
+             // If no cover, try to use a frame or just show nothing for video on card
         }
-    
+
         const newPost: Omit<Post, 'id' | 'status'> = {
             title,
-            date: formattedDate,
+            date: new Date(dateTime).toISOString(), // Store as ISO string
             type: type as PostType,
             description,
             socials: socials as any, // Cast for now
@@ -264,6 +260,9 @@ function ClientDashboard() {
 }
 
 const getPostImage = (post: Post): string => {
+    if (post.coverImageUrl) {
+        return post.coverImageUrl;
+    }
     if (post.type === 'carousel' && post.images && post.images.length > 0) {
         return post.images[0].url;
     }

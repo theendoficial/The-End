@@ -5,8 +5,9 @@ import * as React from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, FileWarning, CheckCircle2, MoreHorizontal, Instagram, Youtube, Send, ArrowRight, ArrowLeft, Download, Edit, Clock, Check, Trash2 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
-import { ptBR, set } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
+import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants, Button } from '@/components/ui/button';
@@ -57,6 +58,7 @@ type PostsContextType = {
     scheduledPosts: Post[];
     updatePostStatus: (postId: number, newStatus: Status) => void;
     addPost: (newPostData: Omit<Post, 'id' | 'status'>) => void;
+    updatePostDate: (postId: number, newDate: string) => void;
 };
 
 const PostsContext = React.createContext<PostsContextType | undefined>(undefined);
@@ -73,31 +75,42 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
         };
         setPosts(prevPosts => [newPost, ...prevPosts]);
     };
+    
+    const updatePostDate = (postId: number, newDate: string) => {
+        setPosts(currentPosts => currentPosts.map(p =>
+            p.id === postId ? { ...p, date: newDate } : p
+        ));
+        setScheduledPosts(currentPosts => currentPosts.map(p =>
+            p.id === postId ? { ...p, date: newDate } : p
+        ));
+    };
 
     const updatePostStatus = (postId: number, newStatus: Status) => {
-        const postToMove = posts.find(p => p.id === postId);
-
+        const postToMove = posts.find(p => p.id === postId) || scheduledPosts.find(p => p.id === postId);
+    
         if (newStatus === 'approved') {
             if (postToMove) {
+                // Move from 'posts' to 'scheduledPosts'
                 setScheduledPosts(prev => [...prev, { ...postToMove, status: 'scheduled' }]);
                 setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
             }
         } else if (newStatus === 'canceled') {
+            // Remove from both lists
             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-        } else if (newStatus === 'notified') {
-             setPosts(currentPosts => currentPosts.map(p =>
+            setScheduledPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
+        } else {
+             // Update status in whichever list it's in
+            setPosts(currentPosts => currentPosts.map(p =>
                 p.id === postId ? { ...p, status: newStatus } : p
             ));
-        }
-        else {
-             setPosts(currentPosts => currentPosts.map(p =>
+            setScheduledPosts(currentPosts => currentPosts.map(p =>
                 p.id === postId ? { ...p, status: newStatus } : p
             ));
         }
     };
 
     return (
-        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus, addPost }}>
+        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus, addPost, updatePostDate }}>
             {children}
         </PostsContext.Provider>
     );
@@ -148,7 +161,7 @@ export type PostImage = {
 export type Post = {
     id: number;
     title: string;
-    date: string;
+    date: string; // ISO 8601 format
     status: Status;
     imageUrl?: string;
     coverImageUrl?: string;
@@ -175,31 +188,6 @@ const socialIcons: Record<SocialNetwork, React.ComponentType<any>> = {
     tiktok: (props) => <TiktokIcon className="h-4 w-4" {...props} />,
     youtube: (props) => <Youtube {...props} />,
 };
-
-function parseDate(dateStr: string): Date {
-    // Handles both 'YYYY-MM-DD' and 'DD de Mmm, YYYY'
-    if (dateStr.includes('-')) {
-        return new Date(dateStr + 'T00:00:00'); // Assume start of day for YYYY-MM-DD
-    }
-
-    const months: { [key: string]: number } = {
-        'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
-        'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
-    };
-    // "20 de Set, 2025" -> ["20", "Set", "2025"]
-    const parts = dateStr.replace(/,/g, '').replace('de ', '').split(' ');
-    if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = months[parts[1]];
-        const year = parseInt(parts[2], 10);
-        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-            return new Date(year, month, day);
-        }
-    }
-    // Fallback for invalid formats
-    return new Date();
-}
-
 
 function CalendarDots({ day, events }: { day: Date, events: Record<string, { type: any }[]> }) {
     const dateString = day.toISOString().split('T')[0];
@@ -228,7 +216,7 @@ export function CalendarWidget() {
         const events: Record<string, { type: any }[]> = {};
         const combinedPosts = [...posts, ...scheduledPosts];
         combinedPosts.forEach(post => {
-            const postDate = parseDate(post.date);
+            const postDate = new Date(post.date);
             const dateString = postDate.toISOString().split('T')[0];
             if (!events[dateString]) {
                 events[dateString] = [];
@@ -239,7 +227,7 @@ export function CalendarWidget() {
     }, [posts, scheduledPosts]);
 
     const scheduledDays = React.useMemo(() => {
-        return Object.keys(allEvents).map(dateStr => new Date(dateStr + 'T00:00:00'));
+        return Object.keys(allEvents).map(dateStr => new Date(dateStr));
     }, [allEvents]);
 
     return (
@@ -348,7 +336,7 @@ export function PendingApprovalsWidget() {
 
 export function UpcomingPostsList() {
     const { posts, scheduledPosts } = usePosts();
-    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -375,7 +363,7 @@ export function UpcomingPostsList() {
 
 export function ProjectUpcomingPostsList() {
     const { posts, scheduledPosts, updatePostStatus } = usePosts();
-    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 
     const handleRequestChange = (postId: number, comment: string) => {
@@ -407,7 +395,7 @@ export function ProjectUpcomingPostsList() {
                                 </DialogTrigger>
                             </TableCell>
                             <TableCell className="capitalize text-muted-foreground">{postLegends[post.type]}</TableCell>
-                            <TableCell className="text-muted-foreground">{post.date}</TableCell>
+                            <TableCell className="text-muted-foreground">{format(new Date(post.date), "dd 'de' MMM, yyyy", { locale: ptBR })}</TableCell>
                             <TableCell>
                                 <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
                                     {statusConfig[post.status].label}
@@ -456,7 +444,7 @@ const PostListItem = ({ post }: { post: Post }) => {
                       )}
                       <div className="flex-grow">
                           <p className="font-semibold text-xs leading-tight">{post.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type as keyof typeof postLegends]} - {post.date}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 capitalize">{postLegends[post.type as keyof typeof postLegends]} - {format(new Date(post.date), "dd 'de' MMM", { locale: ptBR })}</p>
                       </div>
                   </button>
               </DialogTrigger>
@@ -716,9 +704,9 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                         </div>
                     )}
                     
-                    <DialogHeader className="mt-0 pt-0">
+                    <DialogHeader className="mt-0 pt-0 text-left">
                         <DialogTitle className="text-xl">{post.title}</DialogTitle>
-                        <DialogDescription>{post.date}</DialogDescription>
+                        <DialogDescription>{format(new Date(post.date), "dd 'de' MMMM, yyyy 'às' HH:mm", { locale: ptBR })}</DialogDescription>
                     </DialogHeader>
                     
                     <div>
@@ -763,7 +751,7 @@ export function FeedPreview() {
     const { scheduledPosts } = usePosts();
     const feedPosts = scheduledPosts
         .filter(post => ['scheduled', 'completed'].includes(post.status))
-        .sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const getPostImage = (post: Post): PostImage | null => {
         if (post.type === 'carousel' && post.images && post.images.length > 0) {
@@ -805,4 +793,3 @@ export function FeedPreview() {
         </div>
     );
 }
-
