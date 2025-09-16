@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -31,10 +31,23 @@ function ClientDashboard() {
     const [type, setType] = React.useState('');
     const [description, setDescription] = React.useState('');
     const [socials, setSocials] = React.useState<string[]>([]);
+    const [file, setFile] = React.useState<File | null>(null);
+    const [fileName, setFileName] = React.useState('');
+    const [postUrl, setPostUrl] = React.useState('');
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const selectedFile = event.target.files[0];
+            setFile(selectedFile);
+            setFileName(selectedFile.name);
+        }
+    };
     
     const handleSavePost = () => {
         // Here you would typically add the new post to your state management
-        console.log({ title, date, type, description, socials });
+        console.log({ title, date, type, description, socials, file, postUrl });
         // For now, we just log it and close the dialog
         setOpenNewPost(false);
         // Reset form
@@ -43,6 +56,9 @@ function ClientDashboard() {
         setType('');
         setDescription('');
         setSocials([]);
+        setFile(null);
+        setFileName('');
+        setPostUrl('');
     };
     
     return (
@@ -71,6 +87,29 @@ function ClientDashboard() {
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="date" className="text-right">Data de Publicação</Label>
                                 <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="attachment" className="text-right">Conteúdo</Label>
+                                <div className="col-span-3 flex items-center gap-2">
+                                     <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Anexar Arquivo
+                                    </Button>
+                                    <Input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        onChange={handleFileChange}
+                                    />
+                                    {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
+                                </div>
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="postUrl" className="text-right">URL</Label>
+                                <div className="col-span-3 relative flex items-center">
+                                    <LinkIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                                    <Input id="postUrl" placeholder="https://..." value={postUrl} onChange={(e) => setPostUrl(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20 pl-10" />
+                                </div>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="type" className="text-right">Tipo de Post</Label>
