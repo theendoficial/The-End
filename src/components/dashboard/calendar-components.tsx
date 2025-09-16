@@ -323,6 +323,11 @@ export const KanbanBoard = () => {
     const { posts, scheduledPosts, updatePostDate } = usePosts();
     const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
     const [referenceDate, setReferenceDate] = React.useState(new Date());
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     React.useEffect(() => {
         const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
@@ -372,39 +377,43 @@ export const KanbanBoard = () => {
 
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
-                {weekDaysColumns.map(column => (
-                    <Droppable key={column.id} droppableId={String(column.id)}>
-                        {(provided, snapshot) => (
-                             <div 
-                                ref={provided.innerRef} 
-                                {...provided.droppableProps}
-                                className={cn(
-                                    "rounded-lg p-2 bg-card/40 dark:bg-black/20",
-                                    snapshot.isDraggingOver && 'bg-accent/50'
+        <>
+            {isClient && (
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
+                        {weekDaysColumns.map(column => (
+                            <Droppable key={column.id} droppableId={String(column.id)}>
+                                {(provided, snapshot) => (
+                                    <div 
+                                        ref={provided.innerRef} 
+                                        {...provided.droppableProps}
+                                        className={cn(
+                                            "rounded-lg p-2 bg-card/40 dark:bg-black/20",
+                                            snapshot.isDraggingOver && 'bg-accent/50'
+                                        )}
+                                    >
+                                        <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
+                                        <div className="flex flex-col gap-2 min-h-[100px]">
+                                            {weekTasks[column.id] && weekTasks[column.id].map((task, index) => (
+                                                <Draggable key={task.id} draggableId={task.id} index={index}>
+                                                    {(provided, snapshot) => (
+                                                        <TaskCard 
+                                                            task={task} 
+                                                            provided={provided}
+                                                            isDragging={snapshot.isDragging}
+                                                        />
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
+                                        </div>
+                                    </div>
                                 )}
-                             >
-                                <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
-                                <div className="flex flex-col gap-2 min-h-[100px]">
-                                    {weekTasks[column.id] && weekTasks[column.id].map((task, index) => (
-                                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                                            {(provided, snapshot) => (
-                                                <TaskCard 
-                                                    task={task} 
-                                                    provided={provided}
-                                                    isDragging={snapshot.isDragging}
-                                                />
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                    {provided.placeholder}
-                                </div>
-                            </div>
-                        )}
-                    </Droppable>
-                ))}
-            </div>
-        </DragDropContext>
+                            </Droppable>
+                        ))}
+                    </div>
+                </DragDropContext>
+            )}
+        </>
     )
 }
