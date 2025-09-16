@@ -455,3 +455,5 @@ export const KanbanBoard = ({ isAdminView }: { isAdminView?: boolean }) => {
         </>
     )
 }
+
+    
