@@ -2,7 +2,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Upload, Link as LinkIcon, Bell, Settings as SettingsIcon, Download, File as FileIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -22,6 +22,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 // Mock data, this would come from a DB
@@ -80,8 +81,9 @@ function ClientDashboard() {
 
         let finalImageUrl: string | undefined = undefined;
         let finalCoverImageUrl: string | undefined = undefined;
-        let finalUrl = postUrl;
+        let finalUrl = postUrl; // Use postUrl by default
 
+        // If a file is attached, it takes precedence for the main URL
         if (file) {
             finalUrl = URL.createObjectURL(file);
         }
@@ -90,15 +92,20 @@ function ClientDashboard() {
             finalCoverImageUrl = URL.createObjectURL(videoCoverFile);
         }
 
-        if (type === 'image' && file) {
-            finalImageUrl = URL.createObjectURL(file);
-        } else if (type === 'image' && !finalImageUrl) {
-            finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
+        // For image posts, ensure there's an image URL
+        if (type === 'image') {
+            if (file) {
+                finalImageUrl = URL.createObjectURL(file);
+            } else if (!finalImageUrl) {
+                finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`;
+            }
         }
-
+        
+        // For videos, the cover image becomes the main imageUrl for card display
         if ((type === 'video_horizontal' || type === 'reels') && finalCoverImageUrl) {
             finalImageUrl = finalCoverImageUrl;
         }
+
 
         const newPost: Omit<Post, 'id' | 'status'> = {
             title,
@@ -391,7 +398,7 @@ function ClientApprovals() {
 
 
 function ClientCalendar() {
-    const { posts, scheduledPosts, updatePostDate } = usePosts();
+    const { posts, scheduledPosts, updatePostDate, updatePostStatus } = usePosts();
     if (!posts || !scheduledPosts || !updatePostDate) {
         return <div>Carregando calendário...</div>; // Or a loading spinner
     }
@@ -403,7 +410,8 @@ function ClientCalendar() {
                     posts={posts} 
                     scheduledPosts={scheduledPosts} 
                     updatePostDate={updatePostDate} 
-                    isAdminView={true} 
+                    isAdminView={true}
+                    updatePostStatus={updatePostStatus} 
                 />
             </div>
             <div>
@@ -412,6 +420,7 @@ function ClientCalendar() {
                     posts={posts} 
                     scheduledPosts={scheduledPosts} 
                     isAdminView={true} 
+                    updatePostStatus={updatePostStatus}
                 />
             </div>
         </div>
@@ -515,8 +524,160 @@ function ClientProjects({ client }: { client: any }) {
     )
 }
 
+type Report = {
+    id: number;
+    title: string;
+    url: string;
+    date: string;
+    fileName?: string;
+};
+
 function ClientReports() {
-    return <div>Relatórios</div>
+    const [reports, setReports] = React.useState<Report[]>([]);
+    const [openNewReport, setOpenNewReport] = React.useState(false);
+    const [title, setTitle] = React.useState('');
+    const [file, setFile] = React.useState<File | null>(null);
+    const [fileName, setFileName] = React.useState('');
+    const [reportUrl, setReportUrl] = React.useState('');
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const selectedFile = event.target.files[0];
+            setFile(selectedFile);
+            setFileName(selectedFile.name);
+        }
+    };
+    
+    const handleSaveReport = () => {
+        if (!title || (!file && !reportUrl)) {
+            alert("Por favor, preencha o título e anexe um arquivo ou insira uma URL.");
+            return;
+        }
+
+        let finalUrl = reportUrl;
+        if (file) {
+            finalUrl = URL.createObjectURL(file);
+        }
+
+        const newReport: Report = {
+            id: Date.now(),
+            title,
+            url: finalUrl,
+            date: new Date().toISOString(),
+            fileName: file ? file.name : undefined,
+        };
+
+        setReports(prev => [newReport, ...prev]);
+        
+        // Reset form and close dialog
+        setOpenNewReport(false);
+        setTitle('');
+        setFile(null);
+        setFileName('');
+        setReportUrl('');
+    };
+    
+    return (
+        <div className="space-y-6">
+             <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Relatórios do Cliente</h2>
+                <Dialog open={openNewReport} onOpenChange={setOpenNewReport}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Novo Relatório
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg bg-card/80 dark:bg-black/80 backdrop-blur-xl border-white/10">
+                        <DialogHeader>
+                            <DialogTitle>Adicionar Novo Relatório</DialogTitle>
+                            <DialogDescription>
+                                Preencha os detalhes para adicionar um novo relatório para o cliente.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="report-title" className="text-right">Título</Label>
+                                <Input id="report-title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="report-attachment" className="text-right">Arquivo</Label>
+                                <div className="col-span-3 flex items-center gap-2">
+                                     <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Anexar PDF
+                                    </Button>
+                                    <Input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        onChange={handleFileChange}
+                                        accept="application/pdf"
+                                    />
+                                    {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="report-url" className="text-right">URL</Label>
+                                <div className="col-span-3 relative flex items-center">
+                                    <LinkIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                                    <Input id="report-url" placeholder="Ou incorpore um link externo..." value={reportUrl} onChange={(e) => setReportUrl(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20 pl-10" />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                             <DialogClose asChild>
+                                <Button type="button" variant="secondary">Cancelar</Button>
+                            </DialogClose>
+                            <Button type="button" onClick={handleSaveReport}>Salvar Relatório</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-b-white/10">
+                                <TableHead>Título do Relatório</TableHead>
+                                <TableHead>Data de Envio</TableHead>
+                                <TableHead className="text-right">Ação</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {reports.length > 0 ? (
+                                reports.map((report) => (
+                                    <TableRow key={report.id} className="border-b-white/10">
+                                        <TableCell className="font-medium flex items-center gap-3">
+                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                            {report.title}
+                                        </TableCell>
+                                        <TableCell>{format(new Date(report.date), "dd 'de' MMM, yyyy", { locale: ptBR })}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <a href={report.url} download={report.fileName} target="_blank" rel="noopener noreferrer">
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    {report.fileName ? 'Baixar' : 'Visualizar'}
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                        Nenhum relatório encontrado.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    )
 }
 function ClientDocuments() {
     return <div>Documentos</div>

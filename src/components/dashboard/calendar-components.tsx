@@ -51,9 +51,9 @@ const adminStatusColors: Record<Status, string> = {
     notified: 'bg-gray-500', // Cinza
     approved: 'bg-orange-500', // Laranja
     in_revision: 'bg-red-500', // Vermelho
+    scheduled: 'bg-blue-500',
     // Fallback/default colors for other statuses
     awaiting_approval: 'bg-purple-500',
-    scheduled: 'bg-blue-500',
     canceled: 'bg-red-700',
     completed: 'bg-green-500',
 }
@@ -205,8 +205,7 @@ const TaskCard = ({ task, provided, isDragging, isAdminView }: { task: Task | Po
     );
 }
 
-const CalendarEvent = ({ event, isAdminView }: { event: Task | PostTask, isAdminView?: boolean }) => {
-    const { updatePostStatus } = usePosts();
+const CalendarEvent = ({ event, isAdminView, onUpdateStatus }: { event: Task | PostTask, isAdminView?: boolean, onUpdateStatus?: (postId: number, status: Status) => void }) => {
     const eventColor = isAdminView ? adminStatusColors[event.status] : allPostColors[event.type];
 
     const EventContent = () => (
@@ -228,7 +227,7 @@ const CalendarEvent = ({ event, isAdminView }: { event: Task | PostTask, isAdmin
                 <DialogTrigger asChild>
                     <button className="w-full text-left"><EventContent /></button>
                 </DialogTrigger>
-                <PostDialogContent post={event.postData} onUpdateStatus={updatePostStatus} isAdminView={isAdminView} />
+                <PostDialogContent post={event.postData} onUpdateStatus={onUpdateStatus} isAdminView={isAdminView} />
             </Dialog>
         );
     }
@@ -238,12 +237,12 @@ const CalendarEvent = ({ event, isAdminView }: { event: Task | PostTask, isAdmin
             <DialogTrigger asChild>
                 <button className="w-full text-left"><EventContent /></button>
             </DialogTrigger>
-            <TaskDialogContent task={event as Task} onUpdateStatus={updatePostStatus} isAdminView={isAdminView} />
+            <TaskDialogContent task={event as Task} onUpdateStatus={onUpdateStatus} isAdminView={isAdminView} />
         </Dialog>
     );
 };
 
-export function FullCalendar({ posts, scheduledPosts, isAdminView }: { posts: Post[], scheduledPosts: Post[], isAdminView?: boolean }) {
+export function FullCalendar({ posts, scheduledPosts, isAdminView, updatePostStatus }: { posts: Post[], scheduledPosts: Post[], isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [events, setEvents] = React.useState<(Task | PostTask)[]>([]);
     
@@ -334,7 +333,7 @@ export function FullCalendar({ posts, scheduledPosts, isAdminView }: { posts: Po
                                     {format(day, 'd')}
                                 </span>
                                 {eventsForDay.map(event => (
-                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} />
+                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} onUpdateStatus={updatePostStatus} />
                                 ))}
                             </div>
                         );
@@ -355,7 +354,7 @@ const weekDaysColumns = [
     { id: 6, title: 'Sábado' },
 ];
 
-export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView }: { posts: Post[], scheduledPosts: Post[], updatePostDate: (postId: number, newDate: string) => void, isAdminView?: boolean }) => {
+export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView, updatePostStatus }: { posts: Post[], scheduledPosts: Post[], updatePostDate: (postId: number, newDate: string) => void, isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) => {
     const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
     const [referenceDate, setReferenceDate] = React.useState(new Date());
     const [isClient, setIsClient] = React.useState(false);
