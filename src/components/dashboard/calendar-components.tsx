@@ -415,7 +415,7 @@ export const KanbanBoard = ({ isAdminView }: { isAdminView?: boolean }) => {
 
     return (
         <>
-            {isClient && (
+            {isClient ? (
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
                         {weekDaysColumns.map(column => (
@@ -451,7 +451,7 @@ export const KanbanBoard = ({ isAdminView }: { isAdminView?: boolean }) => {
                         ))}
                     </div>
                 </DragDropContext>
-            )}
+            ) : null}
         </>
     )
 }
