@@ -11,8 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts } from '@/components/dashboard/dashboard-components';
+import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType } from '@/components/dashboard/dashboard-components';
 import * as React from 'react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 // Mock data, this would come from a DB
 const clients = [
@@ -22,13 +24,13 @@ const clients = [
 ];
 
 function ClientDashboard() {
-    const { posts, updatePostStatus } = usePosts();
+    const { addPost } = usePosts();
     const [openNewPost, setOpenNewPost] = React.useState(false);
 
     // New Post Form State
     const [title, setTitle] = React.useState('');
-    const [date, setDate] = React.useState('');
-    const [type, setType] = React.useState('');
+    const [dateTime, setDateTime] = React.useState('');
+    const [type, setType] = React.useState<PostType | ''>('');
     const [description, setDescription] = React.useState('');
     const [socials, setSocials] = React.useState<string[]>([]);
     const [file, setFile] = React.useState<File | null>(null);
@@ -46,13 +48,34 @@ function ClientDashboard() {
     };
     
     const handleSavePost = () => {
-        // Here you would typically add the new post to your state management
-        console.log({ title, date, type, description, socials, file, postUrl });
-        // For now, we just log it and close the dialog
+        if (!title || !dateTime || !type || !description) {
+            // Basic validation
+            alert("Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        const date = new Date(dateTime);
+        const formattedDate = format(date, "dd 'de' MMM, yyyy", { locale: ptBR });
+
+        const newPost = {
+            title,
+            date: formattedDate,
+            type,
+            description,
+            socials: socials as any, // Cast for now
+            // In a real app, you would handle file upload and get a URL
+            // For now, we use a placeholder or the provided URL
+            imageUrl: file ? URL.createObjectURL(file) : 'https://picsum.photos/seed/newpost/600/400',
+            imageHint: 'new post',
+            url: postUrl,
+        };
+
+        addPost(newPost);
+        
         setOpenNewPost(false);
         // Reset form
         setTitle('');
-        setDate('');
+        setDateTime('');
         setType('');
         setDescription('');
         setSocials([]);
@@ -85,8 +108,8 @@ function ClientDashboard() {
                                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="date" className="text-right">Data de Publicação</Label>
-                                <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
+                                <Label htmlFor="date" className="text-right">Data e Hora</Label>
+                                <Input id="date" type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="col-span-3 bg-background/50 dark:bg-black/20" />
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="attachment" className="text-right">Conteúdo</Label>
@@ -113,7 +136,7 @@ function ClientDashboard() {
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="type" className="text-right">Tipo de Post</Label>
-                                <Select onValueChange={setType} value={type}>
+                                <Select onValueChange={(value) => setType(value as PostType)} value={type}>
                                     <SelectTrigger className="col-span-3 bg-background/50 dark:bg-black/20">
                                         <SelectValue placeholder="Selecione o tipo" />
                                     </SelectTrigger>

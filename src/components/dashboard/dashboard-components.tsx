@@ -57,6 +57,7 @@ type PostsContextType = {
     posts: Post[];
     scheduledPosts: Post[];
     updatePostStatus: (postId: number, newStatus: Status) => void;
+    addPost: (newPostData: Omit<Post, 'id' | 'status'>) => void;
 };
 
 const PostsContext = React.createContext<PostsContextType | undefined>(undefined);
@@ -64,6 +65,15 @@ const PostsContext = React.createContext<PostsContextType | undefined>(undefined
 export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     const [posts, setPosts] = React.useState<Post[]>(initialPostsData);
     const [scheduledPosts, setScheduledPosts] = React.useState<Post[]>([]);
+
+    const addPost = (newPostData: Omit<Post, 'id' | 'status'>) => {
+        const newPost: Post = {
+            ...newPostData,
+            id: Date.now(), // simple unique ID for demo purposes
+            status: 'awaiting_approval',
+        };
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+    };
 
     const updatePostStatus = (postId: number, newStatus: Status) => {
         if (newStatus === 'approved') {
@@ -82,7 +92,7 @@ export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus }}>
+        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus, addPost }}>
             {children}
         </PostsContext.Provider>
     );
@@ -735,6 +745,7 @@ export function FeedPreview() {
     
 
     
+
 
 
 
