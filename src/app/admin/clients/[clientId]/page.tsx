@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -917,7 +918,7 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
         
         toast({
             title: "Notificação Enviada!",
-            description: `A notificação "${notificationMessage}" foi enviada para o cliente.`,
+            description: `A mensagem foi enviada para o cliente.`,
             variant: "success",
         });
         setNotificationMessage('');

@@ -242,13 +242,18 @@ const CalendarEvent = ({ event, isAdminView, onUpdateStatus }: { event: Task | P
     );
 };
 
-export function FullCalendar({ posts, scheduledPosts, isAdminView, updatePostStatus }: { posts: Post[], scheduledPosts: Post[], isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) {
+export function FullCalendar({ posts: propsPosts, scheduledPosts: propsScheduledPosts, isAdminView, updatePostStatus: propsUpdatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) {
+    const { posts, scheduledPosts, updatePostStatus } = usePosts();
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [events, setEvents] = React.useState<(Task | PostTask)[]>([]);
     
+    const finalPosts = propsPosts ?? posts;
+    const finalScheduledPosts = propsScheduledPosts ?? scheduledPosts;
+    const finalUpdatePostStatus = propsUpdatePostStatus ?? updatePostStatus;
+
     React.useEffect(() => {
-        setEvents(getWeekTasks(posts, scheduledPosts));
-    }, [posts, scheduledPosts]);
+        setEvents(getWeekTasks(finalPosts, finalScheduledPosts));
+    }, [finalPosts, finalScheduledPosts]);
 
 
     const firstDayOfMonth = startOfMonth(currentDate);
@@ -333,7 +338,7 @@ export function FullCalendar({ posts, scheduledPosts, isAdminView, updatePostSta
                                     {format(day, 'd')}
                                 </span>
                                 {eventsForDay.map(event => (
-                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} onUpdateStatus={updatePostStatus} />
+                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} onUpdateStatus={finalUpdatePostStatus} />
                                 ))}
                             </div>
                         );
@@ -354,10 +359,15 @@ const weekDaysColumns = [
     { id: 6, title: 'Sábado' },
 ];
 
-export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView, updatePostStatus }: { posts: Post[], scheduledPosts: Post[], updatePostDate: (postId: number, newDate: string) => void, isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) => {
+export const KanbanBoard = ({ posts: propsPosts, scheduledPosts: propsScheduledPosts, updatePostDate: propsUpdatePostDate, isAdminView, updatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], updatePostDate?: (postId: number, newDate: string) => void, isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) => {
+    const context = usePosts();
     const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
     const [referenceDate, setReferenceDate] = React.useState(new Date());
     const [isClient, setIsClient] = React.useState(false);
+
+    const posts = propsPosts ?? context.posts;
+    const scheduledPosts = propsScheduledPosts ?? context.scheduledPosts;
+    const updatePostDate = propsUpdatePostDate ?? context.updatePostDate;
 
     React.useEffect(() => {
         setIsClient(true);
@@ -400,57 +410,56 @@ export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView
         const taskId = draggableId;
         const postId = parseInt(taskId.replace('post-', ''));
         
-        const task = weekTasks[sourceDayIndex].find(t => t.id === taskId);
+        const task = weekTasks[sourceDayIndex]?.find(t => t.id === taskId);
 
         if (task && sourceDayIndex !== destDayIndex) {
             const dayDifference = destDayIndex - sourceDayIndex;
             const newDate = addDays(task.date, dayDifference);
-            updatePostDate(postId, newDate.toISOString());
+            if (updatePostDate) {
+                updatePostDate(postId, newDate.toISOString());
+            }
         }
     };
 
+    if (!isClient) {
+        return null; // Or a loading skeleton
+    }
 
     return (
-        <>
-            {isClient ? (
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
-                        {weekDaysColumns.map(column => (
-                            <Droppable key={column.id} droppableId={String(column.id)} isDropDisabled={!isAdminView}>
-                                {(provided, snapshot) => (
-                                    <div 
-                                        ref={provided.innerRef} 
-                                        {...provided.droppableProps}
-                                        className={cn(
-                                            "rounded-lg p-2 bg-card/40 dark:bg-black/20",
-                                            snapshot.isDraggingOver && 'bg-accent/50'
-                                        )}
-                                    >
-                                        <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
-                                        <div className="flex flex-col gap-2 min-h-[100px]">
-                                            {weekTasks[column.id] && weekTasks[column.id].map((task, index) => (
-                                                <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isAdminView}>
-                                                    {(provided, snapshot) => (
-                                                        <TaskCard 
-                                                            task={task} 
-                                                            provided={provided}
-                                                            isDragging={snapshot.isDragging}
-                                                            isAdminView={isAdminView}
-                                                        />
-                                                    )}
-                                                </Draggable>
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    </div>
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
+                {weekDaysColumns.map(column => (
+                    <Droppable key={column.id} droppableId={String(column.id)} isDropDisabled={!isAdminView}>
+                        {(provided, snapshot) => (
+                            <div 
+                                ref={provided.innerRef} 
+                                {...provided.droppableProps}
+                                className={cn(
+                                    "rounded-lg p-2 bg-card/40 dark:bg-black/20",
+                                    snapshot.isDraggingOver && 'bg-accent/50'
                                 )}
-                            </Droppable>
-                        ))}
-                    </div>
-                </DragDropContext>
-            ) : null}
-        </>
-    )
-}
-
-    
+                            >
+                                <h3 className="font-semibold mb-3 text-center text-sm">{column.title}</h3>
+                                <div className="flex flex-col gap-2 min-h-[100px]">
+                                    {weekTasks[column.id] && weekTasks[column.id].map((task, index) => (
+                                        <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isAdminView}>
+                                            {(provided, snapshot) => (
+                                                <TaskCard 
+                                                    task={task} 
+                                                    provided={provided}
+                                                    isDragging={snapshot.isDragging}
+                                                    isAdminView={isAdminView}
+                                                />
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            </div>
+                        )}
+                    </Droppable>
+                ))}
+            </div>
+        </DragDropContext>
+    );
+};

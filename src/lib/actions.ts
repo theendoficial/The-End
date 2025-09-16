@@ -30,23 +30,24 @@ export async function login(
   // Mock authentication
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-  if (email === 'admin@example.com' && password === 'password123') {
+  const isAdmin = (email === 'admin@example.com' || email === 'jhokkehgames@gmail.com') && password === 'password123';
+
+  if (isAdmin) {
     redirect('/admin');
   }
 
-  const validUser1 = email === 'user@example.com' && password === 'password123';
-  const validUser2 = email === 'jhokkehgames@gmail.com' && password === '1234567890';
+  const isClient = email === 'user@example.com' && password === 'password123';
 
-  if (!validUser1 && !validUser2) {
-    return {
-      errors: {
-        server: ['Invalid email or password. Please try again.'],
-      },
-      message: 'Invalid email or password.',
-    };
+  if (isClient) {
+    redirect('/dashboard');
   }
-  
-  redirect('/dashboard');
+
+  return {
+    errors: {
+      server: ['Invalid email or password. Please try again.'],
+    },
+    message: 'Invalid email or password.',
+  };
 }
 
 
