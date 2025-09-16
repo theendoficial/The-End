@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { buttonVariants, Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { scheduledPosts, postColors, postLegends, PostType, Post, PostDialogContent, initialPostsData } from './dashboard-components';
+import { postColors, postLegends, PostType, Post, PostDialogContent, usePosts } from './dashboard-components';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const allPostLegends: Record<string, string> = {
@@ -44,30 +44,35 @@ const allPostColors: Record<string, string> = {
 };
 
 
-type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done';
+type TaskStatus = 'todo' | 'in-progress' | 'approval' | 'done' | 'awaiting_approval' | 'in_revision' | 'scheduled' | 'approved' | 'canceled' | 'completed';
 
-const getWeekTasks = () => {
-    const allTasks: (Task | PostTask)[] = [];
+const getWeekTasks = (posts: Post[], scheduledPosts: Post[]) => {
+    const allPosts = [...posts, ...scheduledPosts];
+    const allTasks: (Task | PostTask)[] = allPosts.map(post => ({
+        id: `post-${post.id}`,
+        title: post.title,
+        date: new Date(post.date.replace(/(\d{2}) de (.*?), (\d{4})/, '$2 $1, $3')), // Convert date format
+        type: post.type,
+        project: { id: 6, name: 'Gestão de Mídias Sociais' },
+        status: post.status,
+        postData: post,
+    }));
     return allTasks;
 };
 
-const allScheduledEvents = getWeekTasks();
 
-const weekDaysColumns = [
-    { id: 0, title: 'Domingo' },
-    { id: 1, title: 'Segunda' },
-    { id: 2, title: 'Terça' },
-    { id: 3, title: 'Quarta' },
-    { id: 4, title: 'Quinta' },
-    { id: 5, title: 'Sexta' },
-    { id: 6, title: 'Sábado' },
-];
 
 const statusConfig: Record<TaskStatus, { label: string; color: string; className: string }> = {
     todo: { label: 'A fazer', color: 'bg-gray-400', className: 'bg-gray-800/20 border-gray-600/80 text-gray-300' },
     'in-progress': { label: 'Em progresso', color: 'bg-blue-500', className: 'bg-blue-800/20 border-blue-600/80 text-blue-300' },
     approval: { label: 'Aprovação', color: 'bg-purple-500', className: 'bg-purple-800/20 border-purple-600/80 text-purple-300' },
     done: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-800/20 border-green-600/80 text-green-300' },
+    awaiting_approval: { label: 'Aguardando Aprovação', color: 'bg-yellow-500', className: 'bg-yellow-800/20 border-yellow-600/80 text-yellow-300' },
+    in_revision: { label: 'Em Revisão', color: 'bg-orange-500', className: 'bg-orange-800/20 border-orange-600/80 text-orange-300' },
+    scheduled: { label: 'Agendado', color: 'bg-blue-500', className: 'bg-blue-800/20 border-blue-600/80 text-blue-300' },
+    approved: { label: 'Aprovado', color: 'bg-teal-500', className: 'bg-teal-800/20 border-teal-600/80 text-teal-300' },
+    canceled: { label: 'Cancelado', color: 'bg-red-500', className: 'bg-red-800/20 border-red-600/80 text-red-300' },
+    completed: { label: 'Concluído', color: 'bg-green-500', className: 'bg-green-800/20 border-green-600/80 text-green-300' }
 };
 
 
@@ -131,7 +136,7 @@ const TaskDialogContent = ({ task }: { task: Task }) => {
 
 const TaskCard = ({ task }: { task: Task | PostTask }) => {
     const Icon = taskIcons[task.type];
-    const statusInfo = statusConfig[task.status as TaskStatus];
+    const statusInfo = statusConfig[task.status as TaskStatus] || statusConfig.todo;
     
     // This is a special task that should render the post dialog
     if ('postData' in task && task.postData) {
@@ -203,6 +208,7 @@ const CalendarEvent = ({ event }: { event: Task | PostTask }) => {
 };
 
 export function FullCalendar() {
+    const { posts, scheduledPosts } = usePosts();
     const [currentDate, setCurrentDate] = React.useState(new Date());
 
     const firstDayOfMonth = startOfMonth(currentDate);
@@ -215,7 +221,7 @@ export function FullCalendar() {
 
     const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
     const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
-    const events = getWeekTasks();
+    const events = getWeekTasks(posts, scheduledPosts);
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -283,16 +289,28 @@ export function FullCalendar() {
     );
 }
 
+const weekDaysColumns = [
+    { id: 0, title: 'Domingo' },
+    { id: 1, title: 'Segunda' },
+    { id: 2, title: 'Terça' },
+    { id: 3, title: 'Quarta' },
+    { id: 4, title: 'Quinta' },
+    { id: 5, title: 'Sexta' },
+    { id: 6, title: 'Sábado' },
+];
+
 export const KanbanBoard = () => {
+    const { posts, scheduledPosts } = usePosts();
     const [tasks, setTasks] = React.useState<(Task | PostTask)[]>([]);
 
     React.useEffect(() => {
         const referenceDate = new Date();
         const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
         const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
-        const weekTasks = getWeekTasks().filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
+        const allTasks = getWeekTasks(posts, scheduledPosts);
+        const weekTasks = allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
         setTasks(weekTasks);
-    }, []);
+    }, [posts, scheduledPosts]);
 
 
     return (
@@ -319,3 +337,4 @@ export const KanbanBoard = () => {
     
 
     
+

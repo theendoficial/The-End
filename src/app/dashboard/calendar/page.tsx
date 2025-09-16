@@ -2,8 +2,9 @@
 'use client';
 
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
+import { PostsProvider } from '@/components/dashboard/dashboard-components';
 
-export default function CalendarPage() {
+function CalendarPageContent() {
   return (
     <>
       <div className="flex items-center mb-4">
@@ -23,4 +24,12 @@ export default function CalendarPage() {
       </div>
     </>
   );
+}
+
+export default function CalendarPage() {
+  return (
+    <PostsProvider>
+      <CalendarPageContent />
+    </PostsProvider>
+  )
 }

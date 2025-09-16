@@ -69,6 +69,7 @@ export const initialPostsData: Post[] = [
 
 type PostsContextType = {
     posts: Post[];
+    scheduledPosts: Post[];
     updatePostStatus: (postId: number, newStatus: Status) => void;
 };
 
@@ -76,20 +77,26 @@ const PostsContext = React.createContext<PostsContextType | undefined>(undefined
 
 export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
     const [posts, setPosts] = React.useState<Post[]>(initialPostsData);
+    const [scheduledPosts, setScheduledPosts] = React.useState<Post[]>([]);
 
     const updatePostStatus = (postId: number, newStatus: Status) => {
-        setPosts(currentPosts => {
-            if (newStatus === 'approved' || newStatus === 'canceled') {
-                return currentPosts.filter(p => p.id !== postId);
+        if (newStatus === 'approved') {
+            const postToSchedule = posts.find(p => p.id === postId);
+            if (postToSchedule) {
+                setScheduledPosts(prev => [...prev, { ...postToSchedule, status: 'scheduled' }]);
+                setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
             }
-            return currentPosts.map(p =>
+        } else if (newStatus === 'canceled') {
+            setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
+        } else {
+            setPosts(currentPosts => currentPosts.map(p =>
                 p.id === postId ? { ...p, status: newStatus } : p
-            );
-        });
+            ));
+        }
     };
 
     return (
-        <PostsContext.Provider value={{ posts, updatePostStatus }}>
+        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus }}>
             {children}
         </PostsContext.Provider>
     );
@@ -153,7 +160,7 @@ export const statusConfig: Record<Status, { label: string; className: string }> 
     awaiting_approval: { label: 'Aguardando aprovação', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
     approved: { label: 'Aprovado', className: 'bg-green-400/20 text-green-300 border-green-400/30' },
     in_revision: { label: 'Em alteração', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-    scheduled: { label: 'Agendado', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+    scheduled: { label: 'Agendado', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
     canceled: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
     completed: { label: 'Concluído', className: 'bg-green-600/20 text-green-500 border-green-600/30' }
 };
@@ -302,7 +309,9 @@ export function PendingApprovalsWidget() {
 
 
 export function UpcomingPostsList() {
-    const { posts } = usePosts();
+    const { posts, scheduledPosts } = usePosts();
+    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
              <CardHeader className="p-3">
@@ -314,8 +323,8 @@ export function UpcomingPostsList() {
                 </Link>
             </CardHeader>
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
-                {posts.length > 0 ? (
-                    posts.map((post) => (
+                {allPosts.length > 0 ? (
+                    allPosts.map((post) => (
                         <PostListItem key={post.id} post={post} />
                     ))
                 ) : (
@@ -327,9 +336,9 @@ export function UpcomingPostsList() {
 }
 
 export function ProjectUpcomingPostsList() {
-    const { posts, updatePostStatus } = usePosts();
-    const projectPosts = posts.filter(post =>
-        ['approved', 'scheduled', 'completed'].includes(post.status)
+    const { scheduledPosts, updatePostStatus } = usePosts();
+    const projectPosts = scheduledPosts.filter(post =>
+        ['scheduled', 'completed'].includes(post.status)
     );
 
     const handleRequestChange = (postId: number, comment: string) => {
@@ -441,7 +450,7 @@ const PostActions = ({ post, onRequestChange }: PostActionsProps) => {
                 <DialogTrigger asChild>
                     <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10">Ver Detalhes</DropdownMenuItem>
                 </DialogTrigger>
-                {onRequestChange && (
+                {onRequestChange && ['awaiting_approval', 'scheduled'].includes(post.status) && (
                     <RequestChangeDialog post={post} onConfirm={onRequestChange}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-accent dark:focus:bg-white/10">Pedir alteração</DropdownMenuItem>
                     </RequestChangeDialog>
@@ -660,9 +669,9 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
 }
 
 export function FeedPreview() {
-    const { posts } = usePosts();
-    const feedPosts = posts
-        .filter(post => ['approved', 'scheduled', 'completed'].includes(post.status))
+    const { scheduledPosts } = usePosts();
+    const feedPosts = scheduledPosts
+        .filter(post => ['scheduled', 'completed'].includes(post.status))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const getPostImage = (post: Post): PostImage | null => {
@@ -709,4 +718,5 @@ export function FeedPreview() {
     
 
     
+
 
