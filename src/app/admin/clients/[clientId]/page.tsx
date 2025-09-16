@@ -89,7 +89,7 @@ function ClientDashboard() {
             finalImageUrl = finalCoverImageUrl; // Use cover as the main preview image for cards
         } else if (file) {
             finalImageUrl = URL.createObjectURL(file);
-        } else {
+        } else if (!type.startsWith('video')) {
             finalImageUrl = `https://picsum.photos/seed/${Date.now()}/600/400`
         }
     
@@ -174,12 +174,12 @@ function ClientDashboard() {
                                         ref={fileInputRef} 
                                         className="hidden" 
                                         onChange={handleFileChange}
-                                        accept={type.startsWith('video') ? 'video/*' : 'image/*'}
+                                        accept={type.startsWith('video') || type === 'reels' ? 'video/*' : 'image/*'}
                                     />
                                     {fileName && <span className="text-xs text-muted-foreground truncate max-w-xs">{fileName}</span>}
                                 </div>
                             </div>
-                             {type.startsWith('video') && (
+                             { (type === 'video_horizontal' || type === 'reels') && (
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="video-cover" className="text-right">Capa do Vídeo</Label>
                                     <div className="col-span-3 flex items-center gap-2">
@@ -462,5 +462,3 @@ export default function ClientManagementPage() {
         </PostsProvider>
     );
 }
-
-    

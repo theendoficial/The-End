@@ -684,6 +684,12 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                 </div>
 
                 <div className={cn("flex flex-col gap-4", isReels ? "md:col-span-2" : "md:col-span-1")}>
+                    
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">{post.title}</DialogTitle>
+                        <DialogDescription>{post.date}</DialogDescription>
+                    </DialogHeader>
+
                     {isVideo && post.coverImageUrl && (
                         <div className='space-y-2'>
                              <h4 className="font-semibold text-sm">Capa do Vídeo</h4>
@@ -698,11 +704,6 @@ export const PostDialogContent = ({ post, onRequestChange, children, showExtraAc
                             </div>
                         </div>
                     )}
-
-                    <DialogHeader>
-                        <DialogTitle className="text-xl">{post.title}</DialogTitle>
-                        <DialogDescription>{post.date}</DialogDescription>
-                    </DialogHeader>
                     
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Legenda</h4>
@@ -788,20 +789,3 @@ export function FeedPreview() {
         </div>
     );
 }
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-    
