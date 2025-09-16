@@ -14,17 +14,7 @@ import { Label } from '@/components/ui/label';
 import { allProjects } from '@/components/dashboard/dashboard-components';
 
 export default function AdminClientsPage() {
-    const [clients, setClients] = useState<any[]>([
-        {
-            id: 'major-style-barbearia',
-            name: 'Major Style - Barbearia',
-            email: 'majorstylemkt@gmail.com',
-            password: 'Barbeariaconteudos010102',
-            logo: 'https://instagram.fcgh2-1.fna.fbcdn.net/v/t51.2885-19/505749727_17862883392419934_6871962705883407866_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMjAuYzIifQ&_nc_ht=instagram.fcgh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2QEpRz7AiJPJvBRKa8KlS-dW2cMVN8TzuCNbzgE_z49xazIpgA-PWVjZfsuGeiwhyhyAZr5Y6jAxAUnkXQXpxNDp&_nc_ohc=0_zeMtGquPkQ7kNvwFZtDj9&_nc_gid=D-4UUHwMxstS5iH-C5C03g&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_AfY7-D26PBrUArYKGduva9J-hU9VPFs2yI9U4CC2_gHKfg&oe=68CE7482&_nc_sid=7a9f4b',
-            projects: allProjects.filter(p => [6].includes(p.id)),
-            pendingApprovals: 0,
-        }
-    ]);
+    const [clients, setClients] = useState<any[]>([]);
     const [showPassword, setShowPassword] = useState(false);
     const [open, setOpen] = useState(false);
     const [isEditing, setIsEditing] = useState<string | null>(null);

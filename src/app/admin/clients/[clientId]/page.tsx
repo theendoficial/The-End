@@ -27,38 +27,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 
 // Mock data, this would come from a DB
-const clients = [
-    { 
-        id: 'major-style-barbearia', 
-        name: 'Major Style - Barbearia',
-        email: 'majorstylemkt@gmail.com',
-        password: 'Barbeariaconteudos010102',
-        phone: '5511999998888',
-        whatsappLink: 'https://wa.me/5511999998888',
-        logo: 'https://instagram.fcgh2-1.fna.fbcdn.net/v/t51.2885-19/505749727_17862883392419934_6871962705883407866_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMjAuYzIifQ&_nc_ht=instagram.fcgh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2QEpRz7AiJPJvBRKa8KlS-dW2cMVN8TzuCNbzgE_z49xazIpgA-PWVjZfsuGeiwhyhyAZr5Y6jAxAUnkXQXpxNDp&_nc_ohc=0_zeMtGquPkQ7kNvwFZtDj9&_nc_gid=D-4UUHwMxstS5iH-C5C03g&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_AfY7-D26PBrUArYKGduva9J-hU9VPFs2yI9U4CC2_gHKfg&oe=68CE7482&_nc_sid=7a9f4b',
-        projects: [6]
-    },
-    { 
-        id: 'fitness-club',
-        name: 'Fitness Club',
-        email: 'contact@fitnessclub.com',
-        password: 'fitnesspassword123',
-        phone: '5521988887777',
-        whatsappLink: 'https://wa.me/5521988887777',
-        logo: 'https://picsum.photos/seed/fitnessclub/100/100',
-        projects: []
-    },
-    { 
-        id: 'doce-sonho',
-        name: 'Doceria Doce Sonho',
-        email: 'contato@docesonho.com',
-        password: 'doceriapassword123',
-        phone: '5531977776666',
-        whatsappLink: 'https://wa.me/5531977776666',
-        logo: 'https://picsum.photos/seed/docesonho/100/100',
-        projects: []
-    },
-];
+const clients: any[] = [];
 
 function ClientDashboard() {
     const { addPost } = usePosts();

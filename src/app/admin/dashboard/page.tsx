@@ -9,18 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
 const kpiData = [
-    { title: 'Novos Clientes (Mês)', value: '2', icon: Users, change: '+10%', changeType: 'increase' },
-    { title: 'Aprovações Pendentes', value: '8', icon: FileCheck, change: '+3', changeType: 'increase' },
-    { title: 'Posts Aprovados (Mês)', value: '42', icon: CheckCircle, change: '+25%', changeType: 'increase' },
-    { title: 'Em Revisão', value: '3', icon: Clock, change: '-1', changeType: 'decrease' },
+    { title: 'Novos Clientes (Mês)', value: '0', icon: Users, change: '0', changeType: 'increase' },
+    { title: 'Aprovações Pendentes', value: '0', icon: FileCheck, change: '0', changeType: 'increase' },
+    { title: 'Posts Aprovados (Mês)', value: '0', icon: CheckCircle, change: '0', changeType: 'increase' },
+    { title: 'Em Revisão', value: '0', icon: Clock, change: '0', changeType: 'decrease' },
 ];
 
-const recentActivities = [
-    { id: 1, client: 'Major Style - Barbearia', activity: 'Aprovou o post "Corte Navalha"', time: '2 min atrás', clientLogo: 'https://picsum.photos/seed/client1/40/40' },
-    { id: 2, client: 'Fitness Club', activity: 'Pediu alteração em "Promo de Verão"', time: '15 min atrás', clientLogo: 'https://picsum.photos/seed/client2/40/40' },
-    { id: 3, client: 'Doceria Doce Sonho', activity: 'Novo post "Bolo de Chocolate" aguardando aprovação.', time: '30 min atrás', clientLogo: 'https://picsum.photos/seed/client3/40/40' },
-    { id: 4, client: 'Major Style - Barbearia', activity: 'Aprovou o post "Dia dos Pais"', time: '1 hora atrás', clientLogo: 'https://picsum.photos/seed/client1/40/40' },
-];
+const recentActivities: any[] = [];
 
 export default function AdminDashboardPage() {
   return (
@@ -65,18 +60,26 @@ export default function AdminDashboardPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {recentActivities.map((activity) => (
-                        <TableRow key={activity.id} className="border-b-white/10">
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <img src={activity.clientLogo} alt={activity.client} className="h-8 w-8 rounded-full" data-ai-hint="logo" />
-                                    <span className="font-medium">{activity.client}</span>
-                                </div>
+                    {recentActivities.length > 0 ? (
+                        recentActivities.map((activity) => (
+                            <TableRow key={activity.id} className="border-b-white/10">
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <img src={activity.clientLogo} alt={activity.client} className="h-8 w-8 rounded-full" data-ai-hint="logo" />
+                                        <span className="font-medium">{activity.client}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{activity.activity}</TableCell>
+                                <TableCell className="text-right text-muted-foreground">{activity.time}</TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                Nenhuma atividade recente.
                             </TableCell>
-                            <TableCell className="text-muted-foreground">{activity.activity}</TableCell>
-                            <TableCell className="text-right text-muted-foreground">{activity.time}</TableCell>
                         </TableRow>
-                    ))}
+                    )}
                 </TableBody>
             </Table>
           </CardContent>
