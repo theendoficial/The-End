@@ -2,15 +2,20 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Post } from '@/components/dashboard/dashboard-components';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { 
     collection, 
     doc, 
     onSnapshot, 
     updateDoc, 
     arrayUnion,
-    setDoc
+    setDoc,
+    getDoc,
+    getDocs,
+    query
 } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
+
 
 export type Report = {
     id: number;
@@ -52,6 +57,7 @@ export type Client = {
 
 type AppContextType = {
     clients: Client[];
+    user: User | null;
     loading: boolean;
     getClient: (clientId: string) => Client | undefined;
     addPost: (clientId: string, post: Omit<Post, 'id' | 'status'>) => Promise<void>;
@@ -67,31 +73,69 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [clients, setClients] = useState<Client[]>([]);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setLoading(true);
-        const unsubscribe = onSnapshot(collection(db, "clients"), (snapshot) => {
-            const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
-            setClients(clientsData);
-            setLoading(false);
+        // Listen for authentication state changes
+        const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+            setLoading(true);
+            setUser(currentUser);
+            
+            if (currentUser) {
+                // User is logged in
+                const isAdmin = currentUser.email === 'admin@example.com';
+                
+                if (isAdmin) {
+                    // Admin: fetch all clients
+                    const q = query(collection(db, "clients"));
+                    const unsubscribeFirestore = onSnapshot(q, (snapshot) => {
+                        const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+                        setClients(clientsData);
+                        setLoading(false);
+                    }, (error) => {
+                        console.error("Firestore snapshot error for admin:", error);
+                        setClients([]);
+                        setLoading(false);
+                    });
+                    return () => unsubscribeFirestore();
+
+                } else {
+                    // Regular client: fetch only their own data
+                    const clientDocRef = doc(db, 'clients', currentUser.email!);
+                    const unsubscribeFirestore = onSnapshot(clientDocRef, (docSnapshot) => {
+                        if (docSnapshot.exists()) {
+                            const clientData = { id: docSnapshot.id, ...docSnapshot.data() } as Client;
+                            setClients([clientData]);
+                        } else {
+                            setClients([]);
+                        }
+                        setLoading(false);
+                    }, (error) => {
+                        console.error("Firestore snapshot error for client:", error);
+                        setClients([]);
+                        setLoading(false);
+                    });
+                    return () => unsubscribeFirestore();
+                }
+            } else {
+                // User is logged out
+                setClients([]);
+                setLoading(false);
+            }
         });
 
         // Cleanup subscription on unmount
-        return () => unsubscribe();
+        return () => unsubscribeAuth();
     }, []);
 
     const getClient = (clientId: string) => {
-        // Now that loading is handled, this check is less critical but good for safety
-        if (loading) return undefined;
         return clients.find(c => c.id === clientId);
     };
 
     const updateClient = async (clientId: string, updatedData: Partial<Client>) => {
         if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
-        // Important: never update the password field directly this way
-        delete (updatedData as Partial<Client & {password?: string}>).password;
         await updateDoc(clientDocRef, updatedData);
     };
 
@@ -157,6 +201,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const value = {
         clients,
+        user,
         loading,
         getClient,
         addPost,
