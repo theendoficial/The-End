@@ -28,29 +28,7 @@ export type Client = {
 };
 
 // Centralized mock data. In a real app, this would be fetched from a database.
-export const mockClients: Client[] = [
-    {
-      id: 'empresa-x',
-      name: 'Empresa X',
-      email: 'contato@empresax.com',
-      logo: 'https://picsum.photos/seed/empresax/40/40',
-      projects: [{ id: 6, name: 'Gestão de Mídias Sociais' }],
-      pendingApprovals: 3,
-      driveFolderId: 'mock-folder-id-x'
-    },
-    {
-      id: 'startup-y',
-      name: 'Startup Y',
-      email: 'ceo@startupy.com',
-      logo: 'https://picsum.photos/seed/startupy/40/40',
-      projects: [
-        { id: 1, name: 'Identidade Visual' },
-        { id: 3, name: 'Elaboração de sites' }
-      ],
-      pendingApprovals: 0,
-      driveFolderId: 'mock-folder-id-y'
-    }
-  ];
+export const mockClients: Client[] = [];
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -241,3 +219,5 @@ export default function AdminClientsPage() {
         </>
     );
 }
+
+    
