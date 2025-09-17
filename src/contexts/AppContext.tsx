@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Post, Status } from '@/components/dashboard/dashboard-components';
-import { db, auth } from '@/lib/firebase';
+import { getFirebaseServices } from '@/lib/firebase';
 import { 
     collection, 
     doc, 
@@ -77,59 +77,58 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            
-            // If there's no user, stop loading and clear data.
-            if (!currentUser) {
-                setClients([]);
-                setLoading(false);
-                return;
-            }
+        try {
+            const { auth, db } = getFirebaseServices();
 
-            // Determine if the user is an admin
-            const isAdmin = currentUser.email === 'admin@example.com';
-
-            let unsubscribeFirestore: () => void;
-
-            if (isAdmin) {
-                // For ADMIN: Listen to the entire 'clients' collection.
-                const q = query(collection(db, "clients"));
-                unsubscribeFirestore = onSnapshot(q, (snapshot) => {
-                    const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
-                    setClients(clientsData);
-                    setLoading(false);
-                }, (error) => {
-                    console.error("Firestore snapshot error for admin:", error);
+            const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+                setUser(currentUser);
+                
+                if (!currentUser) {
                     setClients([]);
                     setLoading(false);
-                });
-            } else {
-                // For CLIENT: Listen to only their own document.
-                const clientDocRef = doc(db, 'clients', currentUser.email!);
-                unsubscribeFirestore = onSnapshot(clientDocRef, (docSnapshot) => {
-                    if (docSnapshot.exists()) {
-                        const clientData = { id: docSnapshot.id, ...docSnapshot.data() } as Client;
-                        setClients([clientData]);
-                    } else {
-                        // This might happen if the user was deleted from Firestore but not Auth.
-                        console.warn(`Client document not found for user: ${currentUser.email}`);
+                    return;
+                }
+
+                const isAdmin = currentUser.email === 'admin@example.com';
+                let unsubscribeFirestore: () => void;
+
+                if (isAdmin) {
+                    const q = query(collection(db, "clients"));
+                    unsubscribeFirestore = onSnapshot(q, (snapshot) => {
+                        const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+                        setClients(clientsData);
+                        setLoading(false);
+                    }, (error) => {
+                        console.error("Firestore snapshot error for admin:", error);
                         setClients([]);
-                    }
-                    setLoading(false);
-                }, (error) => {
-                    console.error(`Firestore snapshot error for client ${currentUser.email}:`, error);
-                    setClients([]);
-                    setLoading(false);
-                });
-            }
+                        setLoading(false);
+                    });
+                } else {
+                    const clientDocRef = doc(db, 'clients', currentUser.email!);
+                    unsubscribeFirestore = onSnapshot(clientDocRef, (docSnapshot) => {
+                        if (docSnapshot.exists()) {
+                            const clientData = { id: docSnapshot.id, ...docSnapshot.data() } as Client;
+                            setClients([clientData]);
+                        } else {
+                            console.warn(`Client document not found for user: ${currentUser.email}`);
+                            setClients([]);
+                        }
+                        setLoading(false);
+                    }, (error) => {
+                        console.error(`Firestore snapshot error for client ${currentUser.email}:`, error);
+                        setClients([]);
+                        setLoading(false);
+                    });
+                }
 
-            // Cleanup Firestore subscription on user change or unmount
-            return () => unsubscribeFirestore();
-        });
+                return () => unsubscribeFirestore && unsubscribeFirestore();
+            });
 
-        // Cleanup Auth subscription on unmount
-        return () => unsubscribeAuth();
+            return () => unsubscribeAuth();
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
+        }
     }, []);
 
     const getClient = (clientId: string) => {
@@ -138,12 +137,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const updateClient = async (clientId: string, updatedData: Partial<Client>) => {
         if (!clientId) return;
+        const { db } = getFirebaseServices();
         const clientDocRef = doc(db, 'clients', clientId);
         await updateDoc(clientDocRef, updatedData);
     };
 
     const addPost = async (clientId: string, postData: Omit<Post, 'id' | 'status'>) => {
         if (!clientId) return;
+        const { db } = getFirebaseServices();
         const clientDocRef = doc(db, 'clients', clientId);
         const newPost: Post = {
             ...postData,
@@ -173,6 +174,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const addReport = async (clientId: string, reportData: Omit<Report, 'id'>) => {
         if (!clientId) return;
+        const { db } = getFirebaseServices();
         const clientDocRef = doc(db, 'clients', clientId);
         const newReport: Report = { ...reportData, id: Date.now() };
         await updateDoc(clientDocRef, {
@@ -182,6 +184,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     
     const addDocumentFolder = async (clientId: string, folderName: string) => {
         if (!clientId) return;
+        const { db } = getFirebaseServices();
         const clientDocRef = doc(db, 'clients', clientId);
         const newFolder: DocumentFolder = { id: Date.now(), name: folderName, documents: [] };
         await updateDoc(clientDocRef, {

@@ -16,23 +16,33 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID,
 };
 
-// Check if all required environment variables are set
-if (
-  !firebaseConfig.apiKey ||
-  !firebaseConfig.authDomain ||
-  !firebaseConfig.projectId
-) {
-  // This error will be thrown if the variables are not set, making it clear what's wrong.
-  throw new Error(
-    'Firebase environment variables are not set. Please check your .env.local file or your hosting provider settings.'
-  );
+// Initialize Firebase
+// We check if the config keys are present before initializing.
+// This is a less strict check to avoid build errors while still providing a warning.
+let app;
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+} else {
+    console.warn('Firebase config is missing. Firebase services will not be available.');
 }
 
+// Initialize services only if the app was successfully initialized.
+const db = app ? getFirestore(app) : null;
+const auth = app ? getAuth(app) : null;
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
 
 // It's useful to export the app object as well if you need it elsewhere
-export { app, db, auth };
+// We export a function to get the initialized services to ensure they are not null.
+// This is a safer pattern.
+const getFirebaseServices = () => {
+    if (!app || !db || !auth) {
+        // This will throw an error at runtime if Firebase is not configured, 
+        // which is better than crashing at build time.
+        throw new Error('Firebase has not been initialized. Please check your environment variables.');
+    }
+    return { app, db, auth };
+};
+
+// For direct import, we still export the potentially null values,
+// but usage should ideally be through the getter function.
+export { app, db, auth, getFirebaseServices };

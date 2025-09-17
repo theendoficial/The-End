@@ -52,7 +52,7 @@ import { TheEndLogo } from '@/lib/images';
 import { useAppContext } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-import { auth } from '@/lib/firebase';
+import { getFirebaseServices } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -87,6 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
+      const { auth } = getFirebaseServices();
       await signOut(auth);
       toast({
         title: "Logout realizado",

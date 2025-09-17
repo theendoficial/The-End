@@ -20,7 +20,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { TheEndLogo } from '@/lib/images';
 import { useAppContext } from '@/contexts/AppContext';
-import { auth } from '@/lib/firebase';
+import { getFirebaseServices } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -65,6 +65,7 @@ function AdminHeader() {
 
   const handleLogout = async () => {
     try {
+      const { auth } = getFirebaseServices();
       await signOut(auth);
       toast({
         title: "Logout realizado",

@@ -5,7 +5,7 @@ import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } fro
 import { google } from 'googleapis';
 import { getGoogleDriveCredentials } from './google-drive-credentials';
 import { Client } from '@/contexts/AppContext';
-import { db, auth } from './firebase';
+import { getFirebaseServices } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
@@ -34,6 +34,7 @@ export async function login(
   const { email, password } = validatedFields.data;
 
   try {
+    const { auth } = getFirebaseServices();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -92,6 +93,7 @@ export async function forgotPassword(
     const { email } = validatedFields.data;
 
     try {
+        const { auth } = getFirebaseServices();
         await sendPasswordResetEmail(auth, email);
         return {
             message: 'Se uma conta com este e-mail existir, um link para redefinição de senha foi enviado.',
@@ -173,6 +175,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
     const { name, email, password, logo } = validatedFields.data;
 
     try {
+        const { auth, db } = getFirebaseServices();
         // Step 1: Create user in Firebase Auth.
         // This handles secure password storage automatically.
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
