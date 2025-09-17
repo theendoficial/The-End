@@ -1,3 +1,3 @@
-const TheEndLogo = '/assets/logo/TheEnd_Q_COLORS.png';
+const TheEndLogo = 'https://i.imgur.com/zc3m8Je.png';
 
 export { TheEndLogo };
