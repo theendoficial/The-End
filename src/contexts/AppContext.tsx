@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Post } from '@/components/dashboard/dashboard-components';
+import { Post, allProjects } from '@/components/dashboard/dashboard-components';
 
 export type Report = {
     id: number;

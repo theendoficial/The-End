@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } from './schemas';
 import { google } from 'googleapis';
 import { googleDriveCredentials } from './google-drive-credentials';
+import { Client } from '@/contexts/AppContext';
 
 export type LoginState = {
   errors?: {
@@ -12,6 +13,7 @@ export type LoginState = {
     server?: string[];
   };
   message?: string | null;
+  clients?: Client[];
 };
 
 export async function login(
@@ -37,14 +39,17 @@ export async function login(
   if (isAdmin) {
     redirect('/admin');
   }
-
-  const isClient = email === 'user@example.com' && password === 'password123';
+  
+  const isClient = prevState.clients?.find(c => c.email === email && c.password === password);
 
   if (isClient) {
+    // In a real app, you'd set a session cookie here.
+    // For this demo, we'll redirect, but the app uses a hardcoded ID for the client view.
     redirect('/dashboard');
   }
 
   return {
+    ...prevState,
     errors: {
       server: ['Invalid email or password. Please try again.'],
     },
@@ -136,7 +141,7 @@ export type CreateClientState = {
   };
   message?: string | null;
   success: boolean;
-  newClient?: any;
+  newClient?: Client;
 };
 
 export async function createClient(prevState: CreateClientState, formData: FormData): Promise<CreateClientState> {
@@ -178,12 +183,12 @@ export async function createClient(prevState: CreateClientState, formData: FormD
              throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
         }
 
-        const newClient = {
+        const newClient: Client = {
             id: email, // Use email as a unique ID for now
             name,
             email,
             password,
-            logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
+            logo: logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
             driveFolderId: folderId,
             projects: [],
             posts: [],
