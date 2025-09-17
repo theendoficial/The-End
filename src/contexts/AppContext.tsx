@@ -40,7 +40,8 @@ export type Client = {
     id: string; // email as id
     name: string;
     email: string;
-    password?: string;
+    // Password should not be stored here in production. Use Firebase Auth.
+    password?: string; 
     logo: string;
     driveFolderId?: string;
     projects: number[]; 
@@ -64,6 +65,7 @@ type AppContextType = {
     addDocumentFolder: (clientId: string, folderName: string) => Promise<void>;
     addDocumentToFolder: (clientId: string, folderId: number, document: Omit<Document, 'id'>) => Promise<void>;
     updateClient: (clientId: string, updatedData: Partial<Client>) => Promise<void>;
+    addClient: (client: Client) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -88,11 +90,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const updateClient = async (clientId: string, updatedData: Partial<Client>) => {
+        if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
         await updateDoc(clientDocRef, updatedData);
     };
 
+    const addClient = async (client: Client) => {
+        const clientDocRef = doc(db, "clients", client.id);
+        await setDoc(clientDocRef, client);
+    };
+
     const addPost = async (clientId: string, postData: Omit<Post, 'id' | 'status'>) => {
+        if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
         const newPost: Post = {
             ...postData,
@@ -121,6 +130,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const addReport = async (clientId: string, reportData: Omit<Report, 'id'>) => {
+        if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
         const newReport: Report = { ...reportData, id: Date.now() };
         await updateDoc(clientDocRef, {
@@ -129,6 +139,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     
     const addDocumentFolder = async (clientId: string, folderName: string) => {
+        if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
         const newFolder: DocumentFolder = { id: Date.now(), name: folderName, documents: [] };
         await updateDoc(clientDocRef, {
@@ -160,10 +171,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addDocumentFolder,
         addDocumentToFolder,
         updateClient,
-        addClient: async (client: Client) => {
-            const clientDocRef = doc(db, 'clients', client.id);
-            await setDoc(clientDocRef, client);
-        },
+        addClient,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

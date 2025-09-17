@@ -3,7 +3,7 @@
 
 import { google } from 'googleapis';
 import { Readable } from 'stream';
-import { googleDriveCredentials } from '@/lib/google-drive-credentials';
+import { getGoogleDriveCredentials } from '@/lib/google-drive-credentials';
 
 export type UploadState = {
   message: string | null;
@@ -32,16 +32,23 @@ export async function uploadFileToDrive(
     };
   }
 
-  // Se não houver um ID de pasta específico do cliente, use o folderId geral como fallback.
-  // Em um cenário ideal, o clientFolderId seria obrigatório.
-  const uploadFolderId = clientFolderId || googleDriveCredentials.folderId;
+  // Se não houver um ID de pasta específico do cliente, não podemos prosseguir.
+  if (!clientFolderId) {
+      return {
+        message: 'ID da pasta do cliente não encontrado. O upload não pode ser concluído.',
+        errors: { server: 'ID da pasta do cliente não encontrado.' },
+        success: false,
+      };
+  }
 
 
   try {
+    const { client_email, private_key } = getGoogleDriveCredentials();
+    
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: googleDriveCredentials.client_email,
-        private_key: googleDriveCredentials.private_key,
+        client_email,
+        private_key,
       },
       scopes: ['https://www.googleapis.com/auth/drive.file'],
     });
@@ -56,7 +63,7 @@ export async function uploadFileToDrive(
 
     const fileMetadata = {
       name: file.name,
-      parents: [uploadFolderId],
+      parents: [clientFolderId],
     };
 
     const media = {
@@ -84,6 +91,8 @@ export async function uploadFileToDrive(
 
     if (error.message.includes('File not found') || error.message.includes('folderId')) {
         errorMessage = 'A pasta de destino no Google Drive não foi encontrada. Verifique se o folderId está correto.';
+    } else if (error.message.includes('Missing credentials')) {
+        errorMessage = 'As credenciais do Google Drive não estão configuradas no servidor. Contate o administrador.';
     }
 
     return {

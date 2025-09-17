@@ -4,7 +4,7 @@
 import { redirect } from 'next/navigation';
 import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } from './schemas';
 import { google } from 'googleapis';
-import { googleDriveCredentials } from './google-drive-credentials';
+import { getGoogleDriveCredentials } from './google-drive-credentials';
 import { Client } from '@/contexts/AppContext';
 import { db } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -49,6 +49,7 @@ export async function login(
       const clientData = clientDoc.data() as Client;
       if (clientData.password === password) {
         // In a real app, you'd set a session cookie here.
+        // For this demo, we are simply redirecting. A real auth system is needed.
         redirect('/dashboard');
       }
     }
@@ -97,6 +98,8 @@ export async function forgotPassword(
     // Mock sending email
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log(`Sending password reset link to ${validatedFields.data.email}`);
+    
+    // In a real app with Firebase Auth, you would call sendPasswordResetEmail(auth, email)
     
     return {
         message: 'If an account with this email exists, a password reset link has been sent.',
@@ -170,10 +173,12 @@ export async function createClient(prevState: CreateClientState, formData: FormD
     const { name, email, password, logo } = validatedFields.data;
 
     try {
+        const { client_email, private_key, folderId: parentFolderId } = getGoogleDriveCredentials();
+        
         const auth = new google.auth.GoogleAuth({
             credentials: {
-                client_email: googleDriveCredentials.client_email,
-                private_key: googleDriveCredentials.private_key,
+                client_email,
+                private_key,
             },
             scopes: ['https://www.googleapis.com/auth/drive'],
         });
@@ -182,7 +187,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
         const folderMetadata = {
             name: name,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: [googleDriveCredentials.folderId],
+            parents: [parentFolderId],
         };
 
         const folder = await drive.files.create({
@@ -199,7 +204,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
             id: email, // Use email as a unique ID
             name,
             email,
-            password,
+            password, // Storing password directly is not secure. Use Firebase Auth in production.
             logo: logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
             driveFolderId: folderId,
             projects: [],
@@ -219,10 +224,16 @@ export async function createClient(prevState: CreateClientState, formData: FormD
 
     } catch (error: any) {
         console.error('Error creating client or Drive folder:', error);
+        
+        let serverError = 'Falha na integração com o Google Drive.';
+        if (error.message.includes('credentials')) {
+            serverError = 'As credenciais do Google Drive não estão configuradas corretamente no servidor.';
+        }
+
         return { 
             success: false, 
             message: 'Ocorreu um erro no servidor ao tentar criar o cliente. Verifique as configurações da API do Google Drive.',
-            errors: { server: ['Falha na integração com o Google Drive.'] }
+            errors: { server: [serverError] }
         };
     }
 }
