@@ -73,7 +73,7 @@ export function ForgotPasswordForm() {
             <AlertTitle>Erro</AlertTitle>
             <AlertDescription>
               {state.errors.server[0]}
-            </Description>
+            </AlertDescription>
         </Alert>
       )}
 
