@@ -1,5 +1,6 @@
 
 'use client';
+import * as React from 'react';
 import { ForgotPasswordForm } from '@/components/auth/forgot-password-form';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
