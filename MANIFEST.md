@@ -108,3 +108,4 @@ Esta é uma lista de todos os arquivos que compõem sua aplicação. Você pode 
 - `src/contexts/AppContext.tsx`
 - `src/hooks/use-mobile.tsx`
 - `src/hooks/use-toast.ts`
+
