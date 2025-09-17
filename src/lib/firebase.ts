@@ -1,11 +1,8 @@
 
-// Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
+import { getAuth, type Auth } from "firebase/auth";
 
-// Your web app's Firebase configuration
-// This configuration now exclusively reads from public environment variables.
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -15,38 +12,18 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton pattern to initialize Firebase services safely.
-let app;
-let auth;
-let db;
-
-function initializeFirebase() {
-    if (!getApps().length) {
-        // A simple check to ensure essential config is present.
-        if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } else {
-            // This warning is crucial for debugging on Vercel/production
-            console.warn('Firebase config is missing or incomplete from environment variables. Firebase services will not be available.');
-        }
-    } else {
-        app = getApp();
-        auth = getAuth(app);
-        db = getFirestore(app);
-    }
-}
-
-// Initialize on first load
-initializeFirebase();
-
-// Export a function to get the initialized services.
-// This ensures that any part of the app gets the same, single instance.
+// This function implements a robust singleton pattern for Firebase initialization.
 export const getFirebaseServices = () => {
-    if (!app || !db || !auth) {
-        // This will now only happen if the initial configuration was missing.
-        throw new Error('Firebase has not been initialized. Please check your environment variables on your hosting provider.');
-    }
-    return { app, db, auth };
+  // Check if Firebase has already been initialized.
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  
+  // Ensure essential config is present before trying to get services.
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+      throw new Error('Firebase config is missing or incomplete. Please check your NEXT_PUBLIC_FIREBASE environment variables.');
+  }
+
+  const auth: Auth = getAuth(app);
+  const db: Firestore = getFirestore(app);
+
+  return { app, db, auth };
 };
