@@ -1,6 +1,8 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { AlertCircle } from 'lucide-react';
 
 import { verifyCode, type VerifyState } from '@/lib/actions';
@@ -20,7 +22,7 @@ function VerifyButton() {
 
 export function VerifyForm() {
   const initialState: VerifyState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(verifyCode, initialState);
+  const [state, dispatch] = useActionState(verifyCode, initialState);
 
   return (
     <form action={dispatch} className="space-y-6">

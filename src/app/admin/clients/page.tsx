@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -11,9 +11,10 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { createClient, type CreateClientState } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import * as React from 'react';
 
 // Mock client type
 export type Client = {
@@ -44,7 +45,7 @@ export default function AdminClientsPage() {
     
     // Form state refatorado para usar Server Action
     const initialState: CreateClientState = { message: null, success: false, errors: null };
-    const [formState, dispatch] = useFormState(createClient, initialState);
+    const [formState, dispatch] = useActionState(createClient, initialState);
     const formRef = React.useRef<HTMLFormElement>(null);
 
 
