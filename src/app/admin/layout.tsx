@@ -19,10 +19,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { TheEndLogo } from '@/lib/images';
-import { AdminProvider, useAdmin } from '@/contexts/AdminContext';
+import { useAppContext } from '@/contexts/AppContext';
 
 const navItems = [
-  { href: '/admin', icon: Home, label: 'Painel de Controle' },
+  { href: '/admin/dashboard', icon: Home, label: 'Painel de Controle' },
   { href: '/admin/clients', icon: Users, label: 'Clientes' },
   { href: '/admin/files', icon: FolderArchive, label: 'Gerenciador de Arquivos' },
   { href: '/admin/settings', icon: Settings, label: 'Configurações' },
@@ -55,7 +55,12 @@ function NavLinks({ isSheet = false }: { isSheet?: boolean }) {
 
 function AdminHeader() {
   const { setTheme } = useTheme();
-  const { adminData } = useAdmin();
+  // Fake admin data for display
+  const adminData = {
+    name: 'Admin',
+    email: 'admin@example.com',
+    avatar: ''
+  };
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card/10 dark:bg-black/30 backdrop-blur-lg px-4 lg:h-[60px] lg:px-6 m-2 rounded-2xl border-border/10 dark:border-white/10 shadow-lg">
@@ -147,7 +152,7 @@ function AdminHeader() {
   );
 }
 
-function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-white to-[#F0F0F0] dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000]">
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
@@ -173,13 +178,5 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
-  );
-}
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <AdminProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </AdminProvider>
   );
 }

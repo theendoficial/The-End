@@ -1,4 +1,3 @@
-
 'use server';
 
 import { redirect } from 'next/navigation';
@@ -38,7 +37,7 @@ export async function login(
 
   // Check for admin
   if (email === 'admin@example.com' && password === 'password123') {
-    redirect('/admin');
+    redirect('/admin/dashboard');
   }
   
   try {
@@ -46,7 +45,9 @@ export async function login(
     const clientDoc = await getDoc(clientDocRef);
 
     if (clientDoc.exists()) {
-      const clientData = clientDoc.data() as Client;
+      const clientData = clientDoc.data();
+       // In a real app, you would hash the password. Here we do a plain text comparison.
+       // This check is unsafe for production. Use Firebase Auth instead.
       if (clientData.password === password) {
         // In a real app, you'd set a session cookie here.
         // For this demo, we are simply redirecting. A real auth system is needed.
@@ -54,6 +55,7 @@ export async function login(
       }
     }
   } catch (error) {
+     console.error("Firestore connection error:", error);
      return {
       errors: {
         server: ['Failed to connect to the database. Please try again later.'],
@@ -63,7 +65,6 @@ export async function login(
   }
 
   return {
-    ...prevState,
     errors: {
       server: ['Invalid email or password. Please try again.'],
     },
@@ -200,7 +201,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
              throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
         }
 
-        const newClient: Client = {
+        const newClient: Omit<Client, 'password'> & { password?: string } = {
             id: email, // Use email as a unique ID
             name,
             email,
@@ -226,13 +227,15 @@ export async function createClient(prevState: CreateClientState, formData: FormD
         console.error('Error creating client or Drive folder:', error);
         
         let serverError = 'Falha na integração com o Google Drive.';
-        if (error.message.includes('credentials')) {
+        if (error.code === 'UNAVAILABLE' || error.code === 'DEADLINE_EXCEEDED') {
+            serverError = 'Não foi possível conectar ao banco de dados. Tente novamente mais tarde.';
+        } else if (error.message.includes('credentials')) {
             serverError = 'As credenciais do Google Drive não estão configuradas corretamente no servidor.';
         }
 
         return { 
             success: false, 
-            message: 'Ocorreu um erro no servidor ao tentar criar o cliente. Verifique as configurações da API do Google Drive.',
+            message: 'Ocorreu um erro no servidor ao tentar criar o cliente.',
             errors: { server: [serverError] }
         };
     }

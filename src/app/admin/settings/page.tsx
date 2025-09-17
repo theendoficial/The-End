@@ -5,39 +5,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import * as React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAdmin } from '@/contexts/AdminContext';
 
 export default function AdminSettingsPage() {
-    const { adminData, setAdminData } = useAdmin();
     const { toast } = useToast();
     
-    const [name, setName] = React.useState(adminData.name);
-    const [email, setEmail] = React.useState(adminData.email);
-    const [avatar, setAvatar] = React.useState(adminData.avatar);
+    // Fake static data for admin settings page
+    const [name, setName] = React.useState('Admin');
+    const [email, setEmail] = React.useState('admin@example.com');
+    const [avatar, setAvatar] = React.useState('');
     const [password, setPassword] = React.useState('');
 
     const handleSave = () => {
-        setAdminData({ name, email, avatar });
+        // In a real app, this would update data in a database
+        // For now, we just show a toast notification
         toast({
             title: "Configurações Salvas!",
-            description: "Suas informações de perfil foram atualizadas.",
+            description: "Suas informações de perfil foram atualizadas (simulação).",
             variant: "success",
         });
-        // Note: Password change would require a backend call in a real app.
         if (password) {
             console.log("Password change requested, but this is a frontend-only demo.");
         }
     }
-
-    // Sync local state if context data changes
-    React.useEffect(() => {
-        setName(adminData.name);
-        setEmail(adminData.email);
-        setAvatar(adminData.avatar);
-    }, [adminData]);
     
-    if (!adminData) return null;
-
     return (
         <>
             <div className="flex items-center mb-6">
