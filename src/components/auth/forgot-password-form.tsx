@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
@@ -72,7 +73,7 @@ export function ForgotPasswordForm() {
             <AlertTitle>Erro</AlertTitle>
             <AlertDescription>
               {state.errors.server[0]}
-            </AlertDescription>
+            </Description>
         </Alert>
       )}
 
