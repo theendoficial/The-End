@@ -8,18 +8,18 @@ import { AnimatePresence } from 'framer-motion';
 import { useAppContext } from '@/contexts/AppContext';
 
 export default function ApprovalsPage() {
-  const LOGGED_IN_CLIENT_ID = 'user@example.com';
-  const { getClient, updatePostStatus } = useAppContext();
-  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const { user, getClient, updatePostStatus } = useAppContext();
+  const clientId = user?.email;
+  const client = clientId ? getClient(clientId) : null;
 
-  if (!client) {
+  if (!client || !clientId) {
     return <div>Carregando...</div>;
   }
 
   const posts = client.posts || [];
 
   const handlePostAction = (postId: number, newStatus: Status) => {
-    updatePostStatus(client.id, postId, newStatus);
+    updatePostStatus(clientId, postId, newStatus);
   };
   
   const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision', 'notified'].includes(p.status));

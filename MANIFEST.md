@@ -80,7 +80,7 @@ Esta é uma lista de todos os arquivos que compõem sua aplicação. Você pode 
 - `src/components/ui/chart.tsx`
 - `src/components/ui/checkbox.tsx`
 - `src/components/ui/collapsible.tsx`
-- `src/components/ui/dialog.tsx`
+- `src_components/ui/dialog.tsx`
 - `src/components/ui/dropdown-menu.tsx`
 - `src/components/ui/form.tsx`
 - `src/components/ui/input.tsx`
@@ -108,4 +108,3 @@ Esta é uma lista de todos os arquivos que compõem sua aplicação. Você pode 
 - `src/contexts/AppContext.tsx`
 - `src/hooks/use-mobile.tsx`
 - `src/hooks/use-toast.ts`
-

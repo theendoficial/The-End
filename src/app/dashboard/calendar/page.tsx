@@ -5,21 +5,21 @@ import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-compo
 import { useAppContext } from '@/contexts/AppContext';
 
 function CalendarPageContent() {
-  const LOGGED_IN_CLIENT_ID = 'user@example.com';
-  const { getClient, updatePostStatus, updatePostDate } = useAppContext();
-  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const { user, getClient, updatePostStatus, updatePostDate } = useAppContext();
+  const clientId = user?.email;
+  const client = clientId ? getClient(clientId) : null;
   
-  if (!client) return <div>Carregando...</div>;
+  if (!client || !clientId) return <div>Carregando...</div>;
 
   const posts = client.posts || [];
   const scheduledPosts = posts.filter(p => p.status === 'scheduled' || p.status === 'completed');
 
   const handleUpdateStatus = (postId: number, status: any) => {
-    updatePostStatus(client.id, postId, status);
+    updatePostStatus(clientId, postId, status);
   }
 
   const handleUpdateDate = (postId: number, date: string) => {
-    updatePostDate(client.id, postId, date);
+    updatePostDate(clientId, postId, date);
   }
 
   return (

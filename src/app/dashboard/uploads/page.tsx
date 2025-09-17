@@ -36,9 +36,8 @@ function SubmitButton() {
 
 
 export default function UploadsPage() {
-    const LOGGED_IN_CLIENT_ID = 'user@example.com';
-    const { getClient } = useAppContext();
-    const clientData = getClient(LOGGED_IN_CLIENT_ID);
+    const { user, getClient } = useAppContext();
+    const clientData = user ? getClient(user.email!) : null;
 
     const initialState: UploadState = { message: null, success: false, errors: null };
     const [state, dispatch] = useActionState(uploadFileToDrive, initialState);
@@ -61,6 +60,11 @@ export default function UploadsPage() {
             setFileName(null);
         }
     }, [state]);
+    
+    if (!clientData) {
+        return <div>Carregando...</div>;
+    }
+
 
     return (
         <>
@@ -72,8 +76,8 @@ export default function UploadsPage() {
             <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl w-full max-w-2xl mx-auto">
                 <form action={dispatch} ref={formRef}>
                     {/* Campos ocultos para passar dados extras para a Server Action */}
-                    <input type="hidden" name="clientName" value={clientData?.name} />
-                    <input type="hidden" name="clientFolderId" value={clientData?.driveFolderId} />
+                    <input type="hidden" name="clientName" value={clientData.name} />
+                    <input type="hidden" name="clientFolderId" value={clientData.driveFolderId} />
 
                     <CardHeader>
                         <CardTitle>Enviar Arquivo para a Agência</CardTitle>

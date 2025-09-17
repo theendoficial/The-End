@@ -15,6 +15,7 @@ import {
   Menu,
   MessageSquare,
   UploadCloud,
+  LogOut,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -51,6 +52,10 @@ import { TheEndLogo } from '@/lib/images';
 import { useAppContext } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -66,30 +71,56 @@ const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
       {...props}
     >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-      <path d="M14.05 14.05a2.79 2.79 0 0 1 2.52 2.52" />
-      <path d="M14.05 10.53a7.07 7.07 0 0 1 7.07 7.07" />
     </svg>
 );
 
-
-function DashboardLayoutContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+  const router = useRouter();
+  const { toast } = useToast();
   
-  const LOGGED_IN_CLIENT_ID = 'user@example.com'; 
-  const { getClient } = useAppContext();
-  const clientData = getClient(LOGGED_IN_CLIENT_ID);
+  const { user, getClient, loading } = useAppContext();
   
-  const pendingApprovalsCount = clientData?.posts.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length || 0;
+  const clientData = user ? getClient(user.email!) : null;
+  const pendingApprovalsCount = clientData?.posts?.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length || 0;
 
-  if (!clientData) {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+        variant: "success",
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error("Logout Error:", error);
+      toast({
+        title: "Erro no Logout",
+        description: "Não foi possível desconectar. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+        <div className="flex h-screen items-center justify-center bg-background">
+            <div className="flex flex-col items-center gap-4">
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-6 w-64" />
+            </div>
+        </div>
+    );
+  }
+
+  if (!user || !clientData) {
+    // This can be a flash while redirecting, or if data is truly missing.
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Carregando dados do cliente... Se demorar, <Link href="/login" className="underline">faça o login</Link>.</p>
+        <p>Redirecionando para a página de login...</p>
       </div>
     );
   }
@@ -312,7 +343,7 @@ function DashboardLayoutContent({
                     </DialogHeader>
                     <DialogFooter className="sm:justify-start">
                         <Button asChild className="bg-green-500 hover:bg-green-600 text-white">
-                            <a href={clientData.whatsappLink} target="_blank" rel="noopener noreferrer">
+                            <a href={clientData.whatsappLink || 'https://wa.me/5511999999999'} target="_blank" rel="noopener noreferrer">
                                 <WhatsappIcon className="mr-2 h-4 w-4" />
                                 Abrir WhatsApp
                             </a>
@@ -321,9 +352,10 @@ function DashboardLayoutContent({
                 </DialogContent>
               </Dialog>
               <DropdownMenuSeparator className="bg-muted dark:bg-white/20"/>
-              <Link href="/login">
-                <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Sair</DropdownMenuItem>
-              </Link>
+              <DropdownMenuItem onClick={handleLogout} className="focus:bg-destructive/80 dark:focus:bg-red-800/50 cursor-pointer text-red-500 focus:text-white">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

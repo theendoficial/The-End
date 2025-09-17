@@ -25,12 +25,10 @@ const categories = {
 };
 
 export default function ProjectsPage() {
-  const LOGGED_IN_CLIENT_ID = 'user@example.com';
-  const { getClient } = useAppContext();
-  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const { user, getClient } = useAppContext();
+  const client = user ? getClient(user.email!) : null;
   const clientProjectIds = client?.projects || [];
 
-  // Filter allProjects to get only the ones the client has access to
   const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
 
   return (

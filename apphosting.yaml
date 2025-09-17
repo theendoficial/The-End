@@ -1,0 +1,35 @@
+specVersion: v1alpha1
+run:
+  build:
+    - npm install
+    - npm run build
+  # Aumenta o tempo limite para ações do servidor (como upload para o Drive)
+  serverTimeoutSeconds: 120
+# Esta configuração é para o Firebase App Hosting e pode ser removida se usar outra plataforma.
+# Ela instrui o App Hosting sobre como construir e executar a aplicação Next.js.
+# O `serverTimeoutSeconds` é importante para permitir que operações mais longas,
+# como o upload de arquivos para o Google Drive ou a criação de pastas,
+# sejam concluídas sem que o servidor encerre a conexão prematuramente.
+# Se você decidir hospedar na Vercel ou Netlify, este arquivo não é necessário.
+# Para manter a flexibilidade, o arquivo está aqui, mas pode ser ignorado ou removido.
+# A presença dele não prejudica o deploy em outras plataformas, mas é específico do Firebase.
+# O build é padrão: instalar dependências e rodar o build do Next.js.
+# A versão `v1alpha1` é a versão da especificação do App Hosting.
+# Este arquivo é a chave para o deploy "zero-config" no ecossistema Firebase.
+# Se o projeto for movido para Vercel, a Vercel irá ignorar este arquivo
+# e usará suas próprias convenções para projetos Next.js.
+# Portanto, mantê-lo não causa problemas.
+# O 'run' define os comandos para construir e iniciar o servidor.
+# A seção 'build' especifica os comandos a serem executados no momento da construção.
+# O comando 'npm install' instala todas as as dependências do `package.json`.
+# O comando 'npm run build' executa o script de build do Next.js, otimizando a aplicação para produção.
+# O `serverTimeoutSeconds: 120` define o tempo máximo que uma requisição do lado do servidor pode levar,
+# aumentado para 2 minutos para acomodar uploads de arquivos maiores.
+# O App Hosting do Firebase oferece integração nativa com o backend,
+# facilitando o acesso a variáveis de ambiente e outros serviços do Google Cloud.
+# Este arquivo é a ponte entre o seu código e a infraestrutura de hospedagem do Google.
+# Nenhuma outra configuração é necessária no lado do código para o deploy.
+# Apenas a conexão do repositório Git no console do Firebase.
+# Este é o único arquivo de configuração de infraestrutura necessário.
+# Simples, declarativo e eficaz.
+# Fim do arquivo de configuração.

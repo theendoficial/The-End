@@ -7,7 +7,7 @@ import { getGoogleDriveCredentials } from './google-drive-credentials';
 import { Client } from '@/contexts/AppContext';
 import { db, auth } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 export type LoginState = {
   errors?: {
@@ -33,20 +33,21 @@ export async function login(
 
   const { email, password } = validatedFields.data;
 
-  // Admin check remains the same
-  if (email === 'admin@example.com' && password === 'password123') {
-    redirect('/admin/dashboard');
-  }
-  
   try {
-    // Use Firebase Auth to sign in
-    await signInWithEmailAndPassword(auth, email, password);
-    // On success, Firebase handles session management. Redirect to dashboard.
-    redirect('/dashboard');
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // After successful sign-in, check if the user is an admin.
+    if (user.email === 'admin@example.com') {
+      redirect('/admin/dashboard');
+    } else {
+      // For any other user, redirect to the client dashboard.
+      redirect('/dashboard');
+    }
+
   } catch (error: any) {
      console.error("Firebase Auth Error:", error);
      let errorMessage = 'Invalid email or password. Please try again.';
-     // Handle specific Firebase Auth error codes
      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         errorMessage = 'E-mail ou senha inválidos. Tente novamente.';
      } else if (error.code === 'auth/too-many-requests') {
@@ -88,16 +89,23 @@ export async function forgotPassword(
         };
     }
 
-    // Mock sending email
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(`Sending password reset link to ${validatedFields.data.email}`);
-    
-    // In a real app with Firebase Auth, you would call sendPasswordResetEmail(auth, email)
-    
-    return {
-        message: 'If an account with this email exists, a password reset link has been sent.',
-        success: true,
-    };
+    const { email } = validatedFields.data;
+
+    try {
+        await sendPasswordResetEmail(auth, email);
+        return {
+            message: 'Se uma conta com este e-mail existir, um link para redefinição de senha foi enviado.',
+            success: true,
+        };
+    } catch (error: any) {
+        console.error("Forgot Password Error:", error);
+        // Don't reveal if a user exists or not, for security reasons.
+        // Return a generic success message regardless of the outcome.
+        return {
+            message: 'Se uma conta com este e-mail existir, um link para redefinição de senha foi enviado.',
+            success: true,
+        };
+    }
 }
 
 
@@ -124,7 +132,8 @@ export async function verifyCode(
   
   const { code } = validatedFields.data;
 
-  // Mock code verification: 123456
+  // This is a placeholder for a real 2FA verification logic.
+  // In a real app, you would use a library to verify the code against the user's secret.
   await new Promise((resolve) => setTimeout(resolve, 1000));
   if (code !== '123456') {
      return {
@@ -134,8 +143,6 @@ export async function verifyCode(
       message: 'Verification failed.',
     };
   }
-  // This is a simplified redirect logic. In a real app, you'd check the user's role.
-  // For now, we assume a verified user is a client.
   redirect('/dashboard');
 }
 
@@ -166,11 +173,12 @@ export async function createClient(prevState: CreateClientState, formData: FormD
     const { name, email, password, logo } = validatedFields.data;
 
     try {
-        // 1. Create user in Firebase Auth
+        // Step 1: Create user in Firebase Auth.
+        // This handles secure password storage automatically.
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // 2. Create Google Drive folder
+        // Step 2: Create a Google Drive folder for the client.
         const { client_email, private_key, folderId: parentFolderId } = getGoogleDriveCredentials();
         
         const authClient = new google.auth.GoogleAuth({
@@ -195,9 +203,10 @@ export async function createClient(prevState: CreateClientState, formData: FormD
              throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
         }
 
-        // 3. Create client document in Firestore (without password)
-        const newClient: Client = {
-            id: email, // Use email as a unique ID
+        // Step 3: Create the client's data document in Firestore.
+        // The document ID is the client's email for easy lookup.
+        // **Crucially, we do NOT store the password here.**
+        const newClient: Omit<Client, 'id'> = {
             name,
             email,
             logo: logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
@@ -210,7 +219,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
             pendingApprovals: 0,
         };
 
-        await setDoc(doc(db, "clients", newClient.id), newClient);
+        await setDoc(doc(db, "clients", email), newClient);
 
         console.log(`[CLIENT CREATED] Client "${name}" created successfully. Auth UID: ${user.uid}, Drive Folder ID: ${folderId}`);
 
@@ -223,7 +232,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
         if (error.code === 'auth/email-already-in-use') {
             serverError = 'Este e-mail já está em uso por outra conta.';
         } else if (error.code === 'auth/weak-password') {
-            serverError = 'A senha é muito fraca. Tente uma senha mais forte.';
+            serverError = 'A senha é muito fraca. Tente uma senha com pelo menos 6 caracteres.';
         } else if (error.message.includes('credentials')) {
             serverError = 'As credenciais do Google Drive não estão configuradas corretamente no servidor.';
         }

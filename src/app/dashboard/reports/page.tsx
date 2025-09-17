@@ -1,24 +1,18 @@
 
 'use client';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, File as FileIcon, LineChart, FolderOpen } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Download, File as FileIcon, LineChart } from "lucide-react";
 import * as React from 'react';
 import { useAppContext } from '@/contexts/AppContext';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function ReportsPage() {
-  const LOGGED_IN_CLIENT_ID = 'user@example.com';
-  const { getClient } = useAppContext();
-  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const { user, getClient } = useAppContext();
+  const client = user ? getClient(user.email!) : null;
   const reports = client?.reports || [];
 
 

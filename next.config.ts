@@ -40,6 +40,12 @@ const nextConfig: NextConfig = {
         hostname: 'instagram.fcgh2-1.fna.fbcdn.net',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+        port: '',
+        pathname: '/api/**',
       }
     ],
   },

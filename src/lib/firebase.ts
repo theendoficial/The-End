@@ -20,4 +20,5 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-export { db, auth };
+// It's useful to export the app object as well if you need it elsewhere
+export { app, db, auth };

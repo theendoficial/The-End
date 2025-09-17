@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Post } from '@/components/dashboard/dashboard-components';
+import { Post, Status } from '@/components/dashboard/dashboard-components';
 import { db, auth } from '@/lib/firebase';
 import { 
     collection, 
@@ -66,7 +66,7 @@ type AppContextType = {
     addReport: (clientId: string, report: Omit<Report, 'id'>) => Promise<void>;
     addDocumentFolder: (clientId: string, folderName: string) => Promise<void>;
     addDocumentToFolder: (clientId: string, folderId: number, document: Omit<Document, 'id'>) => Promise<void>;
-    updateClient: (clientId: string, updatedData: Partial<Client>) => Promise<void>;
+    updateClient: (clientId: string, updatedData: Partial<Omit<Client, 'id'>>) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -77,55 +77,58 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Listen for authentication state changes
         const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-            setLoading(true);
             setUser(currentUser);
             
-            if (currentUser) {
-                // User is logged in
-                const isAdmin = currentUser.email === 'admin@example.com';
-                
-                if (isAdmin) {
-                    // Admin: fetch all clients
-                    const q = query(collection(db, "clients"));
-                    const unsubscribeFirestore = onSnapshot(q, (snapshot) => {
-                        const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
-                        setClients(clientsData);
-                        setLoading(false);
-                    }, (error) => {
-                        console.error("Firestore snapshot error for admin:", error);
-                        setClients([]);
-                        setLoading(false);
-                    });
-                    return () => unsubscribeFirestore();
-
-                } else {
-                    // Regular client: fetch only their own data
-                    const clientDocRef = doc(db, 'clients', currentUser.email!);
-                    const unsubscribeFirestore = onSnapshot(clientDocRef, (docSnapshot) => {
-                        if (docSnapshot.exists()) {
-                            const clientData = { id: docSnapshot.id, ...docSnapshot.data() } as Client;
-                            setClients([clientData]);
-                        } else {
-                            setClients([]);
-                        }
-                        setLoading(false);
-                    }, (error) => {
-                        console.error("Firestore snapshot error for client:", error);
-                        setClients([]);
-                        setLoading(false);
-                    });
-                    return () => unsubscribeFirestore();
-                }
-            } else {
-                // User is logged out
+            // If there's no user, stop loading and clear data.
+            if (!currentUser) {
                 setClients([]);
                 setLoading(false);
+                return;
             }
+
+            // Determine if the user is an admin
+            const isAdmin = currentUser.email === 'admin@example.com';
+
+            let unsubscribeFirestore: () => void;
+
+            if (isAdmin) {
+                // For ADMIN: Listen to the entire 'clients' collection.
+                const q = query(collection(db, "clients"));
+                unsubscribeFirestore = onSnapshot(q, (snapshot) => {
+                    const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+                    setClients(clientsData);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Firestore snapshot error for admin:", error);
+                    setClients([]);
+                    setLoading(false);
+                });
+            } else {
+                // For CLIENT: Listen to only their own document.
+                const clientDocRef = doc(db, 'clients', currentUser.email!);
+                unsubscribeFirestore = onSnapshot(clientDocRef, (docSnapshot) => {
+                    if (docSnapshot.exists()) {
+                        const clientData = { id: docSnapshot.id, ...docSnapshot.data() } as Client;
+                        setClients([clientData]);
+                    } else {
+                        // This might happen if the user was deleted from Firestore but not Auth.
+                        console.warn(`Client document not found for user: ${currentUser.email}`);
+                        setClients([]);
+                    }
+                    setLoading(false);
+                }, (error) => {
+                    console.error(`Firestore snapshot error for client ${currentUser.email}:`, error);
+                    setClients([]);
+                    setLoading(false);
+                });
+            }
+
+            // Cleanup Firestore subscription on user change or unmount
+            return () => unsubscribeFirestore();
         });
 
-        // Cleanup subscription on unmount
+        // Cleanup Auth subscription on unmount
         return () => unsubscribeAuth();
     }, []);
 

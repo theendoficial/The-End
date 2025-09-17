@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, Home, Users, FolderArchive, Settings, Menu } from 'lucide-react';
+import { Bell, Home, Users, FolderArchive, Settings, Menu, LogOut } from 'lucide-react';
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -20,6 +20,10 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { TheEndLogo } from '@/lib/images';
 import { useAppContext } from '@/contexts/AppContext';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+
 
 const navItems = [
   { href: '/admin/dashboard', icon: Home, label: 'Painel de Controle' },
@@ -55,10 +59,32 @@ function NavLinks({ isSheet = false }: { isSheet?: boolean }) {
 
 function AdminHeader() {
   const { setTheme } = useTheme();
-  // Fake admin data for display
+  const { user } = useAppContext();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+        variant: "success",
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error("Logout Error:", error);
+       toast({
+        title: "Erro no Logout",
+        description: "Não foi possível desconectar. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   const adminData = {
     name: 'Admin',
-    email: 'admin@example.com',
+    email: user?.email || 'admin@example.com',
     avatar: ''
   };
 
@@ -143,9 +169,10 @@ function AdminHeader() {
             <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Configurações</DropdownMenuItem>
           </Link>
           <DropdownMenuSeparator className="bg-muted dark:bg-white/20" />
-          <Link href="/login">
-            <DropdownMenuItem className="focus:bg-accent dark:focus:bg-white/10 cursor-pointer">Sair</DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem onClick={handleLogout} className="focus:bg-destructive/80 dark:focus:bg-red-800/50 cursor-pointer text-red-500 focus:text-white">
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
@@ -153,6 +180,24 @@ function AdminHeader() {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAppContext();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!loading && (!user || user.email !== 'admin@example.com')) {
+      router.replace('/login');
+    }
+  }, [user, loading, router]);
+
+
+  if (loading || !user) {
+     return (
+        <div className="flex h-screen items-center justify-center bg-background">
+            <p>Carregando...</p>
+        </div>
+    );
+  }
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-white to-[#F0F0F0] dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000]">
       <div className="absolute w-[1200px] h-[200px] top-[10px] left-[-500px] z-0 transform -rotate-[130deg] bg-gradient-to-r from-[#0d41e1] via-[#3498db] to-[#e74c3c] rounded-full filter blur-[30px] opacity-60"></div>
