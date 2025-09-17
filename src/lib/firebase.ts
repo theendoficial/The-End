@@ -15,26 +15,36 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Singleton pattern to initialize Firebase services safely.
 let app;
-// A less strict check to prevent build errors while still providing a warning.
-if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-} else {
-    // This warning helps during development if variables are missing.
-    console.warn('Firebase config is missing. Firebase services might not be available.');
+let auth;
+let db;
+
+function initializeFirebase() {
+    if (!getApps().length) {
+        // A simple check to ensure essential config is present.
+        if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } else {
+            console.warn('Firebase config is missing from environment variables. Firebase services will not be available.');
+        }
+    } else {
+        app = getApp();
+        auth = getAuth(app);
+        db = getFirestore(app);
+    }
 }
 
-// Initialize services only if the app was successfully initialized.
-const db = app ? getFirestore(app) : null;
-const auth = app ? getAuth(app) : null;
+// Initialize on first load
+initializeFirebase();
 
-
-// Export a function to get the initialized services to ensure they are not null.
+// Export a function to get the initialized services.
+// This ensures that any part of the app gets the same, single instance.
 export const getFirebaseServices = () => {
     if (!app || !db || !auth) {
-        // This will throw an error at runtime if Firebase is not configured, 
-        // which is better than crashing at build time.
+        // This will now only happen if the initial configuration was missing.
         throw new Error('Firebase has not been initialized. Please check your environment variables on your hosting provider.');
     }
     return { app, db, auth };
