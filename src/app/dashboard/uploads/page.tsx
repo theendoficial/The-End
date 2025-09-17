@@ -62,7 +62,7 @@ export default function UploadsPage({ clientData }: UploadsPageProps) {
             formRef.current?.reset();
             setFileName(null);
         }
-    }, [state.success]);
+    }, [state]);
 
     return (
         <>

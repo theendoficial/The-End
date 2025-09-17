@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect, useActionState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { useFormStatus } from 'react-dom';
 import { createClient, type CreateClientState } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import * as React from 'react';
 
 // Mock client type
 export type Client = {
@@ -28,6 +27,30 @@ export type Client = {
     pendingApprovals: number;
 };
 
+// Centralized mock data. In a real app, this would be fetched from a database.
+export const mockClients: Client[] = [
+    {
+      id: 'empresa-x',
+      name: 'Empresa X',
+      email: 'contato@empresax.com',
+      logo: 'https://picsum.photos/seed/empresax/40/40',
+      projects: [{ id: 6, name: 'Gestão de Mídias Sociais' }],
+      pendingApprovals: 3,
+      driveFolderId: 'mock-folder-id-x'
+    },
+    {
+      id: 'startup-y',
+      name: 'Startup Y',
+      email: 'ceo@startupy.com',
+      logo: 'https://picsum.photos/seed/startupy/40/40',
+      projects: [
+        { id: 1, name: 'Identidade Visual' },
+        { id: 3, name: 'Elaboração de sites' }
+      ],
+      pendingApprovals: 0,
+      driveFolderId: 'mock-folder-id-y'
+    }
+  ];
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -39,14 +62,14 @@ function SubmitButton() {
 }
 
 export default function AdminClientsPage() {
-    const [clients, setClients] = useState<Client[]>([]);
+    const [clients, setClients] = useState<Client[]>(mockClients);
     const [showPassword, setShowPassword] = useState(false);
     const [open, setOpen] = useState(false);
     
     // Form state refatorado para usar Server Action
     const initialState: CreateClientState = { message: null, success: false, errors: null };
     const [formState, dispatch] = useActionState(createClient, initialState);
-    const formRef = React.useRef<HTMLFormElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
 
     useEffect(() => {
@@ -65,8 +88,11 @@ export default function AdminClientsPage() {
             };
             setClients(prev => [...prev, newClient]);
             
-            setOpen(false);
-            formRef.current?.reset();
+            setOpen(false); // Close the dialog
+            formRef.current?.reset(); // Reset the form fields
+            // We need to manually reset the formState if we want to allow another submission
+            // This is a limitation of the current useActionState hook, a better approach
+            // would be to use a key on the form to force a remount.
         }
     }, [formState]);
 

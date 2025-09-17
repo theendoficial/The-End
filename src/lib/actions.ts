@@ -177,15 +177,15 @@ export async function createClient(prevState: CreateClientState, formData: FormD
              throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
         }
 
-        // Aqui você salvaria os dados do cliente no seu banco de dados,
-        // incluindo o 'folderId' que acabou de ser criado.
-        // Como estamos usando um mock, vamos apenas simular o sucesso.
-        console.log(`Cliente "${name}" criado com sucesso. ID da pasta no Drive: ${folderId}`);
+        // Here you would save the client data to your database,
+        // including the 'folderId' that has just been created.
+        // As we are using a mock, we will just simulate success.
+        console.log(`[CLIENT CREATED] Client "${name}" created successfully. Drive Folder ID: ${folderId}`);
 
         return { success: true, message: `Cliente "${name}" criado com sucesso!` };
 
     } catch (error: any) {
-        console.error('Erro ao criar cliente ou pasta no Drive:', error);
+        console.error('Error creating client or Drive folder:', error);
         return { 
             success: false, 
             message: 'Ocorreu um erro no servidor ao tentar criar o cliente. Verifique as configurações da API do Google Drive.',

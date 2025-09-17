@@ -25,10 +25,11 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Client, mockClients } from '../page';
 
 
 // Mock data, this would come from a DB
-const clients: any[] = [];
+const clients: Client[] = mockClients;
 
 function ClientDashboard() {
     const { addPost } = usePosts();
