@@ -15,6 +15,7 @@ import {
   FolderKanban,
   Menu,
   MessageSquare,
+  UploadCloud,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -94,6 +95,7 @@ function DashboardLayoutContent({
     { href: '/dashboard/projects', icon: FolderKanban, label: 'Meus Projetos' },
     { href: '/dashboard/calendar', icon: Calendar, label: 'Calendário' },
     { href: '/dashboard/approvals', icon: CheckSquare, label: 'Aprovação' },
+    { href: '/dashboard/uploads', icon: UploadCloud, label: 'Envio de Arquivos' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documentos' },
     { href: '/dashboard/reports', icon: LineChart, label: 'Relatórios' },
   ];
