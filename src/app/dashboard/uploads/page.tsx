@@ -31,7 +31,16 @@ function SubmitButton() {
     );
 }
 
-export default function UploadsPage() {
+// Em um app real, os dados do cliente viriam do contexto de autenticação/sessão.
+// Para este exemplo, estamos passando-os como props.
+type UploadsPageProps = {
+    clientData?: {
+        name: string;
+        driveFolderId: string;
+    }
+}
+
+export default function UploadsPage({ clientData }: UploadsPageProps) {
     const initialState: UploadState = { message: null, success: false, errors: null };
     const [state, dispatch] = useFormState(uploadFileToDrive, initialState);
     const [fileName, setFileName] = React.useState<string | null>(null);
@@ -63,6 +72,10 @@ export default function UploadsPage() {
 
             <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl w-full max-w-2xl mx-auto">
                 <form action={dispatch} ref={formRef}>
+                    {/* Campos ocultos para passar dados extras para a Server Action */}
+                    <input type="hidden" name="clientName" value={clientData?.name} />
+                    <input type="hidden" name="clientFolderId" value={clientData?.driveFolderId} />
+
                     <CardHeader>
                         <CardTitle>Enviar Arquivo para a Agência</CardTitle>
                         <CardDescription>

@@ -54,11 +54,13 @@ import { cn } from '@/lib/utils';
 import * as React from 'react';
 
 const clientData = {
-  companyName: 'Nome da Empresa',
-  email: 'email@exemplo.com',
+  name: 'Nome da Empresa',
+  email: 'user@example.com',
   logoUrl: 'https://picsum.photos/seed/clientlogo/40/40',
-  whatsappLink: 'https://wa.me/SEUNUMERO'
+  whatsappLink: 'https://wa.me/SEUNUMERO',
+  driveFolderId: '' // Em um app real, isso viria do banco de dados para o cliente logado
 };
+
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -173,7 +175,7 @@ function DashboardLayoutContent({
                   data-ai-hint="logo"
               />
               <div>
-                <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
+                <p className="font-semibold text-foreground text-sm">{clientData.name}</p>
                 <p className="text-xs text-muted-foreground">{clientData.email}</p>
               </div>
             </div>
@@ -211,7 +213,7 @@ function DashboardLayoutContent({
                       data-ai-hint="logo"
                   />
                   <div>
-                    <p className="font-semibold text-foreground text-sm">{clientData.companyName}</p>
+                    <p className="font-semibold text-foreground text-sm">{clientData.name}</p>
                     <p className="text-xs text-muted-foreground">{clientData.email}</p>
                   </div>
                 </div>
@@ -324,7 +326,7 @@ function DashboardLayoutContent({
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-4 lg:p-4 text-foreground">
-          {children}
+          {React.cloneElement(children as React.ReactElement, { clientData })}
         </main>
       </div>
     </div>

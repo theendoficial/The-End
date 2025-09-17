@@ -19,6 +19,10 @@ export async function uploadFileToDrive(
   formData: FormData
 ): Promise<UploadState> {
   const file = formData.get('file') as File;
+  // Em um app real, o ID do cliente viria da sessão do usuário logado.
+  // Aqui, vamos passar como um campo oculto no formulário.
+  const clientName = formData.get('clientName') as string || 'Cliente Desconhecido'; 
+  const clientFolderId = formData.get('clientFolderId') as string;
 
   if (!file || file.size === 0) {
     return {
@@ -27,6 +31,11 @@ export async function uploadFileToDrive(
       success: false,
     };
   }
+
+  // Se não houver um ID de pasta específico do cliente, use o folderId geral como fallback.
+  // Em um cenário ideal, o clientFolderId seria obrigatório.
+  const uploadFolderId = clientFolderId || googleDriveCredentials.folderId;
+
 
   try {
     const auth = new google.auth.GoogleAuth({
@@ -47,7 +56,7 @@ export async function uploadFileToDrive(
 
     const fileMetadata = {
       name: file.name,
-      parents: [googleDriveCredentials.folderId],
+      parents: [uploadFolderId],
     };
 
     const media = {
@@ -60,6 +69,9 @@ export async function uploadFileToDrive(
       media: media,
       fields: 'id',
     });
+
+    // Log para notificação do admin no servidor
+    console.log(`[ADMIN NOTIFICATION] Arquivo "${file.name}" enviado pelo cliente: "${clientName}".`);
 
     return {
       message: `Arquivo "${file.name}" enviado com sucesso! A agência foi notificada.`,

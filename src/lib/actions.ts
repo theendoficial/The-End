@@ -1,7 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema } from './schemas';
+import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } from './schemas';
+import { google } from 'googleapis';
+import { googleDriveCredentials } from './google-drive-credentials';
 
 export type LoginState = {
   errors?: {
@@ -121,4 +123,73 @@ export async function verifyCode(
   // This is a simplified redirect logic. In a real app, you'd check the user's role.
   // For now, we assume a verified user is a client.
   redirect('/dashboard');
+}
+
+
+export type CreateClientState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+    logo?: string[];
+    server?: string[];
+  };
+  message?: string | null;
+  success: boolean;
+};
+
+export async function createClient(prevState: CreateClientState, formData: FormData): Promise<CreateClientState> {
+    const validatedFields = ClientSchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Campos inválidos. Falha ao criar cliente.',
+            success: false,
+        };
+    }
+
+    const { name } = validatedFields.data;
+
+    try {
+        const auth = new google.auth.GoogleAuth({
+            credentials: {
+                client_email: googleDriveCredentials.client_email,
+                private_key: googleDriveCredentials.private_key,
+            },
+            scopes: ['https://www.googleapis.com/auth/drive'],
+        });
+        const drive = google.drive({ version: 'v3', auth });
+
+        const folderMetadata = {
+            name: name,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [googleDriveCredentials.folderId],
+        };
+
+        const folder = await drive.files.create({
+            requestBody: folderMetadata,
+            fields: 'id',
+        });
+        const folderId = folder.data.id;
+
+        if (!folderId) {
+             throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
+        }
+
+        // Aqui você salvaria os dados do cliente no seu banco de dados,
+        // incluindo o 'folderId' que acabou de ser criado.
+        // Como estamos usando um mock, vamos apenas simular o sucesso.
+        console.log(`Cliente "${name}" criado com sucesso. ID da pasta no Drive: ${folderId}`);
+
+        return { success: true, message: `Cliente "${name}" criado com sucesso!` };
+
+    } catch (error: any) {
+        console.error('Erro ao criar cliente ou pasta no Drive:', error);
+        return { 
+            success: false, 
+            message: 'Ocorreu um erro no servidor ao tentar criar o cliente. Verifique as configurações da API do Google Drive.',
+            errors: { server: ['Falha na integração com o Google Drive.'] }
+        };
+    }
 }
