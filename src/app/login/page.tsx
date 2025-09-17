@@ -78,7 +78,7 @@ export default function LoginPage() {
               break;
           default:
               console.error("Firebase Auth Error:", authError);
-              friendlyMessage = `[DEBUG] Ocorreu um erro no servidor. Código: ${authError.code || 'UNKNOWN_ERROR'}`;
+              friendlyMessage = 'Ocorreu um erro no servidor. Tente novamente mais tarde.';
               break;
       }
       setError(friendlyMessage);
