@@ -28,7 +28,8 @@ function initializeFirebase() {
             auth = getAuth(app);
             db = getFirestore(app);
         } else {
-            console.warn('Firebase config is missing from environment variables. Firebase services will not be available.');
+            // This warning is crucial for debugging on Vercel/production
+            console.warn('Firebase config is missing or incomplete from environment variables. Firebase services will not be available.');
         }
     } else {
         app = getApp();
@@ -49,7 +50,3 @@ export const getFirebaseServices = () => {
     }
     return { app, db, auth };
 };
-
-// For direct import, we still export the potentially null values,
-// but usage should ideally be through the getter function.
-export { app, db, auth };
