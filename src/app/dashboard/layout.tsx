@@ -86,13 +86,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   React.useEffect(() => {
     if (!loading) {
-      if (!user) {
-        // If loading is finished and there's no user, redirect to login.
-        router.replace('/login');
-      } else if (!clientData) {
-        // If there's a user but no client data, it might be an admin or an error.
-        // For a client-facing dashboard, this is an invalid state.
-        console.warn(`User ${user.email} logged in but no client data was found. Redirecting.`);
+      if (!user || !clientData) {
+        // If loading is finished and there's no user or client data, redirect to login.
         router.replace('/login');
       }
     }

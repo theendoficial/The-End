@@ -30,11 +30,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     // This effect handles redirection AFTER the AppContext has confirmed the user state.
+    // It will redirect a logged-in user trying to access the login page.
     if (!contextLoading && user) {
       if (user.email === 'admin@example.com') {
-        router.push('/admin/dashboard');
+        router.replace('/admin/dashboard');
       } else {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     }
   }, [user, contextLoading, router]);
@@ -60,11 +61,10 @@ export default function LoginPage() {
 
     try {
       const { auth } = getFirebaseServices();
-      // The onAuthStateChanged listener in AppContext will pick up this change.
-      // We no longer need to redirect from here. The useEffect above will handle it.
+      // The onAuthStateChanged listener in AppContext will pick up the change.
+      // The useEffect hook above will then handle the redirection.
       await signInWithEmailAndPassword(auth, email, password);
-      // The login was successful, but we let the useEffect handle the redirection.
-      // setLoading(false); // No need to set loading false, page will redirect.
+      // We don't need to setLoading(false) as the page will redirect.
     } catch (authError: any) {
       let friendlyMessage = 'Ocorreu um erro desconhecido. Verifique suas credenciais e tente novamente.';
       switch (authError.code) {
@@ -78,7 +78,7 @@ export default function LoginPage() {
               break;
           default:
               console.error("Firebase Auth Error:", authError);
-              friendlyMessage = "Ocorreu um erro no servidor. Tente novamente mais tarde.";
+              friendlyMessage = `[DEBUG] Ocorreu um erro no servidor. Código: ${authError.code || 'UNKNOWN_ERROR'}`;
               break;
       }
       setError(friendlyMessage);
@@ -86,10 +86,16 @@ export default function LoginPage() {
     }
   };
   
-  // If the user is already logged in (e.g., they navigate back to /login), redirect them away.
-  if (!contextLoading && user) {
-      return <div className="flex h-screen w-full items-center justify-center bg-background text-foreground">Redirecionando...</div>
+  // While AppContext is loading, or if the user is already logged in and being redirected,
+  // show a loading state to prevent the form from flashing.
+  if (contextLoading || (!contextLoading && user)) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-[#1e1e1f] to-[#000000] text-white">
+          Verificando autenticação...
+        </div>
+      );
   }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#1e1e1f] to-[#000000] text-white font-sans">
