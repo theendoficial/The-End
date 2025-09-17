@@ -1,68 +1,16 @@
-
 'use server';
 
 import { redirect } from 'next/navigation';
-import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } from './schemas';
+import { ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } from './schemas';
 import { google } from 'googleapis';
 import { getGoogleDriveCredentials } from './google-drive-credentials';
 import { Client } from '@/contexts/AppContext';
 import { getFirebaseServices } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
-export type LoginState = {
-  errors?: {
-    email?: string[];
-    password?: string[];
-    server?: string[];
-  };
-  message?: string | null;
-};
-
-export async function login(
-  prevState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
-  const validatedFields = LoginSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Invalid fields. Failed to login.',
-    };
-  }
-
-  const { email, password } = validatedFields.data;
-
-  try {
-    const { auth } = getFirebaseServices();
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // After successful sign-in, check if the user is an admin.
-    if (user.email === 'admin@example.com') {
-      redirect('/admin/dashboard');
-    } else {
-      // For any other user, redirect to the client dashboard.
-      redirect('/dashboard');
-    }
-
-  } catch (error: any) {
-     console.error("Firebase Auth Error:", error);
-     
-     // DEBUGGING: Expose the actual error code to the user interface.
-     const errorCode = error.code || 'UNKNOWN_ERROR';
-     const detailedMessage = `[DEBUG] Ocorreu um erro no servidor. Código: ${errorCode}`;
-
-     return {
-      errors: {
-        server: [detailedMessage],
-      },
-      message: detailedMessage,
-    };
-  }
-}
-
+// A função de login foi movida para o lado do cliente em /app/login/page.tsx
+// para evitar problemas de ambiente do servidor Vercel.
 
 export type ForgotPasswordState = {
     errors?: {
