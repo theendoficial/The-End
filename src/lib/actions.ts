@@ -1,3 +1,4 @@
+
 'use server';
 
 import { redirect } from 'next/navigation';
@@ -48,20 +49,16 @@ export async function login(
 
   } catch (error: any) {
      console.error("Firebase Auth Error:", error);
-     let errorMessage = 'Invalid email or password. Please try again.';
-     if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        errorMessage = 'E-mail ou senha inválidos. Tente novamente.';
-     } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Acesso bloqueado temporariamente devido a muitas tentativas. Tente novamente mais tarde.';
-     } else {
-        errorMessage = 'Ocorreu um erro no servidor. Tente novamente mais tarde.';
-     }
+     
+     // DEBUGGING: Expose the actual error code to the user interface.
+     const errorCode = error.code || 'UNKNOWN_ERROR';
+     const detailedMessage = `[DEBUG] Ocorreu um erro no servidor. Código: ${errorCode}`;
 
      return {
       errors: {
-        server: [errorMessage],
+        server: [detailedMessage],
       },
-      message: errorMessage,
+      message: detailedMessage,
     };
   }
 }
