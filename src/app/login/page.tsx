@@ -1,8 +1,9 @@
+
 'use client';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { getFirebaseServices } from '@/lib/firebase';
@@ -11,6 +12,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { TheEndLogo } from '@/lib/images';
 import { LoginSchema } from '@/lib/schemas';
+import { useAppContext } from '@/contexts/AppContext';
 
 function LoginButton({ pending }: { pending: boolean }) {
   return (
@@ -24,6 +26,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user, loading: contextLoading } = useAppContext();
+
+  useEffect(() => {
+    // This effect handles redirection AFTER the AppContext has confirmed the user state.
+    if (!contextLoading && user) {
+      if (user.email === 'admin@example.com') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  }, [user, contextLoading, router]);
+
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,13 +60,11 @@ export default function LoginPage() {
 
     try {
       const { auth } = getFirebaseServices();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      if (userCredential.user.email === 'admin@example.com') {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
+      // The onAuthStateChanged listener in AppContext will pick up this change.
+      // We no longer need to redirect from here. The useEffect above will handle it.
+      await signInWithEmailAndPassword(auth, email, password);
+      // The login was successful, but we let the useEffect handle the redirection.
+      // setLoading(false); // No need to set loading false, page will redirect.
     } catch (authError: any) {
       let friendlyMessage = 'Ocorreu um erro desconhecido. Verifique suas credenciais e tente novamente.';
       switch (authError.code) {
@@ -63,11 +76,20 @@ export default function LoginPage() {
           case 'auth/too-many-requests':
               friendlyMessage = 'Acesso bloqueado temporariamente devido a muitas tentativas. Tente novamente mais tarde.';
               break;
+          default:
+              console.error("Firebase Auth Error:", authError);
+              friendlyMessage = "Ocorreu um erro no servidor. Tente novamente mais tarde.";
+              break;
       }
       setError(friendlyMessage);
       setLoading(false);
     }
   };
+  
+  // If the user is already logged in (e.g., they navigate back to /login), redirect them away.
+  if (!contextLoading && user) {
+      return <div className="flex h-screen w-full items-center justify-center bg-background text-foreground">Redirecionando...</div>
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#1e1e1f] to-[#000000] text-white font-sans">
