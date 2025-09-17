@@ -897,11 +897,9 @@ function ClientSettings({ client, onSave }: { client: Client, onSave: (id: strin
     const { toast } = useToast();
     const [name, setName] = React.useState(client.name);
     const [email, setEmail] = React.useState(client.email);
-    const [password, setPassword] = React.useState(client.password);
     const [phone, setPhone] = React.useState(client.phone || '');
     const [whatsappLink, setWhatsappLink] = React.useState(client.whatsappLink || '');
     const [logo, setLogo] = React.useState(client.logo || '');
-    const [showPassword, setShowPassword] = React.useState(false);
     const [notificationMessage, setNotificationMessage] = React.useState('');
 
     const notificationOptions = {
@@ -913,7 +911,7 @@ function ClientSettings({ client, onSave }: { client: Client, onSave: (id: strin
     };
 
     const handleSaveChanges = () => {
-        onSave(client.id, { name, email, password, phone, whatsappLink, logo });
+        onSave(client.id, { name, email, phone, whatsappLink, logo });
         toast({
             title: "Dados Salvos!",
             description: "As informações do cliente foram atualizadas.",
@@ -945,7 +943,7 @@ function ClientSettings({ client, onSave }: { client: Client, onSave: (id: strin
                 <CardHeader>
                     <CardTitle>Dados do Cliente</CardTitle>
                     <CardDescription>
-                        Altere as informações de acesso e perfil do cliente.
+                        Altere as informações de acesso e perfil do cliente. O email não pode ser alterado.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -955,28 +953,7 @@ function ClientSettings({ client, onSave }: { client: Client, onSave: (id: strin
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="email">Email de Acesso</Label>
-                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background/50 dark:bg-black/20" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Senha de Acesso</Label>
-                        <div className="relative">
-                            <Input 
-                                id="password" 
-                                type={showPassword ? 'text' : 'password'}
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="bg-background/50 dark:bg-black/20 pr-10" 
-                            />
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute inset-y-0 right-0 h-full px-3"
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                        </div>
+                        <Input id="email" type="email" value={email} disabled className="bg-background/50 dark:bg-black/20" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="phone">Telefone / WhatsApp</Label>
@@ -1042,8 +1019,12 @@ function ClientSettings({ client, onSave }: { client: Client, onSave: (id: strin
 export default function ClientManagementPage() {
     const params = useParams();
     const clientId = params.clientId as string;
-    const { clients, updateClient } = useAppContext();
+    const { clients, updateClient, loading } = useAppContext();
     const client = clients.find(c => c.id === clientId);
+
+    if (loading) {
+        return <div>Carregando...</div>
+    }
 
     if (!client) {
         return (

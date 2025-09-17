@@ -60,7 +60,7 @@ type AppContextType = {
     addReport: (clientId: string, report: Omit<Report, 'id'>) => Promise<void>;
     addDocumentFolder: (clientId: string, folderName: string) => Promise<void>;
     addDocumentToFolder: (clientId: string, folderId: number, document: Omit<Document, 'id'>) => Promise<void>;
-    updateClient: (clientId: string, updatedData: Partial<Omit<Client, 'id' | 'password'>>) => Promise<void>;
+    updateClient: (clientId: string, updatedData: Partial<Client>) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -70,6 +70,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         const unsubscribe = onSnapshot(collection(db, "clients"), (snapshot) => {
             const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
             setClients(clientsData);
@@ -81,13 +82,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const getClient = (clientId: string) => {
+        // Now that loading is handled, this check is less critical but good for safety
         if (loading) return undefined;
         return clients.find(c => c.id === clientId);
     };
 
-    const updateClient = async (clientId: string, updatedData: Partial<Omit<Client, 'id' | 'password'>>) => {
+    const updateClient = async (clientId: string, updatedData: Partial<Client>) => {
         if (!clientId) return;
         const clientDocRef = doc(db, 'clients', clientId);
+        // Important: never update the password field directly this way
+        delete (updatedData as Partial<Client & {password?: string}>).password;
         await updateDoc(clientDocRef, updatedData);
     };
 

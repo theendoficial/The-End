@@ -5,3 +5,6 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  # Server actions can sometimes take longer, e.g., when creating a Google Drive folder.
+  # This increases the timeout to 2 minutes to prevent premature termination.
+  serverActionsTimeout: 120s
