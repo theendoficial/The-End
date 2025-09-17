@@ -29,8 +29,8 @@ export default function LoginPage() {
   const { user, loading: contextLoading } = useAppContext();
 
   useEffect(() => {
-    // This effect handles redirection AFTER the AppContext has confirmed the user state.
-    // It will redirect a logged-in user trying to access the login page.
+    // Este efeito lida com o redirecionamento quando o estado do usuário muda.
+    // Ele só age quando o carregamento inicial do contexto termina.
     if (!contextLoading && user) {
       if (user.email === 'admin@example.com') {
         router.replace('/admin/dashboard');
@@ -61,24 +61,26 @@ export default function LoginPage() {
 
     try {
       const { auth } = getFirebaseServices();
-      // The onAuthStateChanged listener in AppContext will pick up the change.
-      // The useEffect hook above will then handle the redirection.
+      // O listener onAuthStateChanged no AppContext irá detectar a mudança e
+      // o useEffect acima cuidará do redirecionamento.
       await signInWithEmailAndPassword(auth, email, password);
-      // We don't need to setLoading(false) as the page will redirect.
+      // Não definimos setLoading(false) aqui porque o redirecionamento irá acontecer.
     } catch (authError: any) {
-      let friendlyMessage = 'Ocorreu um erro desconhecido. Verifique suas credenciais e tente novamente.';
+      // Exibe a mensagem de erro específica para depuração.
+      let friendlyMessage = `Ocorreu um erro desconhecido. Código: ${authError.code}`;
       switch (authError.code) {
           case 'auth/user-not-found':
           case 'auth/wrong-password':
           case 'auth/invalid-credential':
-              friendlyMessage = 'Email ou senha inválidos.';
+              friendlyMessage = 'Email ou senha inválidos. Por favor, verifique seus dados.';
               break;
           case 'auth/too-many-requests':
               friendlyMessage = 'Acesso bloqueado temporariamente devido a muitas tentativas. Tente novamente mais tarde.';
               break;
           default:
               console.error("Firebase Auth Error:", authError);
-              friendlyMessage = 'Ocorreu um erro no servidor. Tente novamente mais tarde.';
+              // Para depuração final, mostramos o código do erro real.
+              friendlyMessage = `Ocorreu um erro no servidor. Verifique o console ou o código de erro: ${authError.code || 'UNKNOWN_ERROR'}`;
               break;
       }
       setError(friendlyMessage);
@@ -86,8 +88,8 @@ export default function LoginPage() {
     }
   };
   
-  // While AppContext is loading, or if the user is already logged in and being redirected,
-  // show a loading state to prevent the form from flashing.
+  // Exibe "Verificando autenticação..." enquanto o AppContext está carregando
+  // ou se o usuário já está logado e aguardando o redirecionamento do useEffect.
   if (contextLoading || (!contextLoading && user)) {
       return (
         <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-[#1e1e1f] to-[#000000] text-white">
