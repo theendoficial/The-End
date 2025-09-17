@@ -83,6 +83,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, getClient, loading } = useAppContext();
   
   const clientData = user ? getClient(user.email!) : null;
+  
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        // If loading is finished and there's no user, redirect to login.
+        router.replace('/login');
+      } else if (!clientData) {
+        // If there's a user but no client data, it might be an admin or an error.
+        // For a client-facing dashboard, this is an invalid state.
+        console.warn(`User ${user.email} logged in but no client data was found. Redirecting.`);
+        router.replace('/login');
+      }
+    }
+  }, [user, clientData, loading, router]);
+
+
+  if (loading) {
+    return (
+        <div className="flex h-screen items-center justify-center bg-background">
+            <p>Carregando...</p>
+        </div>
+    );
+  }
+
+  if (!user || !clientData) {
+    // This state can be hit briefly before the redirect happens.
+    // Showing a loading screen prevents a flash of unstyled content or an error message.
+     return (
+        <div className="flex h-screen items-center justify-center bg-background">
+            <p>Verificando autenticação...</p>
+        </div>
+    );
+  }
+
   const pendingApprovalsCount = clientData?.posts?.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length || 0;
 
   const handleLogout = async () => {
@@ -104,27 +138,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       });
     }
   };
-
-  if (loading) {
-    return (
-        <div className="flex h-screen items-center justify-center bg-background">
-            <div className="flex flex-col items-center gap-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-6 w-64" />
-            </div>
-        </div>
-    );
-  }
-
-  if (!user || !clientData) {
-    // This can be a flash while redirecting, or if data is truly missing.
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Redirecionando para a página de login...</p>
-      </div>
-    );
-  }
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Painel de Controle' },

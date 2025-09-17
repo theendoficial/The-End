@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -185,19 +186,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!loading && (!user || user.email !== 'admin@example.com')) {
-      router.replace('/login');
+    if (!loading) {
+      if (!user || user.email !== 'admin@example.com') {
+        router.replace('/login');
+      }
     }
   }, [user, loading, router]);
 
 
-  if (loading || !user) {
+  if (loading) {
      return (
         <div className="flex h-screen items-center justify-center bg-background">
             <p>Carregando...</p>
         </div>
     );
   }
+
+  if (!user) {
+    // This state can be hit briefly before the redirect happens.
+    // Showing a loading screen prevents a flash of unstyled content or an error message.
+    return (
+       <div className="flex h-screen items-center justify-center bg-background">
+           <p>Verificando autenticação...</p>
+       </div>
+   );
+ }
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative bg-gradient-to-b from-white to-[#F0F0F0] dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-[#000000]">
