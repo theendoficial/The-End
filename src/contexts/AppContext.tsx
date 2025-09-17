@@ -1,8 +1,18 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Post, allProjects } from '@/components/dashboard/dashboard-components';
+import { db } from '@/lib/firebase';
+import { 
+    collection, 
+    doc, 
+    onSnapshot, 
+    updateDoc, 
+    arrayUnion, 
+    serverTimestamp,
+    setDoc
+} from 'firebase/firestore';
 
 export type Report = {
     id: number;
@@ -45,111 +55,103 @@ export type Client = {
 
 type AppContextType = {
     clients: Client[];
-    addClient: (client: Client) => void;
-    updateClient: (clientId: string, updatedData: Partial<Client>) => void;
+    loading: boolean;
     getClient: (clientId: string) => Client | undefined;
-    addPost: (clientId: string, post: Omit<Post, 'id' | 'status'>) => void;
-    updatePostStatus: (clientId: string, postId: number, status: Post['status']) => void;
-    updatePostDate: (clientId: string, postId: number, newDate: string) => void;
-    addReport: (clientId: string, report: Omit<Report, 'id'>) => void;
-    addDocumentFolder: (clientId: string, folderName: string) => void;
-    addDocumentToFolder: (clientId: string, folderId: number, document: Omit<Document, 'id'>) => void;
+    addPost: (clientId: string, post: Omit<Post, 'id' | 'status'>) => Promise<void>;
+    updatePostStatus: (clientId: string, postId: number, status: Post['status']) => Promise<void>;
+    updatePostDate: (clientId: string, postId: number, newDate: string) => Promise<void>;
+    addReport: (clientId: string, report: Omit<Report, 'id'>) => Promise<void>;
+    addDocumentFolder: (clientId: string, folderName: string) => Promise<void>;
+    addDocumentToFolder: (clientId: string, folderId: number, document: Omit<Document, 'id'>) => Promise<void>;
+    updateClient: (clientId: string, updatedData: Partial<Client>) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [clients, setClients] = useState<Client[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const addClient = (client: Client) => {
-        setClients(prev => [...prev, client]);
-    };
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, "clients"), (snapshot) => {
+            const clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+            setClients(clientsData);
+            setLoading(false);
+        });
+
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+    }, []);
 
     const getClient = (clientId: string) => {
         return clients.find(c => c.id === clientId);
     };
 
-    const updateClient = (clientId: string, updatedData: Partial<Client>) => {
-        setClients(prev => prev.map(c => c.id === clientId ? { ...c, ...updatedData } : c));
+    const updateClient = async (clientId: string, updatedData: Partial<Client>) => {
+        const clientDocRef = doc(db, 'clients', clientId);
+        await updateDoc(clientDocRef, updatedData);
     };
 
-    const addPost = (clientId: string, postData: Omit<Post, 'id' | 'status'>) => {
+    const addPost = async (clientId: string, postData: Omit<Post, 'id' | 'status'>) => {
+        const clientDocRef = doc(db, 'clients', clientId);
         const newPost: Post = {
             ...postData,
             id: Date.now(),
             status: 'awaiting_approval',
         };
-        setClients(prev => prev.map(c => 
-            c.id === clientId ? { ...c, posts: [newPost, ...c.posts] } : c
-        ));
+        await updateDoc(clientDocRef, {
+            posts: arrayUnion(newPost)
+        });
     };
 
-    const updatePostStatus = (clientId: string, postId: number, status: Post['status']) => {
-        setClients(prev => prev.map(c => {
-            if (c.id === clientId) {
-                const updatedPosts = c.posts.map(p => 
-                    p.id === postId ? { ...p, status } : p
-                );
-                return { ...c, posts: updatedPosts };
-            }
-            return c;
-        }));
+    const updatePostStatus = async (clientId: string, postId: number, status: Post['status']) => {
+        const client = getClient(clientId);
+        if (client) {
+            const updatedPosts = client.posts.map(p => p.id === postId ? { ...p, status } : p);
+            await updateClient(clientId, { posts: updatedPosts });
+        }
     };
     
-    const updatePostDate = (clientId: string, postId: number, newDate: string) => {
-         setClients(prev => prev.map(c => {
-            if (c.id === clientId) {
-                const updatedPosts = c.posts.map(p => 
-                    p.id === postId ? { ...p, date: newDate } : p
-                );
-                return { ...c, posts: updatedPosts };
-            }
-            return c;
-        }));
+    const updatePostDate = async (clientId: string, postId: number, newDate: string) => {
+        const client = getClient(clientId);
+        if (client) {
+            const updatedPosts = client.posts.map(p => p.id === postId ? { ...p, date: newDate } : p);
+            await updateClient(clientId, { posts: updatedPosts });
+        }
     }
 
-    const addReport = (clientId: string, reportData: Omit<Report, 'id'>) => {
-        const newReport: Report = {
-            ...reportData,
-            id: Date.now(),
-        };
-        setClients(prev => prev.map(c => 
-            c.id === clientId ? { ...c, reports: [newReport, ...c.reports] } : c
-        ));
+    const addReport = async (clientId: string, reportData: Omit<Report, 'id'>) => {
+        const clientDocRef = doc(db, 'clients', clientId);
+        const newReport: Report = { ...reportData, id: Date.now() };
+        await updateDoc(clientDocRef, {
+            reports: arrayUnion(newReport)
+        });
     };
     
-    const addDocumentFolder = (clientId: string, folderName: string) => {
-        const newFolder: DocumentFolder = {
-            id: Date.now(),
-            name: folderName,
-            documents: []
-        };
-        setClients(prev => prev.map(c =>
-            c.id === clientId ? { ...c, documents: [...c.documents, newFolder] } : c
-        ));
+    const addDocumentFolder = async (clientId: string, folderName: string) => {
+        const clientDocRef = doc(db, 'clients', clientId);
+        const newFolder: DocumentFolder = { id: Date.now(), name: folderName, documents: [] };
+        await updateDoc(clientDocRef, {
+            documents: arrayUnion(newFolder)
+        });
     };
     
-    const addDocumentToFolder = (clientId: string, folderId: number, documentData: Omit<Document, 'id'>) => {
-        const newDocument: Document = {
-            ...documentData,
-            id: Date.now() + 1,
-        };
-        setClients(prev => prev.map(c => {
-            if (c.id === clientId) {
-                const updatedFolders = c.documents.map(f =>
-                    f.id === folderId ? { ...f, documents: [newDocument, ...f.documents] } : f
-                );
-                return { ...c, documents: updatedFolders };
-            }
-            return c;
-        }));
+    const addDocumentToFolder = async (clientId: string, folderId: number, documentData: Omit<Document, 'id'>) => {
+        const client = getClient(clientId);
+        if (client) {
+            const newDocument: Document = { ...documentData, id: Date.now() + 1 };
+            const updatedFolders = client.documents.map(f => 
+                f.id === folderId 
+                ? { ...f, documents: [newDocument, ...f.documents] } 
+                : f
+            );
+            await updateClient(clientId, { documents: updatedFolders });
+        }
     };
-
 
     const value = {
         clients,
-        addClient,
-        updateClient,
+        loading,
         getClient,
         addPost,
         updatePostStatus,
@@ -157,6 +159,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addReport,
         addDocumentFolder,
         addDocumentToFolder,
+        updateClient,
+        addClient: async (client: Client) => {
+            const clientDocRef = doc(db, 'clients', client.id);
+            await setDoc(clientDocRef, client);
+        },
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

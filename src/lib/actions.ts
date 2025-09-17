@@ -1,3 +1,4 @@
+
 'use server';
 
 import { redirect } from 'next/navigation';
@@ -5,6 +6,8 @@ import { LoginSchema, ForgotPasswordSchema, VerifyCodeSchema, ClientSchema } fro
 import { google } from 'googleapis';
 import { googleDriveCredentials } from './google-drive-credentials';
 import { Client } from '@/contexts/AppContext';
+import { db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export type LoginState = {
   errors?: {
@@ -13,7 +16,6 @@ export type LoginState = {
     server?: string[];
   };
   message?: string | null;
-  clients?: Client[];
 };
 
 export async function login(
@@ -34,18 +36,29 @@ export async function login(
   // Mock authentication
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-  const isAdmin = (email === 'admin@example.com' || email === 'jhokkehgames@gmail.com') && password === 'password123';
-
-  if (isAdmin) {
+  // Check for admin
+  if (email === 'admin@example.com' && password === 'password123') {
     redirect('/admin');
   }
   
-  const isClient = prevState.clients?.find(c => c.email === email && c.password === password);
+  try {
+    const clientDocRef = doc(db, 'clients', email);
+    const clientDoc = await getDoc(clientDocRef);
 
-  if (isClient) {
-    // In a real app, you'd set a session cookie here.
-    // For this demo, we'll redirect, but the app uses a hardcoded ID for the client view.
-    redirect('/dashboard');
+    if (clientDoc.exists()) {
+      const clientData = clientDoc.data() as Client;
+      if (clientData.password === password) {
+        // In a real app, you'd set a session cookie here.
+        redirect('/dashboard');
+      }
+    }
+  } catch (error) {
+     return {
+      errors: {
+        server: ['Failed to connect to the database. Please try again later.'],
+      },
+      message: 'Server error.',
+    };
   }
 
   return {
@@ -141,7 +154,6 @@ export type CreateClientState = {
   };
   message?: string | null;
   success: boolean;
-  newClient?: Client;
 };
 
 export async function createClient(prevState: CreateClientState, formData: FormData): Promise<CreateClientState> {
@@ -184,7 +196,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
         }
 
         const newClient: Client = {
-            id: email, // Use email as a unique ID for now
+            id: email, // Use email as a unique ID
             name,
             email,
             password,
@@ -198,9 +210,12 @@ export async function createClient(prevState: CreateClientState, formData: FormD
             pendingApprovals: 0,
         };
 
+        // Save to Firestore
+        await setDoc(doc(db, "clients", newClient.id), newClient);
+
         console.log(`[CLIENT CREATED] Client "${name}" created successfully. Drive Folder ID: ${folderId}`);
 
-        return { success: true, message: `Cliente "${name}" criado com sucesso!`, newClient };
+        return { success: true, message: `Cliente "${name}" criado com sucesso!` };
 
     } catch (error: any) {
         console.error('Error creating client or Drive folder:', error);

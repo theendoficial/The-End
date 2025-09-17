@@ -9,7 +9,6 @@ import { login, type LoginState } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { TheEndLogo } from '@/lib/images';
-import { useAppContext } from '@/contexts/AppContext';
 
 function LoginButton() {
   const { pending } = useFormStatus();
@@ -21,12 +20,8 @@ function LoginButton() {
 }
 
 export default function LoginPage() {
-  const { clients } = useAppContext();
-  const initialState: LoginState = { message: null, errors: {}, clients: clients };
-  
-  // Bind the clients data to the server action
-  const loginWithClients = login.bind(null, { ...initialState, clients });
-  const [state, dispatch] = useActionState(loginWithClients, initialState);
+  const initialState: LoginState = { message: null, errors: {} };
+  const [state, dispatch] = useActionState(login, initialState);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#1e1e1f] to-[#000000] text-white font-sans">

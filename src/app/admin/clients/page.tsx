@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { useFormStatus } from 'react-dom';
 import { createClient, type CreateClientState } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useAppContext, Client } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -26,7 +27,7 @@ function SubmitButton() {
 }
 
 export default function AdminClientsPage() {
-    const { clients, addClient } = useAppContext();
+    const { clients, loading } = useAppContext();
     const [showPassword, setShowPassword] = useState(false);
     const [open, setOpen] = useState(false);
     
@@ -36,12 +37,11 @@ export default function AdminClientsPage() {
 
 
     useEffect(() => {
-        if (formState.success && formState.newClient) {
-            addClient(formState.newClient);
+        if (formState.success) {
             setOpen(false); // Close the dialog
             formRef.current?.reset(); // Reset the form fields
         }
-    }, [formState, addClient]);
+    }, [formState]);
 
 
     return (
@@ -132,7 +132,21 @@ export default function AdminClientsPage() {
                     </DialogContent>
                 </Dialog>
             </div>
-            {clients.length > 0 ? (
+            {loading ? (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl flex flex-col group">
+                            <CardHeader>
+                               <Skeleton className="h-12 w-full" />
+                            </CardHeader>
+                            <CardContent className="flex-grow flex flex-col justify-between">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-10 w-full mt-4" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                 </div>
+            ) : clients.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clients.map((client) => (
                         <Card key={client.id} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl flex flex-col group">
