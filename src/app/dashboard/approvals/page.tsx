@@ -2,20 +2,28 @@
 'use client';
 
 import * as React from 'react';
-import { Post } from '@/components/dashboard/dashboard-components';
+import { Post, Status } from '@/components/dashboard/dashboard-components';
 import { ApprovalPostCard } from '@/components/dashboard/approval-components';
 import { AnimatePresence } from 'framer-motion';
-import { usePosts } from '@/components/dashboard/dashboard-components';
+import { useAppContext } from '@/contexts/AppContext';
 
 export default function ApprovalsPage() {
-  const { posts, updatePostStatus } = usePosts();
+  const LOGGED_IN_CLIENT_ID = 'user@example.com';
+  const { getClient, updatePostStatus } = useAppContext();
+  const client = getClient(LOGGED_IN_CLIENT_ID);
 
-  const handlePostAction = (postId: number, newStatus: Post['status']) => {
-    updatePostStatus(postId, newStatus);
+  if (!client) {
+    return <div>Carregando...</div>;
+  }
+
+  const posts = client.posts || [];
+
+  const handlePostAction = (postId: number, newStatus: Status) => {
+    updatePostStatus(client.id, postId, newStatus);
   };
   
-  const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision'].includes(p.status));
-  const awaitingApprovalPosts = postsToShow.filter(p => p.status === 'awaiting_approval');
+  const postsToShow = posts.filter(p => ['awaiting_approval', 'in_revision', 'notified'].includes(p.status));
+  const awaitingApprovalPosts = postsToShow.filter(p => p.status === 'awaiting_approval' || p.status === 'notified');
   const inRevisionPosts = postsToShow.filter(p => p.status === 'in_revision');
 
   return (

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarWidget, ProjectUpcomingPostsList, PostsProvider, usePosts, PostType, Post, Status, statusConfig, PostDialogContent, allProjects } from '@/components/dashboard/dashboard-components';
+import { CalendarWidget, ProjectUpcomingPostsList, allProjects, PostType, Post, Status, statusConfig, PostDialogContent } from '@/components/dashboard/dashboard-components';
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
 import { AnimatePresence } from 'framer-motion';
 import * as React from 'react';
@@ -25,14 +25,12 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Client, mockClients } from '../page';
-
-
-// Mock data, this would come from a DB
-const clients: Client[] = mockClients;
+import { useAppContext, Client } from '@/contexts/AppContext';
 
 function ClientDashboard() {
-    const { addPost } = usePosts();
+    const params = useParams();
+    const clientId = params.clientId as string;
+    const { addPost } = useAppContext();
     const [openNewPost, setOpenNewPost] = React.useState(false);
 
     // New Post Form State
@@ -99,7 +97,7 @@ function ClientDashboard() {
             url: finalUrl,
         };
         
-        addPost(newPost);
+        addPost(clientId, newPost);
         
         setOpenNewPost(false);
         // Reset form
@@ -232,13 +230,13 @@ function ClientDashboard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CalendarWidget />
+                <CalendarWidget clientId={clientId} />
                 <div></div>
             </div>
 
             <div>
                 <h3 className="text-lg font-semibold mb-4">Fila de Conteúdo</h3>
-                <ProjectUpcomingPostsList />
+                <ProjectUpcomingPostsList clientId={clientId} />
             </div>
         </div>
     )
@@ -261,10 +259,14 @@ const getImageHint = (post: Post): string => {
     return post.imageHint || 'placeholder';
 }
 
-function AdminApprovalCard({ post, onNotify, onUpdateStatus }: { post: Post, onNotify: (postId: number) => void, onUpdateStatus: (postId: number, status: Status) => void }) {
+function AdminApprovalCard({ post, onNotify, onUpdateStatus, clientId }: { post: Post, onNotify: (postId: number) => void, onUpdateStatus: (clientId: string, postId: number, status: Status) => void, clientId: string }) {
     const imageUrl = getPostImage(post);
     const imageHint = getImageHint(post);
     const statusInfo = statusConfig[post.status];
+
+    const handleUpdate = (status: Status) => {
+        onUpdateStatus(clientId, post.id, status);
+    };
 
     return (
         <Dialog>
@@ -297,18 +299,24 @@ function AdminApprovalCard({ post, onNotify, onUpdateStatus }: { post: Post, onN
                     </div>
                 </CardContent>
             </Card>
-            <PostDialogContent post={post} onUpdateStatus={onUpdateStatus} isAdminView={true} />
+            <PostDialogContent post={post} onUpdateStatus={(postId, status) => handleUpdate(status)} isAdminView={true} />
         </Dialog>
 
     );
 }
 
 function ClientApprovals() {
-    const { posts, updatePostStatus } = usePosts();
+    const params = useParams();
+    const clientId = params.clientId as string;
+    const { clients, updatePostStatus } = useAppContext();
+    const client = clients.find(c => c.id === clientId);
     const { toast } = useToast();
 
+    if (!client) return null;
+    const posts = client.posts || [];
+
     const handleNotify = (postId: number) => {
-        updatePostStatus(postId, 'notified');
+        updatePostStatus(clientId, postId, 'notified');
         toast({
             title: "Cliente Notificado!",
             description: "O cliente foi notificado sobre o novo post para aprovação.",
@@ -329,7 +337,7 @@ function ClientApprovals() {
                         {awaitingApprovalPosts.length > 0 ? (
                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {awaitingApprovalPosts.map((post) => (
-                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} clientId={clientId} />
                                 ))}
                             </div>
                         ) : (
@@ -342,7 +350,7 @@ function ClientApprovals() {
                         {notifiedPosts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {notifiedPosts.map((post) => (
-                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
+                                    <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} clientId={clientId} />
                                 ))}
                             </div>
                         ) : (
@@ -355,7 +363,7 @@ function ClientApprovals() {
                          {otherPosts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {otherPosts.map((post) => (
-                                <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} />
+                                <AdminApprovalCard key={post.id} post={post} onNotify={handleNotify} onUpdateStatus={updatePostStatus} clientId={clientId} />
                                 ))}
                             </div>
                         ) : (
@@ -378,10 +386,17 @@ function ClientApprovals() {
 
 
 function ClientCalendar() {
-    const { posts, scheduledPosts, updatePostDate, updatePostStatus } = usePosts();
-    if (!posts || !scheduledPosts || !updatePostDate) {
+    const params = useParams();
+    const clientId = params.clientId as string;
+    const { clients, updatePostDate, updatePostStatus } = useAppContext();
+    const client = clients.find(c => c.id === clientId);
+
+    if (!client) {
         return <div>Carregando calendário...</div>; // Or a loading spinner
     }
+    const posts = client.posts || [];
+    const scheduledPosts = posts.filter(p => p.status === 'scheduled' || p.status === 'completed');
+
     return (
         <div className="flex flex-col gap-6">
             <div>
@@ -389,9 +404,9 @@ function ClientCalendar() {
                 <KanbanBoard 
                     posts={posts} 
                     scheduledPosts={scheduledPosts} 
-                    updatePostDate={updatePostDate} 
+                    updatePostDate={(postId, newDate) => updatePostDate(clientId, postId, newDate)}
                     isAdminView={true}
-                    updatePostStatus={updatePostStatus} 
+                    updatePostStatus={(postId, status) => updatePostStatus(clientId, postId, status)}
                 />
             </div>
             <div>
@@ -400,14 +415,15 @@ function ClientCalendar() {
                     posts={posts} 
                     scheduledPosts={scheduledPosts} 
                     isAdminView={true} 
-                    updatePostStatus={updatePostStatus}
+                    updatePostStatus={(postId, status) => updatePostStatus(clientId, postId, status)}
                 />
             </div>
         </div>
     );
 }
 
-function ClientProjects({ client }: { client: any }) {
+function ClientProjects({ client }: { client: Client }) {
+    const { updateClient } = useAppContext();
     const [open, setOpen] = React.useState(false);
     const [selectedProjects, setSelectedProjects] = React.useState<number[]>(client.projects || []);
 
@@ -420,8 +436,7 @@ function ClientProjects({ client }: { client: any }) {
     };
 
     const handleSave = () => {
-        // In a real app, you'd save this to your database.
-        client.projects = selectedProjects; // Mutating mock data for demo
+        updateClient(client.id, { projects: selectedProjects });
         setOpen(false);
     };
     
@@ -488,7 +503,7 @@ function ClientProjects({ client }: { client: any }) {
                             </CardHeader>
                             <CardContent>
                                 {project.id === 6 ? ( // "Gestão de Mídias Sociais"
-                                    <ProjectUpcomingPostsList />
+                                    <ProjectUpcomingPostsList clientId={client.id} />
                                 ) : (
                                     <p className="text-sm text-muted-foreground">O conteúdo para este tipo de projeto é estático. Gerencie-o na seção de arquivos globais.</p>
                                 )}
@@ -513,7 +528,12 @@ type Report = {
 };
 
 function ClientReports() {
-    const [reports, setReports] = React.useState<Report[]>([]);
+    const params = useParams();
+    const clientId = params.clientId as string;
+    const { getClient, addReport } = useAppContext();
+    const client = getClient(clientId);
+    const reports = client?.reports || [];
+    
     const [openNewReport, setOpenNewReport] = React.useState(false);
     const [title, setTitle] = React.useState('');
     const [file, setFile] = React.useState<File | null>(null);
@@ -540,15 +560,14 @@ function ClientReports() {
             finalUrl = URL.createObjectURL(file);
         }
 
-        const newReport: Report = {
-            id: Date.now(),
+        const newReport: Omit<Report, 'id'> & { date: string } = {
             title,
             url: finalUrl,
             date: new Date().toISOString(),
             fileName: file ? file.name : undefined,
         };
 
-        setReports(prev => [newReport, ...prev]);
+        addReport(clientId, newReport);
         
         // Reset form and close dialog
         setOpenNewReport(false);
@@ -675,7 +694,12 @@ type Folder = {
 };
 
 function ClientDocuments() {
-    const [folders, setFolders] = React.useState<Folder[]>([]);
+    const params = useParams();
+    const clientId = params.clientId as string;
+    const { getClient, addDocumentFolder, addDocumentToFolder } = useAppContext();
+    const client = getClient(clientId);
+    const folders = client?.documents || [];
+
     const [openNewFolder, setOpenNewFolder] = React.useState(false);
     const [openNewDoc, setOpenNewDoc] = React.useState(false);
     
@@ -692,12 +716,7 @@ function ClientDocuments() {
 
     const handleSaveFolder = () => {
         if (!folderName) return;
-        const newFolder: Folder = {
-            id: Date.now(),
-            name: folderName,
-            documents: [],
-        };
-        setFolders(prev => [...prev, newFolder]);
+        addDocumentFolder(clientId, folderName);
         setFolderName('');
         setOpenNewFolder(false);
     };
@@ -721,19 +740,14 @@ function ClientDocuments() {
             finalUrl = URL.createObjectURL(docFile);
         }
 
-        const newDocument: Document = {
-            id: Date.now() + 1,
+        const newDocument: Omit<Document, 'id'> & {date: string} = {
             title: docTitle,
             url: finalUrl,
             date: new Date().toISOString(),
             fileName: docFile ? docFile.name : undefined,
         };
 
-        setFolders(prev => prev.map(folder => 
-            folder.id === parseInt(docFolderId, 10)
-                ? { ...folder, documents: [newDocument, ...folder.documents] }
-                : folder
-        ));
+        addDocumentToFolder(clientId, parseInt(docFolderId, 10), newDocument);
 
         // Reset form and close dialog
         setOpenNewDoc(false);
@@ -879,7 +893,7 @@ function ClientDocuments() {
     );
 }
 
-function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClient: any) => void }) {
+function ClientSettings({ client, onSave }: { client: Client, onSave: (id: string, updatedClient: Partial<Client>) => void }) {
     const { toast } = useToast();
     const [name, setName] = React.useState(client.name);
     const [email, setEmail] = React.useState(client.email);
@@ -899,7 +913,7 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
     };
 
     const handleSaveChanges = () => {
-        onSave({ ...client, name, email, password, phone, whatsappLink, logo });
+        onSave(client.id, { name, email, password, phone, whatsappLink, logo });
         toast({
             title: "Dados Salvos!",
             description: "As informações do cliente foram atualizadas.",
@@ -1025,21 +1039,11 @@ function ClientSettings({ client, onSave }: { client: any, onSave: (updatedClien
     );
 }
 
-function ClientManagementPageContent() {
+export default function ClientManagementPage() {
     const params = useParams();
-    const { clientId } = params;
-    const [client, setClient] = React.useState(clients.find(c => c.id === clientId));
-
-    const handleSaveClient = (updatedClient: any) => {
-        // In a real app, this would be an API call.
-        // Here, we update the mock data state.
-        const clientIndex = clients.findIndex(c => c.id === updatedClient.id);
-        if (clientIndex !== -1) {
-            clients[clientIndex] = updatedClient;
-        }
-        setClient(updatedClient);
-    };
-    
+    const clientId = params.clientId as string;
+    const { clients, updateClient } = useAppContext();
+    const client = clients.find(c => c.id === clientId);
 
     if (!client) {
         return (
@@ -1077,16 +1081,8 @@ function ClientManagementPageContent() {
                 <TabsContent value="projects"><ClientProjects client={client} /></TabsContent>
                 <TabsContent value="reports"><ClientReports /></TabsContent>
                 <TabsContent value="documents"><ClientDocuments /></TabsContent>
-                <TabsContent value="settings"><ClientSettings client={client} onSave={handleSaveClient} /></TabsContent>
+                <TabsContent value="settings"><ClientSettings client={client} onSave={updateClient} /></TabsContent>
             </Tabs>
         </div>
-    );
-}
-
-export default function ClientManagementPage() {
-    return (
-        <PostsProvider>
-            <ClientManagementPageContent />
-        </PostsProvider>
     );
 }

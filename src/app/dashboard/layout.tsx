@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -49,18 +48,9 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { TheEndLogo } from '@/lib/images';
-import { PostsProvider, usePosts } from '@/components/dashboard/dashboard-components';
+import { useAppContext } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-
-const clientData = {
-  name: 'Nome da Empresa',
-  email: 'user@example.com',
-  logoUrl: 'https://picsum.photos/seed/clientlogo/40/40',
-  whatsappLink: 'https://wa.me/SEUNUMERO',
-  driveFolderId: '' // Em um app real, isso viria do banco de dados para o cliente logado
-};
-
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -89,8 +79,20 @@ function DashboardLayoutContent({
 }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
-  const { posts } = usePosts();
-  const pendingApprovalsCount = posts.filter(p => p.status === 'awaiting_approval').length;
+  
+  const LOGGED_IN_CLIENT_ID = 'user@example.com'; 
+  const { getClient } = useAppContext();
+  const clientData = getClient(LOGGED_IN_CLIENT_ID);
+  
+  const pendingApprovalsCount = clientData?.posts.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length || 0;
+
+  if (!clientData) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Carregando dados do cliente... Se demorar, <Link href="/login" className="underline">faça o login</Link>.</p>
+      </div>
+    );
+  }
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Painel de Controle' },
@@ -167,7 +169,7 @@ function DashboardLayoutContent({
           <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-3">
               <Image 
-                  src={clientData.logoUrl}
+                  src={clientData.logo}
                   width={40}
                   height={40}
                   alt="Client Logo"
@@ -205,7 +207,7 @@ function DashboardLayoutContent({
               <div className="flex h-14 items-center border-b border-border/10 dark:border-white/10 px-4 lg:h-[60px] lg:px-6">
                 <div className="flex items-center gap-3">
                   <Image 
-                      src={clientData.logoUrl}
+                      src={clientData.logo}
                       width={40}
                       height={40}
                       alt="Client Logo"
@@ -326,21 +328,9 @@ function DashboardLayoutContent({
           </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-4 lg:p-4 text-foreground">
-          {React.cloneElement(children as React.ReactElement, { clientData })}
+          {children}
         </main>
       </div>
     </div>
   );
-}
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <PostsProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </PostsProvider>
-  )
 }

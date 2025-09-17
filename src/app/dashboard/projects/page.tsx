@@ -3,22 +3,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import {
-  Palette,
-  LayoutTemplate,
-  MonitorPlay,
-  FileText,
-  DollarSign,
-  Users,
-  BarChart,
-  Megaphone,
-  Video,
-  Film,
-  ListVideo,
-  FolderKanban,
-} from 'lucide-react';
 import Link from 'next/link';
 import { allProjects } from '@/components/dashboard/dashboard-components';
+import { useAppContext } from '@/contexts/AppContext';
+import { FolderKanban } from 'lucide-react';
+
 
 const categories = {
   creative: {
@@ -35,15 +24,15 @@ const categories = {
   },
 };
 
-
-// In a real app, this would be fetched based on the logged-in user's client data.
-// For this demo, we'll start with an empty list. The admin will assign projects.
-const clientProjectIds: number[] = []; 
-
-// Filter allProjects to get only the ones the client has access to
-const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
-
 export default function ProjectsPage() {
+  const LOGGED_IN_CLIENT_ID = 'user@example.com';
+  const { getClient } = useAppContext();
+  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const clientProjectIds = client?.projects || [];
+
+  // Filter allProjects to get only the ones the client has access to
+  const clientProjects = allProjects.filter(project => clientProjectIds.includes(project.id));
+
   return (
     <>
       <div className="flex items-center mb-4">
@@ -66,9 +55,7 @@ export default function ProjectsPage() {
                     <CardTitle className="text-sm font-medium mt-4">{project.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-col flex-grow-0 justify-end items-center pb-4">
-                    <div className="h-6 w-16 bg-muted/50 rounded-md flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground">Logo</span>
-                    </div>
+                     <img src={client?.logo} alt={`${client?.name} logo`} className="h-8 w-8 rounded-full object-contain" />
                   </CardContent>
                 </Card>
               </Link>
@@ -91,5 +78,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-
-    

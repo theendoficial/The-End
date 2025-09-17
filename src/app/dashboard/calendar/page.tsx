@@ -2,9 +2,26 @@
 'use client';
 
 import { KanbanBoard, FullCalendar } from '@/components/dashboard/calendar-components';
-import { PostsProvider } from '@/components/dashboard/dashboard-components';
+import { useAppContext } from '@/contexts/AppContext';
 
 function CalendarPageContent() {
+  const LOGGED_IN_CLIENT_ID = 'user@example.com';
+  const { getClient, updatePostStatus, updatePostDate } = useAppContext();
+  const client = getClient(LOGGED_IN_CLIENT_ID);
+  
+  if (!client) return <div>Carregando...</div>;
+
+  const posts = client.posts || [];
+  const scheduledPosts = posts.filter(p => p.status === 'scheduled' || p.status === 'completed');
+
+  const handleUpdateStatus = (postId: number, status: any) => {
+    updatePostStatus(client.id, postId, status);
+  }
+
+  const handleUpdateDate = (postId: number, date: string) => {
+    updatePostDate(client.id, postId, date);
+  }
+
   return (
     <>
       <div className="flex items-center mb-4">
@@ -14,12 +31,12 @@ function CalendarPageContent() {
       <div className="flex flex-col gap-6">
         <div>
           <h2 className="text-base font-semibold md:text-xl mb-3">Quadro Semanal</h2>
-          <KanbanBoard />
+          <KanbanBoard posts={posts} scheduledPosts={scheduledPosts} updatePostDate={handleUpdateDate} />
         </div>
         
         <div>
           <h2 className="text-base font-semibold md:text-xl mb-3">Calendário de Conteúdo</h2>
-          <FullCalendar />
+          <FullCalendar posts={posts} scheduledPosts={scheduledPosts} updatePostStatus={handleUpdateStatus} />
         </div>
       </div>
     </>
@@ -28,8 +45,6 @@ function CalendarPageContent() {
 
 export default function CalendarPage() {
   return (
-    <PostsProvider>
       <CalendarPageContent />
-    </PostsProvider>
   )
 }

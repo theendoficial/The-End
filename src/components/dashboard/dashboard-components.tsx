@@ -27,6 +27,7 @@ import {
     TableRow,
   } from "@/components/ui/table";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAppContext } from '@/contexts/AppContext';
 
 const TiktokIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -68,112 +69,6 @@ export const allProjects = [
   { id: 10, name: 'Vídeos Longos', category: 'audiovisual', icon: <Film className="h-8 w-8 text-pink-500" /> },
   { id: 11, name: 'Vídeos sequenciais', category: 'audiovisual', icon: <ListVideo className="h-8 w-8 text-pink-500" /> },
 ];
-
-export const initialPostsData: Post[] = [];
-
-type PostsContextType = {
-    posts: Post[];
-    scheduledPosts: Post[];
-    updatePostStatus: (postId: number, newStatus: Status) => void;
-    addPost: (newPostData: Omit<Post, 'id' | 'status'>) => void;
-    updatePostDate: (postId: number, newDate: string) => void;
-};
-
-const PostsContext = React.createContext<PostsContextType | undefined>(undefined);
-
-export const PostsProvider = ({ children }: { children: React.ReactNode }) => {
-    const [posts, setPosts] = React.useState<Post[]>(initialPostsData);
-    const [scheduledPosts, setScheduledPosts] = React.useState<Post[]>([]);
-
-    const addPost = (newPostData: Omit<Post, 'id' | 'status'>) => {
-        const newPost: Post = {
-            ...newPostData,
-            id: Date.now(), // simple unique ID for demo purposes
-            status: 'awaiting_approval',
-        };
-        setPosts(prevPosts => [newPost, ...prevPosts]);
-    };
-    
-    const updatePostDate = (postId: number, newDate: string) => {
-        const postInPosts = posts.find(p => p.id === postId);
-        const postInScheduled = scheduledPosts.find(p => p.id === postId);
-
-        if (postInPosts) {
-            setPosts(currentPosts => currentPosts.map(p =>
-                p.id === postId ? { ...p, date: newDate } : p
-            ));
-        } else if (postInScheduled) {
-            setScheduledPosts(currentPosts => currentPosts.map(p =>
-                p.id === postId ? { ...p, date: newDate } : p
-            ));
-        }
-    };
-
-    const updatePostStatus = (postId: number, newStatus: Status) => {
-        const postToMove = posts.find(p => p.id === postId) || scheduledPosts.find(p => p.id === postId);
-    
-        if (!postToMove) return;
-
-        // If moving to a "scheduled" state from an "approved" state (client-side)
-        if ((newStatus === 'approved') && postToMove.status !== 'approved') {
-            setScheduledPosts(prev => [...prev, { ...postToMove, status: 'approved' }]);
-            setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-            return;
-        }
-        
-        // If an admin schedules a post
-        if (newStatus === 'scheduled' && postToMove.status === 'approved') {
-            setScheduledPosts(currentPosts => currentPosts.map(p =>
-                p.id === postId ? { ...p, status: newStatus } : p
-            ));
-             setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-             return;
-        }
-
-        if (newStatus === 'canceled') {
-            // Remove from both lists
-            setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-            setScheduledPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
-        } else {
-             // Update status in whichever list it's in, or move it if needed
-            const isCurrentlyScheduled = scheduledPosts.some(p => p.id === postId);
-            const isMovingToPending = ['in_revision', 'awaiting_approval', 'notified'].includes(newStatus);
-
-            if (isCurrentlyScheduled && isMovingToPending) {
-                // Move from scheduled back to posts
-                setPosts(prev => [...prev, { ...postToMove, status: newStatus }]);
-                setScheduledPosts(current => current.filter(p => p.id !== postId));
-            } else if (!isCurrentlyScheduled && !isMovingToPending) {
-                 // Move from posts to scheduled
-                setScheduledPosts(prev => [...prev, { ...postToMove, status: newStatus }]);
-                setPosts(current => current.filter(p => p.id !== postId));
-            }
-             else {
-                 // Just update status in the current list
-                setPosts(currentPosts => currentPosts.map(p =>
-                    p.id === postId ? { ...p, status: newStatus } : p
-                ));
-                setScheduledPosts(currentPosts => currentPosts.map(p =>
-                    p.id === postId ? { ...p, status: newStatus } : p
-                ));
-            }
-        }
-    };
-
-    return (
-        <PostsContext.Provider value={{ posts, scheduledPosts, updatePostStatus, addPost, updatePostDate }}>
-            {children}
-        </PostsContext.Provider>
-    );
-};
-
-export const usePosts = () => {
-    const context = React.useContext(PostsContext);
-    if (!context) {
-        throw new Error('usePosts must be used within a PostsProvider');
-    }
-    return context;
-};
 
 export type PostType = 'image' | 'video_horizontal' | 'reels' | 'carousel' | 'meeting' | 'delivery' | 'strategy';
 type SocialNetwork = 'instagram' | 'tiktok' | 'youtube';
@@ -259,8 +154,11 @@ function CalendarDots({ day, events }: { day: Date, events: Record<string, { typ
     return null;
 }
 
-export function CalendarWidget() {
-    const { posts, scheduledPosts } = usePosts();
+export function CalendarWidget({ clientId }: { clientId: string }) {
+    const { getClient } = useAppContext();
+    const client = getClient(clientId);
+    const posts = client?.posts || [];
+
     const [date, setDate] = React.useState<Date | undefined>(new Date());
     const [isClient, setIsClient] = React.useState(false);
 
@@ -270,8 +168,7 @@ export function CalendarWidget() {
     
     const allEvents = React.useMemo(() => {
         const events: Record<string, { type: any }[]> = {};
-        const combinedPosts = [...posts, ...scheduledPosts];
-        combinedPosts.forEach(post => {
+        posts.forEach(post => {
             const postDate = new Date(post.date);
             const dateString = postDate.toISOString().split('T')[0];
             if (!events[dateString]) {
@@ -280,7 +177,7 @@ export function CalendarWidget() {
             events[dateString].push({ type: post.type });
         });
         return events;
-    }, [posts, scheduledPosts]);
+    }, [posts]);
 
     const scheduledDays = React.useMemo(() => {
         return Object.keys(allEvents).map(dateStr => new Date(dateStr));
@@ -363,9 +260,10 @@ export function CalendarWidget() {
     )
 }
 
-export function PendingApprovalsWidget() {
-    const { posts } = usePosts();
-    const pendingApprovalsCount = posts.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length;
+export function PendingApprovalsWidget({ clientId }: { clientId: string }) {
+    const { getClient } = useAppContext();
+    const client = getClient(clientId);
+    const pendingApprovalsCount = client?.posts.filter(p => ['awaiting_approval', 'notified'].includes(p.status)).length || 0;
     const hasApprovals = pendingApprovalsCount > 0;
 
     return (
@@ -397,9 +295,10 @@ export function PendingApprovalsWidget() {
 }
 
 
-export function UpcomingPostsList() {
-    const { posts, scheduledPosts } = usePosts();
-    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export function UpcomingPostsList({ clientId }: { clientId: string }) {
+    const { getClient, updatePostStatus } = useAppContext();
+    const client = getClient(clientId);
+    const allPosts = [...(client?.posts || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
         <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -414,7 +313,7 @@ export function UpcomingPostsList() {
             <CardContent className="flex flex-col gap-1.5 p-3 pt-0">
                 {allPosts.length > 0 ? (
                     allPosts.map((post) => (
-                        <PostListItem key={post.id} post={post} />
+                        <PostListItem key={post.id} post={post} clientId={clientId} onUpdateStatus={(postId, status) => updatePostStatus(clientId, postId, status)} />
                     ))
                 ) : (
                     <p className="text-xs text-muted-foreground text-center py-4">Nenhum post agendado.</p>
@@ -424,15 +323,11 @@ export function UpcomingPostsList() {
     )
 }
 
-export function ProjectUpcomingPostsList() {
-    const { posts, scheduledPosts, updatePostStatus } = usePosts();
-    const allPosts = [...posts, ...scheduledPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export function ProjectUpcomingPostsList({ clientId }: { clientId: string }) {
+    const { getClient, updatePostStatus } = useAppContext();
+    const client = getClient(clientId);
+    const allPosts = [...(client?.posts || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-
-    const handleRequestChange = (postId: number, comment: string) => {
-        console.log(`Change request for post ID ${postId}: "${comment}". Status changed to in_revision.`);
-        updatePostStatus(postId, 'in_revision');
-    };
 
     return (
       <Card className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border-white/10 shadow-lg rounded-2xl">
@@ -465,10 +360,10 @@ export function ProjectUpcomingPostsList() {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <PostActions post={post} onUpdateStatus={updatePostStatus} isAdminView={true} />
+                                <PostActions post={post} onUpdateStatus={(postId, status) => updatePostStatus(clientId, postId, status)} isAdminView={true} />
                             </TableCell>
                         </TableRow>
-                        <PostDialogContent post={post} onUpdateStatus={updatePostStatus} isAdminView={true} />
+                        <PostDialogContent post={post} onUpdateStatus={(postId, status) => updatePostStatus(clientId, postId, status)} isAdminView={true} />
                     </Dialog>
                 ))
               ) : (
@@ -485,10 +380,9 @@ export function ProjectUpcomingPostsList() {
     );
   }
 
-const PostListItem = ({ post }: { post: Post }) => {
+const PostListItem = ({ post, clientId, onUpdateStatus }: { post: Post, clientId: string, onUpdateStatus: (postId: number, status: Status) => void }) => {
     const postImage = post.imageUrl || (post.images && post.images[0].url);
     const postHint = post.imageHint || (post.images && post.images[0].hint);
-    const { updatePostStatus } = usePosts();
 
     return (
         <Dialog>
@@ -514,9 +408,9 @@ const PostListItem = ({ post }: { post: Post }) => {
               <Badge className={cn('text-[0.6rem] border py-0.5 px-2 font-normal', statusConfig[post.status].className)}>
                   {statusConfig[post.status].label}
               </Badge>
-              <PostActions post={post} onUpdateStatus={updatePostStatus} isAdminView={false}/>
+              <PostActions post={post} onUpdateStatus={(postId, status) => onUpdateStatus(postId, status)} isAdminView={false}/>
           </div>
-          <PostDialogContent post={post} onUpdateStatus={updatePostStatus} isAdminView={false}/>
+          <PostDialogContent post={post} onUpdateStatus={(postId, status) => onUpdateStatus(postId, status)} isAdminView={false}/>
         </Dialog>
     )
 }
@@ -672,7 +566,7 @@ export const PostDialogContent = ({ post, children, showExtraActions, onAction, 
     const PostMedia = () => {
         if (isVideo && post.url) {
             const isExternalUrl = post.url.startsWith('http');
-            if (isExternalUrl) {
+            if (isExternal-url) {
                 return (
                     <div className={cn("rounded-lg overflow-hidden bg-black flex items-center justify-center", isReels ? "aspect-[9/16]" : "aspect-video")}>
                         <iframe
@@ -817,10 +711,12 @@ export const PostDialogContent = ({ post, children, showExtraActions, onAction, 
     )
 }
 
-export function FeedPreview() {
-    const { scheduledPosts } = usePosts();
+export function FeedPreview({ clientId }: { clientId: string }) {
+    const { getClient } = useAppContext();
+    const client = getClient(clientId);
+    const scheduledPosts = client?.posts.filter(post => ['scheduled', 'completed'].includes(post.status)) || [];
+
     const feedPosts = scheduledPosts
-        .filter(post => ['scheduled', 'completed'].includes(post.status))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const getPostImage = (post: Post): PostImage | null => {
@@ -863,9 +759,3 @@ export function FeedPreview() {
         </div>
     );
 }
-
-    
-
-    
-
-    

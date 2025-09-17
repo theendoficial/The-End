@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UploadCloud, File as FileIcon, Loader, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { uploadFileToDrive, type UploadState } from '@/app/actions/upload-action';
+import { useAppContext } from '@/contexts/AppContext';
+
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -32,16 +34,12 @@ function SubmitButton() {
     );
 }
 
-// Em um app real, os dados do cliente viriam do contexto de autenticação/sessão.
-// Para este exemplo, estamos passando-os como props.
-type UploadsPageProps = {
-    clientData?: {
-        name: string;
-        driveFolderId: string;
-    }
-}
 
-export default function UploadsPage({ clientData }: UploadsPageProps) {
+export default function UploadsPage() {
+    const LOGGED_IN_CLIENT_ID = 'user@example.com';
+    const { getClient } = useAppContext();
+    const clientData = getClient(LOGGED_IN_CLIENT_ID);
+
     const initialState: UploadState = { message: null, success: false, errors: null };
     const [state, dispatch] = useActionState(uploadFileToDrive, initialState);
     const [fileName, setFileName] = React.useState<string | null>(null);

@@ -18,11 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Settings } from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
 
-const clientData = {
-  companyName: 'Nome da Empresa',
-  email: 'email@exemplo.com',
-};
 
 const settingsSchema = z.object({
   companyName: z.string().min(1, 'O nome da empresa é obrigatório.'),
@@ -33,6 +30,10 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const LOGGED_IN_CLIENT_ID = 'user@example.com';
+  const { getClient } = useAppContext();
+  const clientData = getClient(LOGGED_IN_CLIENT_ID);
+
   const {
     register,
     handleSubmit,
@@ -40,8 +41,8 @@ export default function SettingsPage() {
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      companyName: clientData.companyName,
-      email: clientData.email,
+      companyName: clientData?.name || '',
+      email: clientData?.email || '',
     },
   });
 

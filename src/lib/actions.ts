@@ -136,6 +136,7 @@ export type CreateClientState = {
   };
   message?: string | null;
   success: boolean;
+  newClient?: any;
 };
 
 export async function createClient(prevState: CreateClientState, formData: FormData): Promise<CreateClientState> {
@@ -149,7 +150,7 @@ export async function createClient(prevState: CreateClientState, formData: FormD
         };
     }
 
-    const { name } = validatedFields.data;
+    const { name, email, password, logo } = validatedFields.data;
 
     try {
         const auth = new google.auth.GoogleAuth({
@@ -177,12 +178,24 @@ export async function createClient(prevState: CreateClientState, formData: FormD
              throw new Error('Falha ao obter o ID da pasta criada no Google Drive.');
         }
 
-        // Here you would save the client data to your database,
-        // including the 'folderId' that has just been created.
-        // As we are using a mock, we will just simulate success.
+        const newClient = {
+            id: email, // Use email as a unique ID for now
+            name,
+            email,
+            password,
+            logo: logo || `https://ui-avatars.com/api/?name=${name.replace(/\s+/g, '+')}&background=random`,
+            driveFolderId: folderId,
+            projects: [],
+            posts: [],
+            documents: [],
+            reports: [],
+            notifications: [],
+            pendingApprovals: 0,
+        };
+
         console.log(`[CLIENT CREATED] Client "${name}" created successfully. Drive Folder ID: ${folderId}`);
 
-        return { success: true, message: `Cliente "${name}" criado com sucesso!` };
+        return { success: true, message: `Cliente "${name}" criado com sucesso!`, newClient };
 
     } catch (error: any) {
         console.error('Error creating client or Drive folder:', error);

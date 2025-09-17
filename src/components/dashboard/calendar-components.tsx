@@ -29,8 +29,10 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { postColors, postLegends, PostType, Post, PostDialogContent, usePosts, Status } from './dashboard-components';
+import { postColors, postLegends, PostType, Post, PostDialogContent, Status } from './dashboard-components';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useAppContext } from '@/contexts/AppContext';
+
 
 const allPostLegends: Record<string, string> = {
     ...postLegends,
@@ -158,8 +160,7 @@ const TaskDialogContent = ({ task, onUpdateStatus, isAdminView }: { task: Task |
 };
 
 
-const TaskCard = ({ task, provided, isDragging, isAdminView }: { task: Task | PostTask, provided: any, isDragging: boolean, isAdminView?: boolean }) => {
-    const { updatePostStatus } = usePosts();
+const TaskCard = ({ task, provided, isDragging, isAdminView, onUpdateStatus }: { task: Task | PostTask, provided: any, isDragging: boolean, isAdminView?: boolean, onUpdateStatus?: (postId: number, status: Status) => void }) => {
     const Icon = taskIcons[task.type];
     
     const statusColor = isAdminView ? adminStatusColors[task.status] : allPostColors[task.type];
@@ -187,7 +188,7 @@ const TaskCard = ({ task, provided, isDragging, isAdminView }: { task: Task | Po
                     <DialogTrigger asChild>
                         <button className="w-full text-left"><CardInner /></button>
                     </DialogTrigger>
-                    <PostDialogContent post={task.postData as Post} onUpdateStatus={updatePostStatus} isAdminView={isAdminView} />
+                    <PostDialogContent post={task.postData as Post} onUpdateStatus={onUpdateStatus} isAdminView={isAdminView} />
                 </Dialog>
             </div>
         );
@@ -199,7 +200,7 @@ const TaskCard = ({ task, provided, isDragging, isAdminView }: { task: Task | Po
                 <DialogTrigger asChild>
                     <button className="w-full text-left"><CardInner /></button>
                 </DialogTrigger>
-                <TaskDialogContent task={task as Task} onUpdateStatus={updatePostStatus} isAdminView={isAdminView} />
+                <TaskDialogContent task={task as Task} onUpdateStatus={onUpdateStatus} isAdminView={isAdminView} />
             </Dialog>
         </div>
     );
@@ -242,18 +243,13 @@ const CalendarEvent = ({ event, isAdminView, onUpdateStatus }: { event: Task | P
     );
 };
 
-export function FullCalendar({ posts: propsPosts, scheduledPosts: propsScheduledPosts, isAdminView, updatePostStatus: propsUpdatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) {
-    const { posts, scheduledPosts, updatePostStatus } = usePosts();
+export function FullCalendar({ posts, scheduledPosts, isAdminView, updatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [events, setEvents] = React.useState<(Task | PostTask)[]>([]);
     
-    const finalPosts = propsPosts ?? posts;
-    const finalScheduledPosts = propsScheduledPosts ?? scheduledPosts;
-    const finalUpdatePostStatus = propsUpdatePostStatus ?? updatePostStatus;
-
     React.useEffect(() => {
-        setEvents(getWeekTasks(finalPosts, finalScheduledPosts));
-    }, [finalPosts, finalScheduledPosts]);
+        setEvents(getWeekTasks(posts || [], scheduledPosts || []));
+    }, [posts, scheduledPosts]);
 
 
     const firstDayOfMonth = startOfMonth(currentDate);
@@ -338,7 +334,7 @@ export function FullCalendar({ posts: propsPosts, scheduledPosts: propsScheduled
                                     {format(day, 'd')}
                                 </span>
                                 {eventsForDay.map(event => (
-                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} onUpdateStatus={finalUpdatePostStatus} />
+                                    <CalendarEvent key={event.id} event={event} isAdminView={isAdminView} onUpdateStatus={updatePostStatus} />
                                 ))}
                             </div>
                         );
@@ -359,15 +355,10 @@ const weekDaysColumns = [
     { id: 6, title: 'Sábado' },
 ];
 
-export const KanbanBoard = ({ posts: propsPosts, scheduledPosts: propsScheduledPosts, updatePostDate: propsUpdatePostDate, isAdminView, updatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], updatePostDate?: (postId: number, newDate: string) => void, isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) => {
-    const context = usePosts();
+export const KanbanBoard = ({ posts, scheduledPosts, updatePostDate, isAdminView, updatePostStatus }: { posts?: Post[], scheduledPosts?: Post[], updatePostDate?: (postId: number, newDate: string) => void, isAdminView?: boolean, updatePostStatus?: (postId: number, status: Status) => void }) => {
     const [weekTasks, setWeekTasks] = React.useState<Record<number, (Task | PostTask)[]>>({});
     const [referenceDate, setReferenceDate] = React.useState(new Date());
     const [isClient, setIsClient] = React.useState(false);
-
-    const posts = propsPosts ?? context.posts;
-    const scheduledPosts = propsScheduledPosts ?? context.scheduledPosts;
-    const updatePostDate = propsUpdatePostDate ?? context.updatePostDate;
 
     React.useEffect(() => {
         setIsClient(true);
@@ -376,7 +367,7 @@ export const KanbanBoard = ({ posts: propsPosts, scheduledPosts: propsScheduledP
     React.useEffect(() => {
         const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 }); // Sunday
         const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
-        const allTasks = getWeekTasks(posts, scheduledPosts);
+        const allTasks = getWeekTasks(posts || [], scheduledPosts || []);
         const currentWeekTasks = allTasks.filter(task => isWithinInterval(task.date, { start: weekStart, end: weekEnd }));
         
         const groupedTasks: Record<number, (Task | PostTask)[]> = {};
@@ -449,6 +440,7 @@ export const KanbanBoard = ({ posts: propsPosts, scheduledPosts: propsScheduledP
                                                     provided={provided}
                                                     isDragging={snapshot.isDragging}
                                                     isAdminView={isAdminView}
+                                                    onUpdateStatus={updatePostStatus}
                                                 />
                                             )}
                                         </Draggable>

@@ -9,15 +9,16 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ClipboardList, Download, File as FileIcon, Briefcase, FolderOpen } from "lucide-react";
+import { Download, File as FileIcon, FolderOpen } from "lucide-react";
 import * as React from 'react';
-
-// Dados de exemplo para visualização. 
-// No futuro, estes dados virão do seu painel de administração.
-const documentFolders: any[] = [];
-
+import { useAppContext } from '@/contexts/AppContext';
 
 export default function DocumentsPage() {
+  const LOGGED_IN_CLIENT_ID = 'user@example.com';
+  const { getClient } = useAppContext();
+  const client = getClient(LOGGED_IN_CLIENT_ID);
+  const documentFolders = client?.documents || [];
+
   return (
     <>
       <div className="flex items-center mb-6">
@@ -27,11 +28,11 @@ export default function DocumentsPage() {
       {documentFolders.length > 0 ? (
         <Accordion type="single" collapsible className="w-full space-y-4">
           {documentFolders.map((folder, index) => (
-            <AccordionItem value={`item-${index}`} key={index} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border border-white/10 shadow-lg rounded-2xl px-4">
+            <AccordionItem value={`item-${index}`} key={folder.id} className="bg-card/60 dark:bg-black/40 backdrop-blur-lg border border-white/10 shadow-lg rounded-2xl px-4">
               <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
-                      <folder.icon className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-base">{folder.title}</span>
+                      <FolderOpen className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-base">{folder.name}</span>
                   </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -44,22 +45,22 @@ export default function DocumentsPage() {
                           </TableRow>
                       </TableHeader>
                       <TableBody>
-                          {folder.assets.map((asset: any) => (
-                              <TableRow key={asset.name} className="border-b-white/10">
+                          {folder.documents.map((asset: any) => (
+                              <TableRow key={asset.id} className="border-b-white/10">
                                   <TableCell className="font-medium flex items-center gap-3">
                                       <FileIcon className="h-4 w-4 text-muted-foreground" />
-                                      {asset.name}
+                                      {asset.title}
                                   </TableCell>
                                   <TableCell>
                                       <span className="bg-muted/50 text-muted-foreground text-xs font-semibold px-2 py-1 rounded-md">
-                                          {asset.type}
+                                          {asset.fileName ? asset.fileName.split('.').pop() : 'Link'}
                                       </span>
                                   </TableCell>
                                   <TableCell className="text-right">
                                       <Button asChild variant="outline" size="sm">
-                                          <a href={asset.url} download>
+                                          <a href={asset.url} download={asset.fileName}>
                                               <Download className="mr-2 h-4 w-4" />
-                                              Baixar
+                                              {asset.fileName ? 'Baixar' : 'Acessar'}
                                           </a>
                                       </Button>
                                   </TableCell>

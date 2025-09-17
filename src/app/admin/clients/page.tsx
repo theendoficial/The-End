@@ -14,21 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useFormStatus } from 'react-dom';
 import { createClient, type CreateClientState } from '@/lib/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-// Mock client type
-export type Client = {
-    id: string;
-    name: string;
-    email: string;
-    password?: string;
-    logo: string;
-    driveFolderId?: string;
-    projects: any[]; // Simplificado por agora
-    pendingApprovals: number;
-};
-
-// Centralized mock data. In a real app, this would be fetched from a database.
-export const mockClients: Client[] = [];
+import { useAppContext, Client } from '@/contexts/AppContext';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -40,39 +26,22 @@ function SubmitButton() {
 }
 
 export default function AdminClientsPage() {
-    const [clients, setClients] = useState<Client[]>(mockClients);
+    const { clients, addClient } = useAppContext();
     const [showPassword, setShowPassword] = useState(false);
     const [open, setOpen] = useState(false);
     
-    // Form state refatorado para usar Server Action
     const initialState: CreateClientState = { message: null, success: false, errors: null };
     const [formState, dispatch] = useActionState(createClient, initialState);
     const formRef = useRef<HTMLFormElement>(null);
 
 
     useEffect(() => {
-        if (formState.success) {
-            // Lógica para adicionar o novo cliente à lista local após sucesso.
-            // Em um app real, você provavelmente re-validaria os dados do servidor.
-            const formData = new FormData(formRef.current!);
-            const newClient: Client = {
-                id: (formData.get('name') as string).toLowerCase().replace(/\s+/g, '-'),
-                name: formData.get('name') as string,
-                email: formData.get('email') as string,
-                logo: formData.get('logo') as string || `https://ui-avatars.com/api/?name=${(formData.get('name') as string).replace(/\s+/g, '+')}&background=random`,
-                projects: [],
-                pendingApprovals: 0,
-                // driveFolderId viria da resposta da action em um app real
-            };
-            setClients(prev => [...prev, newClient]);
-            
+        if (formState.success && formState.newClient) {
+            addClient(formState.newClient);
             setOpen(false); // Close the dialog
             formRef.current?.reset(); // Reset the form fields
-            // We need to manually reset the formState if we want to allow another submission
-            // This is a limitation of the current useActionState hook, a better approach
-            // would be to use a key on the form to force a remount.
         }
-    }, [formState]);
+    }, [formState, addClient]);
 
 
     return (

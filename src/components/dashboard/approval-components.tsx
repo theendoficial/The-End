@@ -10,7 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type ApprovalPostCardProps = {
     post: Post;
@@ -35,7 +36,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
     const imageUrl = getPostImage(post);
     const imageHint = getImageHint(post);
     
-    const isAwaitingApproval = post.status === 'awaiting_approval';
+    const isAwaitingApproval = ['awaiting_approval', 'notified'].includes(post.status);
     const isInRevision = post.status === 'in_revision';
 
     return (
@@ -63,7 +64,7 @@ export function ApprovalPostCard({ post, onAction }: ApprovalPostCardProps) {
                              <h3 className="font-semibold text-sm mb-2 leading-tight h-10">{post.title}</h3>
                             <div className="flex items-center text-xs text-muted-foreground mb-4">
                                 <Calendar className="h-4 w-4 mr-2" />
-                                <span>Publicação: {post.date}</span>
+                                <span>{format(parseISO(post.date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
                             </div>
 
                             <div className="mt-auto space-y-2">
