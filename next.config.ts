@@ -1,6 +1,7 @@
 
 import type {NextConfig} from 'next';
 
+// Forcing a change to invalidate Vercel's cache. Version 2.
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
